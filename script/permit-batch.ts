@@ -16,7 +16,7 @@ import {
 } from "viem"
 import { moonbeam } from "viem/chains"
 import { privateKeyToAccount } from "viem/accounts"
-import { ERC20_ABI, CALL_PERMIT_ABI, BATCH_ABI } from "./abi"
+import { ERC20_ABI, CALL_PERMIT_ABI, BATCH_ABI, CALLER_ABI } from "./abi"
 import dotenv from "dotenv"
 
 dotenv.config()
@@ -29,6 +29,7 @@ interface PermitBatchConfig {
     rpcUrl: string
     privateKey: string
     senderPrivateKey: string
+    contract?: Address
 }
 
 class PermitBatch {
@@ -149,18 +150,30 @@ class PermitBatch {
 
         const batchData = this.createBatchData(targets, values, callData, gasLimits)
 
-        const { v, r, s } = await this.createPermitSignature(from, BATCH_PRECOMPILE, 0n, batchData, 1000000n, deadline, nonce)
+        const gasLimit = 800000n
+        const { v, r, s } = await this.createPermitSignature(from, BATCH_PRECOMPILE, 0n, batchData, gasLimit, deadline, nonce)
 
-        const hash = await this.walletClient.writeContract({
-            account: privateKeyToAccount(this.config.senderPrivateKey as Hex),
-            chain: moonbeam,
-            address: CALL_PERMIT_PRECOMPILE,
-            abi: CALL_PERMIT_ABI,
-            functionName: "dispatch",
-            args: [from, BATCH_PRECOMPILE, 0n, batchData, 1000000n, deadline, v, r, s],
-        })
-
-        return hash
+        let hash: Hash
+        if (this.config.contract) {
+            hash = await this.walletClient.writeContract({
+                account: privateKeyToAccount(this.config.senderPrivateKey as Hex),
+                chain: moonbeam,
+                address: this.config.contract,
+                abi: CALLER_ABI,
+                functionName: "permitCall",
+                args: [from, BATCH_PRECOMPILE, 0n, batchData, gasLimit, deadline, v, r, s],
+            })
+        } else {
+            hash = await this.walletClient.writeContract({
+                account: privateKeyToAccount(this.config.senderPrivateKey as Hex),
+                chain: moonbeam,
+                address: CALL_PERMIT_PRECOMPILE,
+                abi: CALL_PERMIT_ABI,
+                functionName: "dispatch",
+                args: [from, BATCH_PRECOMPILE, 0n, batchData, gasLimit, deadline, v, r, s],
+            })
+        }
+        return hash ?? "0x"
     }
 
     async runTest(): Promise<void> {
@@ -226,10 +239,23 @@ function formatUnits(value: bigint, decimals: number): string {
 }
 
 async function main() {
-    const config: PermitBatchConfig = {
-        rpcUrl: process.env.MOONBEAM_RPC_URL || "https://moonbeam.drpc.org",
-        privateKey: process.env.PRIVATE_KEY || "",
-        senderPrivateKey: process.env.SENDER_PRIVATE_KEY || "",
+    const args = process.argv.slice(2)
+
+    let config: PermitBatchConfig | null = null
+
+    if (args[0] === "--m") {
+        config = {
+            rpcUrl: process.env.MOONBEAM_RPC_URL || "https://moonbeam.drpc.org",
+            privateKey: process.env.PRIVATE_KEY || "",
+            senderPrivateKey: process.env.SENDER_PRIVATE_KEY || "",
+            contract: args[1] as Address,
+        }
+    } else {
+        config = {
+            rpcUrl: process.env.MOONBEAM_RPC_URL || "https://moonbeam.drpc.org",
+            privateKey: process.env.PRIVATE_KEY || "",
+            senderPrivateKey: process.env.SENDER_PRIVATE_KEY || "",
+        }
     }
 
     if (!config.privateKey || !config.senderPrivateKey) {

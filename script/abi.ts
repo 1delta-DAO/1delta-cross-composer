@@ -160,3 +160,45 @@ export const BATCH_ABI = [
         anonymous: false,
     },
 ] as const
+
+export const CALLER_ABI = [
+    {
+        type: "function",
+        name: "batchCall",
+        inputs: [
+            { name: "to", type: "address[]", internalType: "address[]" },
+            { name: "value", type: "uint256[]", internalType: "uint256[]" },
+            { name: "callData", type: "bytes[]", internalType: "bytes[]" },
+            { name: "gasLimit", type: "uint64[]", internalType: "uint64[]" },
+        ],
+        outputs: [],
+        stateMutability: "payable",
+    },
+    {
+        type: "function",
+        name: "call",
+        inputs: [
+            { name: "target", type: "address", internalType: "address" },
+            { name: "data", type: "bytes", internalType: "bytes" },
+        ],
+        outputs: [],
+        stateMutability: "payable",
+    },
+    {
+        type: "function",
+        name: "permitCall",
+        inputs: [
+            { name: "from", type: "address", internalType: "address" },
+            { name: "to", type: "address", internalType: "address" },
+            { name: "value", type: "uint256", internalType: "uint256" },
+            { name: "data", type: "bytes", internalType: "bytes" },
+            { name: "gaslimit", type: "uint64", internalType: "uint64" },
+            { name: "deadline", type: "uint256", internalType: "uint256" },
+            { name: "v", type: "uint8", internalType: "uint8" },
+            { name: "r", type: "bytes32", internalType: "bytes32" },
+            { name: "s", type: "bytes32", internalType: "bytes32" },
+        ],
+        outputs: [{ name: "", type: "bytes", internalType: "bytes" }],
+        stateMutability: "payable",
+    },
+] as const
