@@ -277,23 +277,25 @@ export function SwapTab({ userAddress }: Props) {
                         />
                     )}
                 </div>
-                <div className="form-control">
-                    <label className="label">
-                        <span className="label-text">Amount</span>
-                    </label>
-                    <input
-                        className="input input-bordered w-full"
-                        inputMode="decimal"
-                        value={amount}
-                        onChange={(e) => setAmount(filterNumeric(e.target.value))}
-                        placeholder="0.0"
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="form-control">
+                        <label className="label">
+                            <span className="label-text">Amount</span>
+                        </label>
+                        <input
+                            className="input input-bordered w-full"
+                            inputMode="decimal"
+                            value={amount}
+                            onChange={(e) => setAmount(filterNumeric(e.target.value))}
+                            placeholder="0.0"
+                        />
+                    </div>
+                    <SlippageAndAmount
+                        balance={srcTokenBalance?.value || (srcToken ? srcBalances?.[srcChainId || ""]?.[srcToken.toLowerCase()]?.value : undefined)}
+                        amount={amount}
+                        onAmount={setAmount}
                     />
                 </div>
-                <SlippageAndAmount
-                    balance={srcTokenBalance?.value || (srcToken ? srcBalances?.[srcChainId || ""]?.[srcToken.toLowerCase()]?.value : undefined)}
-                    amount={amount}
-                    onAmount={setAmount}
-                />
                 {quoteOut && (
                     <div className="card bg-base-100 shadow">
                         <div className="card-body">
@@ -306,78 +308,81 @@ export function SwapTab({ userAddress }: Props) {
                                     Estimated receive: <span className="font-mono">{quoteOut}</span>
                                 </div>
                             </div>
-                            {dstChainId === "1284" && (
-                                <div className="mt-4">
-                                    <DestinationActionSelector
-                                        onAdd={(config, selector) => {
-                                            setActions((arr) => [...arr, { id: Math.random().toString(36).slice(2), config, selector, args: [] }])
-                                        }}
-                                    />
-                                    {actions.length > 0 && (
-                                        <div className="mt-4 space-y-3">
-                                            {actions.map((a, idx) => (
-                                                <ActionEditor
-                                                    key={a.id}
-                                                    action={a}
-                                                    canMoveUp={idx > 0}
-                                                    canMoveDown={idx < actions.length - 1}
-                                                    onChange={(next) => setActions((arr) => arr.map((x) => (x.id === a.id ? next : x)))}
-                                                    onRemove={() => setActions((arr) => arr.filter((x) => x.id !== a.id))}
-                                                    onMoveUp={() =>
-                                                        setActions((arr) => {
-                                                            const copy = [...arr]
-                                                            const i = copy.findIndex((x) => x.id === a.id)
-                                                            if (i > 0) {
-                                                                const tmp = copy[i - 1]
-                                                                copy[i - 1] = copy[i]
-                                                                copy[i] = tmp
-                                                            }
-                                                            return copy
-                                                        })
+                        </div>
+                    </div>
+                )}
+                {dstChainId === "1284" && quoteOut && (
+                    <div className="card bg-base-100 shadow">
+                        <div className="card-body">
+                            <div className="font-medium mb-3">Moonbeam Actions</div>
+                            <DestinationActionSelector
+                                onAdd={(config, selector) => {
+                                    setActions((arr) => [...arr, { id: Math.random().toString(36).slice(2), config, selector, args: [] }])
+                                }}
+                            />
+                            {actions.length > 0 && (
+                                <div className="mt-4 space-y-3">
+                                    {actions.map((a, idx) => (
+                                        <ActionEditor
+                                            key={a.id}
+                                            action={a}
+                                            canMoveUp={idx > 0}
+                                            canMoveDown={idx < actions.length - 1}
+                                            onChange={(next) => setActions((arr) => arr.map((x) => (x.id === a.id ? next : x)))}
+                                            onRemove={() => setActions((arr) => arr.filter((x) => x.id !== a.id))}
+                                            onMoveUp={() =>
+                                                setActions((arr) => {
+                                                    const copy = [...arr]
+                                                    const i = copy.findIndex((x) => x.id === a.id)
+                                                    if (i > 0) {
+                                                        const tmp = copy[i - 1]
+                                                        copy[i - 1] = copy[i]
+                                                        copy[i] = tmp
                                                     }
-                                                    onMoveDown={() =>
-                                                        setActions((arr) => {
-                                                            const copy = [...arr]
-                                                            const i = copy.findIndex((x) => x.id === a.id)
-                                                            if (i >= 0 && i < copy.length - 1) {
-                                                                const tmp = copy[i + 1]
-                                                                copy[i + 1] = copy[i]
-                                                                copy[i] = tmp
-                                                            }
-                                                            return copy
-                                                        })
+                                                    return copy
+                                                })
+                                            }
+                                            onMoveDown={() =>
+                                                setActions((arr) => {
+                                                    const copy = [...arr]
+                                                    const i = copy.findIndex((x) => x.id === a.id)
+                                                    if (i >= 0 && i < copy.length - 1) {
+                                                        const tmp = copy[i + 1]
+                                                        copy[i + 1] = copy[i]
+                                                        copy[i] = tmp
                                                     }
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
-                                    <div className="mt-3">
-                                        <ExecuteButton
-                                            onDone={(hashes) => {
-                                                // Invalidate all balance queries for src/dst chains and tokens
-                                                if (srcChainId && userAddress) {
-                                                    queryClient.invalidateQueries({
-                                                        queryKey: ["balances", srcChainId, userAddress],
-                                                    })
-                                                    queryClient.invalidateQueries({
-                                                        queryKey: ["tokenBalance", srcChainId, userAddress],
-                                                    })
-                                                }
-                                                if (dstChainId && userAddress) {
-                                                    queryClient.invalidateQueries({
-                                                        queryKey: ["balances", dstChainId, userAddress],
-                                                    })
-                                                    queryClient.invalidateQueries({
-                                                        queryKey: ["tokenBalance", dstChainId, userAddress],
-                                                    })
-                                                }
-                                            }}
+                                                    return copy
+                                                })
+                                            }
                                         />
-                                    </div>
+                                    ))}
                                 </div>
                             )}
                         </div>
                     </div>
+                )}
+                {quoteOut && (
+                    <ExecuteButton
+                        onDone={(hashes) => {
+                            // Invalidate all balance queries for src/dst chains and tokens
+                            if (srcChainId && userAddress) {
+                                queryClient.invalidateQueries({
+                                    queryKey: ["balances", srcChainId, userAddress],
+                                })
+                                queryClient.invalidateQueries({
+                                    queryKey: ["tokenBalance", srcChainId, userAddress],
+                                })
+                            }
+                            if (dstChainId && userAddress) {
+                                queryClient.invalidateQueries({
+                                    queryKey: ["balances", dstChainId, userAddress],
+                                })
+                                queryClient.invalidateQueries({
+                                    queryKey: ["tokenBalance", dstChainId, userAddress],
+                                })
+                            }
+                        }}
+                    />
                 )}
             </div>
         </div>
@@ -447,7 +452,7 @@ function SlippageAndAmount({ balance, amount, onAmount }: { balance?: string; am
                         setPct(v)
                         if (numericBal > 0) onAmount((numericBal * (v / 100)).toString())
                     }}
-                    className="range"
+                    className="range flex-1"
                 />
                 <input className="input input-bordered w-24" value={pct} onChange={(e) => setPct(Number(e.target.value) || 0)} />
             </div>
