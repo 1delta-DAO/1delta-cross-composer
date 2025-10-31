@@ -9,16 +9,20 @@ interface TabSelectorProps {
 
 export default function TabSelector({ activeTab, onTabChange }: TabSelectorProps) {
     return (
-        <div className="tabs tabs-boxed mb-8">
+        <div role="tablist" className="tabs tabs-lifted tabs-lg w-full mb-8">
             <button
-                className={`tab ${activeTab === "swap" ? "tab-active" : ""}`}
+                role="tab"
+                className={`tab transition-all ${activeTab === "swap" ? "tab-active [--tab-bg:theme(colors.base-100)] font-semibold" : "text-base-content/60 hover:text-base-content"}`}
                 onClick={() => onTabChange("swap")}
+                aria-selected={activeTab === "swap"}
             >
                 Swap
             </button>
             <button
-                className={`tab ${activeTab === "transactions" ? "tab-active" : ""}`}
+                role="tab"
+                className={`tab transition-all ${activeTab === "transactions" ? "tab-active [--tab-bg:theme(colors.base-100)] font-semibold" : "text-base-content/60 hover:text-base-content"}`}
                 onClick={() => onTabChange("transactions")}
+                aria-selected={activeTab === "transactions"}
             >
                 Transactions
             </button>

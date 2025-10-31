@@ -44,34 +44,36 @@ export default function App() {
         ) : (
           <div className="space-y-8">
             <TabSelector activeTab={activeTab} onTabChange={setActiveTab} />
-            {activeTab === 'swap' ? (
-              <SwapTab userAddress={address ?? undefined} />
-            ) : transactionHash ? (
-              <div className="card bg-base-100 shadow-2xl">
-                <div className="card-body">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="card-title text-2xl">Transaction Executed</h2>
-                    <div className="badge badge-success badge-lg">Success</div>
-                  </div>
-                  <div className="space-y-6">
-                    <div className="card bg-base-200 shadow-md">
-                      <div className="card-body">
-                        <h3 className="card-title text-lg">Transaction Hash</h3>
-                        <div className="flex flex-row gap-2 items-center pt-2">
-                          <p className="flex-1 font-mono text-s w-10/11 text-white border rounded-md p-2">{transactionHash}</p>
+            <div className="card bg-base-100 shadow-xl border-t-0 rounded-t-none">
+              <div className="card-body">
+                {activeTab === 'swap' ? (
+                  <SwapTab userAddress={address ?? undefined} />
+                ) : transactionHash ? (
+                  <div>
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="card-title text-2xl">Transaction Executed</h2>
+                      <div className="badge badge-success badge-lg">Success</div>
+                    </div>
+                    <div className="space-y-6">
+                      <div className="card bg-base-200 shadow-md">
+                        <div className="card-body">
+                          <h3 className="card-title text-lg">Transaction Hash</h3>
+                          <div className="flex flex-row gap-2 items-center pt-2">
+                            <p className="flex-1 font-mono text-s w-10/11 text-white border rounded-md p-2">{transactionHash}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="card-actions justify-between">
-                      <button onClick={handleReset} className="btn btn-outline btn-secondary">Reset</button>
-                      <button onClick={handleReset} className="btn btn-primary btn-lg">Create New Transaction</button>
+                      <div className="card-actions justify-between">
+                        <button onClick={handleReset} className="btn btn-outline btn-secondary">Reset</button>
+                        <button onClick={handleReset} className="btn btn-primary btn-lg">Create New Transaction</button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <BatchTransactionForm onTransactionExecuted={handleTransactionExecuted} />
+                )}
               </div>
-            ) : (
-              <BatchTransactionForm onTransactionExecuted={handleTransactionExecuted} />
-            )}
+            </div>
           </div>
         )}
       </main>

@@ -191,200 +191,191 @@ export function SwapTab({ userAddress }: Props) {
     const [actions, setActions] = React.useState<PendingAction[]>([])
 
     return (
-        <div>
-            <div role="tablist" className="tabs tabs-lift mb-4">
-                <a role="tab" className="tab tab-active">
-                    Swap
-                </a>
-            </div>
-            <div className="space-y-4">
-                <div className="space-y-2">
-                    <div className="font-medium">Source</div>
-                    <ChainSelector
-                        value={srcChainId}
-                        onChange={(cid) => {
-                            setSrcChainId(cid)
-                            // if dst matches src after change, clear dstToken to enforce difference
-                            if (cid === dstChainId && srcToken && dstToken && srcToken.toLowerCase() === dstToken.toLowerCase()) {
-                                setDstToken(undefined)
-                            }
-                        }}
-                    />
-                    {srcChainId && <TokenSelector chainId={srcChainId} userAddress={userAddress} value={srcToken} onChange={setSrcToken} />}
-                    {srcChainId && srcToken && (
-                        <SelectedTokenInfo
-                            chains={chains}
-                            chainId={srcChainId || ""}
-                            tokenAddress={srcToken}
-                            balance={
-                                srcTokenBalance?.value || (srcToken ? srcBalances?.[srcChainId || ""]?.[srcToken.toLowerCase()]?.value : undefined)
-                            }
-                            price={srcToken && srcChainId ? getTokenPrice(srcChainId, srcToken, srcPrices?.[srcChainId || ""]) : undefined}
-                            balanceLoading={srcTokenBalanceLoading || srcBalancesLoading}
-                            priceLoading={srcPricesLoading}
-                        />
-                    )}
-                </div>
-                <div className="flex justify-center">
-                    <button
-                        type="button"
-                        className="btn btn-circle"
-                        onClick={() => {
-                            const sc = srcChainId
-                            const st = srcToken
-                            setSrcChainId(dstChainId)
-                            setSrcToken(dstToken)
-                            setDstChainId(sc)
-                            setDstToken(st)
-                        }}
-                        aria-label="Swap direction"
-                    >
-                        ↕
-                    </button>
-                </div>
-                <div className="space-y-2">
-                    <div className="font-medium">Destination</div>
-                    <ChainSelector
-                        value={dstChainId}
-                        onChange={(cid) => {
-                            setDstChainId(cid)
-                            if (cid === srcChainId && srcToken && dstToken && srcToken.toLowerCase() === dstToken.toLowerCase()) {
-                                setDstToken(undefined)
-                            }
-                        }}
-                    />
-                    {dstChainId && (
-                        <TokenSelector
-                            chainId={dstChainId}
-                            userAddress={userAddress}
-                            value={dstToken}
-                            onChange={(addr) => {
-                                if (srcChainId === dstChainId && srcToken && addr.toLowerCase() === srcToken.toLowerCase()) return
-                                setDstToken(addr)
-                            }}
-                            excludeAddresses={srcChainId === dstChainId && srcToken ? [srcToken] : []}
-                        />
-                    )}
-                    {dstChainId && dstToken && (
-                        <SelectedTokenInfo
-                            chains={chains}
-                            chainId={dstChainId}
-                            tokenAddress={dstToken}
-                            balance={dstTokenBalance?.value || (dstToken ? dstBalances?.[dstChainId]?.[dstToken.toLowerCase()]?.value : undefined)}
-                            price={dstToken && dstChainId ? getTokenPrice(dstChainId, dstToken, dstPrices?.[dstChainId]) : undefined}
-                            balanceLoading={dstTokenBalanceLoading || dstBalancesLoading}
-                            priceLoading={dstPricesLoading}
-                        />
-                    )}
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="form-control">
-                        <label className="label">
-                            <span className="label-text">Amount</span>
-                        </label>
-                        <input
-                            className="input input-bordered w-full"
-                            inputMode="decimal"
-                            value={amount}
-                            onChange={(e) => setAmount(filterNumeric(e.target.value))}
-                            placeholder="0.0"
-                        />
-                    </div>
-                    <SlippageAndAmount
+        <div className="space-y-4">
+            <div className="space-y-2">
+                <div className="font-medium">Source</div>
+                <ChainSelector
+                    value={srcChainId}
+                    onChange={(cid) => {
+                        setSrcChainId(cid)
+                        // if dst matches src after change, clear dstToken to enforce difference
+                        if (cid === dstChainId && srcToken && dstToken && srcToken.toLowerCase() === dstToken.toLowerCase()) {
+                            setDstToken(undefined)
+                        }
+                    }}
+                />
+                {srcChainId && <TokenSelector chainId={srcChainId} userAddress={userAddress} value={srcToken} onChange={setSrcToken} />}
+                {srcChainId && srcToken && (
+                    <SelectedTokenInfo
+                        chains={chains}
+                        chainId={srcChainId || ""}
+                        tokenAddress={srcToken}
                         balance={srcTokenBalance?.value || (srcToken ? srcBalances?.[srcChainId || ""]?.[srcToken.toLowerCase()]?.value : undefined)}
-                        amount={amount}
-                        onAmount={setAmount}
-                    />
-                </div>
-                {quoteOut && (
-                    <div className="card bg-base-100 shadow">
-                        <div className="card-body">
-                            <div className="flex items-center justify-between">
-                                <div className="font-medium">Quote</div>
-                                {quoting && <span className="loading loading-spinner loading-sm" />}
-                            </div>
-                            <div className="mt-2">
-                                <div className="text-sm">
-                                    Estimated receive: <span className="font-mono">{quoteOut}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-                {dstChainId === "1284" && quoteOut && (
-                    <div className="card bg-base-100 shadow">
-                        <div className="card-body">
-                            <div className="font-medium mb-3">Moonbeam Actions</div>
-                            <DestinationActionSelector
-                                onAdd={(config, selector) => {
-                                    setActions((arr) => [...arr, { id: Math.random().toString(36).slice(2), config, selector, args: [] }])
-                                }}
-                            />
-                            {actions.length > 0 && (
-                                <div className="mt-4 space-y-3">
-                                    {actions.map((a, idx) => (
-                                        <ActionEditor
-                                            key={a.id}
-                                            action={a}
-                                            canMoveUp={idx > 0}
-                                            canMoveDown={idx < actions.length - 1}
-                                            onChange={(next) => setActions((arr) => arr.map((x) => (x.id === a.id ? next : x)))}
-                                            onRemove={() => setActions((arr) => arr.filter((x) => x.id !== a.id))}
-                                            onMoveUp={() =>
-                                                setActions((arr) => {
-                                                    const copy = [...arr]
-                                                    const i = copy.findIndex((x) => x.id === a.id)
-                                                    if (i > 0) {
-                                                        const tmp = copy[i - 1]
-                                                        copy[i - 1] = copy[i]
-                                                        copy[i] = tmp
-                                                    }
-                                                    return copy
-                                                })
-                                            }
-                                            onMoveDown={() =>
-                                                setActions((arr) => {
-                                                    const copy = [...arr]
-                                                    const i = copy.findIndex((x) => x.id === a.id)
-                                                    if (i >= 0 && i < copy.length - 1) {
-                                                        const tmp = copy[i + 1]
-                                                        copy[i + 1] = copy[i]
-                                                        copy[i] = tmp
-                                                    }
-                                                    return copy
-                                                })
-                                            }
-                                        />
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-                {quoteOut && (
-                    <ExecuteButton
-                        onDone={(hashes) => {
-                            // Invalidate all balance queries for src/dst chains and tokens
-                            if (srcChainId && userAddress) {
-                                queryClient.invalidateQueries({
-                                    queryKey: ["balances", srcChainId, userAddress],
-                                })
-                                queryClient.invalidateQueries({
-                                    queryKey: ["tokenBalance", srcChainId, userAddress],
-                                })
-                            }
-                            if (dstChainId && userAddress) {
-                                queryClient.invalidateQueries({
-                                    queryKey: ["balances", dstChainId, userAddress],
-                                })
-                                queryClient.invalidateQueries({
-                                    queryKey: ["tokenBalance", dstChainId, userAddress],
-                                })
-                            }
-                        }}
+                        price={srcToken && srcChainId ? getTokenPrice(srcChainId, srcToken, srcPrices?.[srcChainId || ""]) : undefined}
+                        balanceLoading={srcTokenBalanceLoading || srcBalancesLoading}
+                        priceLoading={srcPricesLoading}
                     />
                 )}
             </div>
+            <div className="flex justify-center">
+                <button
+                    type="button"
+                    className="btn btn-circle"
+                    onClick={() => {
+                        const sc = srcChainId
+                        const st = srcToken
+                        setSrcChainId(dstChainId)
+                        setSrcToken(dstToken)
+                        setDstChainId(sc)
+                        setDstToken(st)
+                    }}
+                    aria-label="Swap direction"
+                >
+                    ↕
+                </button>
+            </div>
+            <div className="space-y-2">
+                <div className="font-medium">Destination</div>
+                <ChainSelector
+                    value={dstChainId}
+                    onChange={(cid) => {
+                        setDstChainId(cid)
+                        if (cid === srcChainId && srcToken && dstToken && srcToken.toLowerCase() === dstToken.toLowerCase()) {
+                            setDstToken(undefined)
+                        }
+                    }}
+                />
+                {dstChainId && (
+                    <TokenSelector
+                        chainId={dstChainId}
+                        userAddress={userAddress}
+                        value={dstToken}
+                        onChange={(addr) => {
+                            if (srcChainId === dstChainId && srcToken && addr.toLowerCase() === srcToken.toLowerCase()) return
+                            setDstToken(addr)
+                        }}
+                        excludeAddresses={srcChainId === dstChainId && srcToken ? [srcToken] : []}
+                    />
+                )}
+                {dstChainId && dstToken && (
+                    <SelectedTokenInfo
+                        chains={chains}
+                        chainId={dstChainId}
+                        tokenAddress={dstToken}
+                        balance={dstTokenBalance?.value || (dstToken ? dstBalances?.[dstChainId]?.[dstToken.toLowerCase()]?.value : undefined)}
+                        price={dstToken && dstChainId ? getTokenPrice(dstChainId, dstToken, dstPrices?.[dstChainId]) : undefined}
+                        balanceLoading={dstTokenBalanceLoading || dstBalancesLoading}
+                        priceLoading={dstPricesLoading}
+                    />
+                )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="form-control">
+                    <label className="label">
+                        <span className="label-text">Amount</span>
+                    </label>
+                    <input
+                        className="input input-bordered w-full"
+                        inputMode="decimal"
+                        value={amount}
+                        onChange={(e) => setAmount(filterNumeric(e.target.value))}
+                        placeholder="0.0"
+                    />
+                </div>
+                <SlippageAndAmount
+                    balance={srcTokenBalance?.value || (srcToken ? srcBalances?.[srcChainId || ""]?.[srcToken.toLowerCase()]?.value : undefined)}
+                    amount={amount}
+                    onAmount={setAmount}
+                />
+            </div>
+            {quoteOut && (
+                <div className="card bg-base-100 shadow">
+                    <div className="card-body">
+                        <div className="flex items-center justify-between">
+                            <div className="font-medium">Quote</div>
+                            {quoting && <span className="loading loading-spinner loading-sm" />}
+                        </div>
+                        <div className="mt-2">
+                            <div className="text-sm">
+                                Estimated receive: <span className="font-mono">{quoteOut}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {dstChainId === "1284" && quoteOut && (
+                <div className="card bg-base-100 shadow">
+                    <div className="card-body">
+                        <div className="font-medium mb-3">Moonbeam Actions</div>
+                        <DestinationActionSelector
+                            onAdd={(config, selector) => {
+                                setActions((arr) => [...arr, { id: Math.random().toString(36).slice(2), config, selector, args: [] }])
+                            }}
+                        />
+                        {actions.length > 0 && (
+                            <div className="mt-4 space-y-3">
+                                {actions.map((a, idx) => (
+                                    <ActionEditor
+                                        key={a.id}
+                                        action={a}
+                                        canMoveUp={idx > 0}
+                                        canMoveDown={idx < actions.length - 1}
+                                        onChange={(next) => setActions((arr) => arr.map((x) => (x.id === a.id ? next : x)))}
+                                        onRemove={() => setActions((arr) => arr.filter((x) => x.id !== a.id))}
+                                        onMoveUp={() =>
+                                            setActions((arr) => {
+                                                const copy = [...arr]
+                                                const i = copy.findIndex((x) => x.id === a.id)
+                                                if (i > 0) {
+                                                    const tmp = copy[i - 1]
+                                                    copy[i - 1] = copy[i]
+                                                    copy[i] = tmp
+                                                }
+                                                return copy
+                                            })
+                                        }
+                                        onMoveDown={() =>
+                                            setActions((arr) => {
+                                                const copy = [...arr]
+                                                const i = copy.findIndex((x) => x.id === a.id)
+                                                if (i >= 0 && i < copy.length - 1) {
+                                                    const tmp = copy[i + 1]
+                                                    copy[i + 1] = copy[i]
+                                                    copy[i] = tmp
+                                                }
+                                                return copy
+                                            })
+                                        }
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+            {quoteOut && (
+                <ExecuteButton
+                    onDone={(hashes) => {
+                        // Invalidate all balance queries for src/dst chains and tokens
+                        if (srcChainId && userAddress) {
+                            queryClient.invalidateQueries({
+                                queryKey: ["balances", srcChainId, userAddress],
+                            })
+                            queryClient.invalidateQueries({
+                                queryKey: ["tokenBalance", srcChainId, userAddress],
+                            })
+                        }
+                        if (dstChainId && userAddress) {
+                            queryClient.invalidateQueries({
+                                queryKey: ["balances", dstChainId, userAddress],
+                            })
+                            queryClient.invalidateQueries({
+                                queryKey: ["tokenBalance", dstChainId, userAddress],
+                            })
+                        }
+                    }}
+                />
+            )}
         </div>
     )
 }
