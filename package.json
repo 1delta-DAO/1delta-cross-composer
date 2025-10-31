@@ -1,19 +1,18 @@
 {
-    "name": "moonbeamer",
-    "version": "1.0.0",
-    "scripts": {
-        "start": "tsx script/permit-batch.ts",
-        "web": "cd ui && npx next dev",
-        "contract": "tsx script/permit-batch.ts --m 0xF3f6f0cCe68be57B9605D77B7B3d424f95f04871"
-    },
-    "dependencies": {
-        "viem": "^2.0.0"
-    },
-    "devDependencies": {
-        "@types/node": "^20.0.0",
-        "dotenv": "^17.2.3",
-        "tsx": "^4.0.0",
-        "typescript": "^5.0.0"
-    },
-    "type": "module"
+  "name": "moonbeamer",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "tsx script/permit-batch.ts",
+    "contract": "tsx script/permit-batch.ts --m 0xF3f6f0cCe68be57B9605D77B7B3d424f95f04871"
+  },
+  "dependencies": {
+    "viem": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "dotenv": "^17.2.3",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "type": "module"
 }
