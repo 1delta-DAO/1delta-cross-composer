@@ -5,7 +5,7 @@ import type { Hex } from 'viem'
 import TabSelector from './components/VariantSelector'
 import BatchTransactionForm from './components/BatchTransactionForm'
 import { SwapTab } from './components/swap/SwapTab'
-import { TradeAggregator } from '@1delta/trade-sdk'
+import { TradeSdkWalletSync } from './lib/trade-sdk/walletClient'
 
 export default function App() {
   const { address, isConnected } = useAccount()
@@ -17,6 +17,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-base-200" data-theme="moonbeam">
+      <TradeSdkWalletSync />
       <div className="navbar bg-base-100 shadow-lg">
         <div className="flex flex-row p-2 flex-grow">
           <div className="flex-1">
