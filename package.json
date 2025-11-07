@@ -1,19 +1,44 @@
 {
   "name": "moonbeamer",
   "version": "1.0.0",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "start": "tsx script/permit-batch.ts",
-    "web": "cd ui && pnpm start",
-    "contract": "tsx script/permit-batch.ts --m 0xF3f6f0cCe68be57B9605D77B7B3d424f95f04871"
+    "script:start": "tsx script/permit-batch.ts",
+    "script:contract": "tsx script/permit-batch.ts --m 0xF3f6f0cCe68be57B9605D77B7B3d424f95f04871",
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "fetch-assets": "npx tsx src/lib/assetLists.ts"
   },
   "dependencies": {
-    "viem": "^2.0.0"
+    "@1delta/bridge-configs": "^0.1.1",
+    "@1delta/data-sdk": "^0.0.10",
+    "@1delta/lib-utils": "^0.1.1",
+    "@1delta/trade-sdk": "^0.1.1",
+    "@rainbow-me/rainbowkit": "^2.2.9",
+    "@tailwindcss/postcss": "^4.1.17",
+    "@tanstack/react-query": "^5.90.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "async-retry": "^1.3.3",
+    "postcss": "^8.5.6",
+    "qs": "^6.14.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwindcss": "^4.1.17",
+    "viem": "^2.38.6",
+    "vite": "^5.4.21",
+    "wagmi": "^2.19.2"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
+    "@types/async-retry": "^1.4.9",
+    "@types/node": "^20.19.24",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "daisyui": "^5.4.7",
     "dotenv": "^17.2.3",
-    "tsx": "^4.0.0",
-    "typescript": "^5.0.0"
-  },
-  "type": "module"
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
+    "typescript": "5.5.4"
+  }
 }
