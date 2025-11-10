@@ -87,17 +87,35 @@ export function TokenSelector({
         tokenAddresses: userAddress ? addressesWithNative : [],
     })
 
-    // Include wrapped native address for native token price
     const priceAddresses = useMemo(() => {
-        const addrs = [...allAddrs.slice(0, 300)]
-        const wrapped = CurrencyHandler.wrappedAddressFromAddress(chainId, zeroAddress)
-        if (wrapped && !addrs.includes(wrapped as Address)) {
-            addrs.push(wrapped as Address)
-        }
-        return addrs
-    }, [allAddrs, chainId])
+        if (!balances?.[chainId] || !userAddress) return []
 
-    const { data: prices, isLoading: pricesLoading } = useDexscreenerPrices({ chainId, addresses: priceAddresses })
+        const addressesWithBalance: Address[] = []
+        const wrapped = CurrencyHandler.wrappedAddressFromAddress(chainId, zeroAddress)
+
+        for (const addr of addressesWithNative) {
+            const bal = balances[chainId][addr.toLowerCase()]
+            if (bal && Number(bal.value || 0) > 0) {
+                if (addr.toLowerCase() === zeroAddress.toLowerCase() && wrapped) {
+                    if (!addressesWithBalance.includes(wrapped as Address)) {
+                        addressesWithBalance.push(wrapped as Address)
+                    }
+                } else {
+                    if (!addressesWithBalance.includes(addr)) {
+                        addressesWithBalance.push(addr)
+                    }
+                }
+            }
+        }
+
+        return addressesWithBalance
+    }, [balances, chainId, addressesWithNative, userAddress])
+
+    const { data: prices, isLoading: pricesLoading } = useDexscreenerPrices({
+        chainId,
+        addresses: priceAddresses,
+        enabled: priceAddresses.length > 0,
+    })
 
     // Helper function to get token category for sorting
     const getTokenCategory = useCallback(

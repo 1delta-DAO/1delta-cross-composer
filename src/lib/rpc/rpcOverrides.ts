@@ -12,7 +12,6 @@ export const RPC_OVERRIDE_CHAINS: Record<string, ChainRpcConfig> = {
             "https://1rpc.io/base",
             "https://base-pokt.nodies.app",
             "https://base.meowrpc.com",
-            "https://base-mainnet.public.blastapi.io",
             "https://developer-access-mainnet.base.org",
             "https://base.drpc.org",
             "https://base.api.onfinality.io/public",
@@ -30,7 +29,6 @@ export const RPC_OVERRIDE_CHAINS: Record<string, ChainRpcConfig> = {
         chain: polygon,
         rpcs: [
             "https://polygon-bor-rpc.publicnode.com",
-            "https://polygon-mainnet.public.blastapi.io",
             "https://polygon.lava.build",
             "https://polygon.drpc.org",
             "https://gateway.tenderly.co/public/polygon",
@@ -119,7 +117,6 @@ export const RPC_OVERRIDE_CHAINS: Record<string, ChainRpcConfig> = {
             "https://moonbeam.unitedbloc.com",
             "https://1rpc.io/glmr",
             "https://moonbeam-rpc.dwellir.com",
-            "https://moonbeam.public.blastapi.io",
             "https://moonbeam-rpc.publicnode.com",
             "https://moonbeam.drpc.org",
             "https://endpoints.omniatech.io/v1/moonbeam/mainnet/public",

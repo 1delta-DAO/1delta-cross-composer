@@ -8,6 +8,7 @@ import { useTokenLists } from "../../hooks/useTokenLists"
 import { useEvmBalances } from "../../hooks/balances/useEvmBalances"
 import { useTokenBalance } from "../../hooks/balances/useTokenBalance"
 import { useDexscreenerPrices } from "../../hooks/prices/useDexscreenerPrices"
+import { useTokenPrice } from "../../hooks/prices/useTokenPrice"
 import { buildTokenUrl, buildTransactionUrl } from "../../lib/explorer"
 import { useDebounce } from "../../hooks/useDebounce"
 import DestinationActionSelector from "../../components/DestinationActionSelector"
@@ -19,16 +20,18 @@ import type { GenericTrade } from "@1delta/lib-utils"
 import { TradeType } from "@1delta/lib-utils"
 import { getCurrency, convertAmountToWei } from "../../lib/trade-sdk/utils"
 import { fetchAllAggregatorTrades } from "../../lib/trade-sdk/aggregatorSelector"
-import { useWriteContract, usePublicClient } from "wagmi"
+import { fetchAllBridgeTrades } from "../../lib/trade-sdk/bridgeSelector"
+import { useWriteContract, usePublicClient, useReadContract } from "wagmi"
 import { ERC20_ABI } from "../../lib/abi"
 import { useSlippage } from "../../contexts/SlippageContext"
 import { Logo } from "../common/Logo"
 
 type Props = {
     userAddress?: Address
+    onResetStateChange?: (showReset: boolean, resetCallback?: () => void) => void
 }
 
-export function SwapTab({ userAddress }: Props) {
+export function SwapTab({ userAddress, onResetStateChange }: Props) {
     const { data: chains } = useChainsRegistry()
     const { data: lists } = useTokenLists()
     const currentChainId = useChainId()
@@ -72,19 +75,60 @@ export function SwapTab({ userAddress }: Props) {
         userAddress,
         tokenAddresses: srcAddressesWithNative,
     })
-    // Include wrapped native address for native token price
+
     const srcPriceAddresses = useMemo(() => {
-        const addrs = [...srcAddrs]
-        const wrapped = srcChainId ? CurrencyHandler.wrappedAddressFromAddress(srcChainId, zeroAddress) : undefined
-        if (wrapped && !addrs.includes(wrapped as Address)) {
-            addrs.push(wrapped as Address)
+        if (!srcBalances?.[srcChainId || ""] || !userAddress || !srcChainId) return []
+
+        const addressesWithBalance: Address[] = []
+        const wrapped = CurrencyHandler.wrappedAddressFromAddress(srcChainId, zeroAddress)
+
+        for (const addr of srcAddressesWithNative) {
+            const bal = srcBalances[srcChainId][addr.toLowerCase()]
+            if (bal && Number(bal.value || 0) > 0) {
+                if (addr.toLowerCase() === zeroAddress.toLowerCase() && wrapped) {
+                    if (!addressesWithBalance.includes(wrapped as Address)) {
+                        addressesWithBalance.push(wrapped as Address)
+                    }
+                } else {
+                    if (!addressesWithBalance.includes(addr)) {
+                        addressesWithBalance.push(addr)
+                    }
+                }
+            }
         }
-        return addrs
-    }, [srcAddrs, srcChainId])
 
-    const { data: srcPrices, isLoading: srcPricesLoading } = useDexscreenerPrices({ chainId: srcChainId || "", addresses: srcPriceAddresses })
+        return addressesWithBalance
+    }, [srcBalances, srcChainId, srcAddressesWithNative, userAddress])
 
-    // Include zero address for native token balance (destination)
+    const { data: srcPrices, isLoading: srcPricesLoading } = useDexscreenerPrices({
+        chainId: srcChainId || "",
+        addresses: srcPriceAddresses,
+        enabled: srcPriceAddresses.length > 0,
+    })
+
+    const srcTokenPriceAddr = useMemo(() => {
+        if (!srcToken || !srcChainId) return undefined
+        if (srcToken.toLowerCase() === zeroAddress.toLowerCase()) {
+            return CurrencyHandler.wrappedAddressFromAddress(srcChainId, zeroAddress) as Address | undefined
+        }
+        return srcToken
+    }, [srcToken, srcChainId])
+
+    const srcTokenPriceInCache = srcTokenPriceAddr && srcPrices?.[srcChainId || ""]?.[srcTokenPriceAddr.toLowerCase()]
+    const { price: srcTokenPriceOnDemand, isLoading: srcTokenPriceOnDemandLoading } = useTokenPrice({
+        chainId: srcChainId || "",
+        tokenAddress: srcTokenPriceAddr,
+        enabled: Boolean(srcToken && srcChainId && !srcTokenPriceInCache),
+    })
+
+    const srcPricesMerged = useMemo(() => {
+        const merged = { ...srcPrices?.[srcChainId || ""] }
+        if (srcTokenPriceAddr && srcTokenPriceOnDemand) {
+            merged[srcTokenPriceAddr.toLowerCase()] = { usd: srcTokenPriceOnDemand }
+        }
+        return merged
+    }, [srcPrices, srcChainId, srcTokenPriceAddr, srcTokenPriceOnDemand])
+
     const dstAddressesWithNative = useMemo(() => {
         if (!dstChainId || !userAddress) return []
         const addrs = [...dstAddrs]
@@ -99,17 +143,59 @@ export function SwapTab({ userAddress }: Props) {
         userAddress,
         tokenAddresses: dstAddressesWithNative,
     })
-    // Include wrapped native address for native token price (destination)
-    const dstPriceAddresses = useMemo(() => {
-        const addrs = [...dstAddrs]
-        const wrapped = dstChainId ? CurrencyHandler.wrappedAddressFromAddress(dstChainId, zeroAddress) : undefined
-        if (wrapped && !addrs.includes(wrapped as Address)) {
-            addrs.push(wrapped as Address)
-        }
-        return addrs
-    }, [dstAddrs, dstChainId])
 
-    const { data: dstPrices, isLoading: dstPricesLoading } = useDexscreenerPrices({ chainId: dstChainId || "", addresses: dstPriceAddresses })
+    const dstPriceAddresses = useMemo(() => {
+        if (!dstBalances?.[dstChainId || ""] || !userAddress || !dstChainId) return []
+
+        const addressesWithBalance: Address[] = []
+        const wrapped = CurrencyHandler.wrappedAddressFromAddress(dstChainId, zeroAddress)
+
+        for (const addr of dstAddressesWithNative) {
+            const bal = dstBalances[dstChainId][addr.toLowerCase()]
+            if (bal && Number(bal.value || 0) > 0) {
+                if (addr.toLowerCase() === zeroAddress.toLowerCase() && wrapped) {
+                    if (!addressesWithBalance.includes(wrapped as Address)) {
+                        addressesWithBalance.push(wrapped as Address)
+                    }
+                } else {
+                    if (!addressesWithBalance.includes(addr)) {
+                        addressesWithBalance.push(addr)
+                    }
+                }
+            }
+        }
+
+        return addressesWithBalance
+    }, [dstBalances, dstChainId, dstAddressesWithNative, userAddress])
+
+    const { data: dstPrices, isLoading: dstPricesLoading } = useDexscreenerPrices({
+        chainId: dstChainId || "",
+        addresses: dstPriceAddresses,
+        enabled: dstPriceAddresses.length > 0,
+    })
+
+    const dstTokenPriceAddr = useMemo(() => {
+        if (!dstToken || !dstChainId) return undefined
+        if (dstToken.toLowerCase() === zeroAddress.toLowerCase()) {
+            return CurrencyHandler.wrappedAddressFromAddress(dstChainId, zeroAddress) as Address | undefined
+        }
+        return dstToken
+    }, [dstToken, dstChainId])
+
+    const dstTokenPriceInCache = dstTokenPriceAddr && dstPrices?.[dstChainId || ""]?.[dstTokenPriceAddr.toLowerCase()]
+    const { price: dstTokenPriceOnDemand, isLoading: dstTokenPriceOnDemandLoading } = useTokenPrice({
+        chainId: dstChainId || "",
+        tokenAddress: dstTokenPriceAddr,
+        enabled: Boolean(dstToken && dstChainId && !dstTokenPriceInCache),
+    })
+
+    const dstPricesMerged = useMemo(() => {
+        const merged = { ...dstPrices?.[dstChainId || ""] }
+        if (dstTokenPriceAddr && dstTokenPriceOnDemand) {
+            merged[dstTokenPriceAddr.toLowerCase()] = { usd: dstTokenPriceOnDemand }
+        }
+        return merged
+    }, [dstPrices, dstChainId, dstTokenPriceAddr, dstTokenPriceOnDemand])
 
     // Fetch individual token balances for selected tokens (ensures balance is available even if not in list)
     const { data: srcTokenBalance, isLoading: srcTokenBalanceLoading } = useTokenBalance({
@@ -126,6 +212,7 @@ export function SwapTab({ userAddress }: Props) {
 
     const debouncedAmount = useDebounce(amount, 1000)
     // Create stable keys for debounce to avoid array reference churn
+    // These keys include chainId to handle native tokens correctly (same token name, different chain = different address)
     const srcKey = useMemo(() => `${srcChainId || ""}|${(srcToken || "").toLowerCase()}`, [srcChainId, srcToken])
     const dstKey = useMemo(() => `${dstChainId || ""}|${(dstToken || "").toLowerCase()}`, [dstChainId, dstToken])
     const debouncedSrcKey = useDebounce(srcKey, 1000)
@@ -134,6 +221,25 @@ export function SwapTab({ userAddress }: Props) {
     const [quoting, setQuoting] = useState(false)
     const [quoteError, setQuoteError] = useState<string | undefined>(undefined)
     const [quotes, setQuotes] = useState<Array<{ label: string; trade: GenericTrade }>>([])
+
+    // Track previous keys to detect changes
+    const prevSrcKeyRef = useRef<string>(srcKey)
+    const prevDstKeyRef = useRef<string>(dstKey)
+
+    // Clear quotes immediately when token/chain changes (before debounce completes)
+    // This ensures UI feedback is immediate while still debouncing the actual fetch
+    useEffect(() => {
+        // If keys changed, clear quotes immediately
+        if (prevSrcKeyRef.current !== srcKey || prevDstKeyRef.current !== dstKey) {
+            // Only clear if we had quotes before
+            if (quotes.length > 0) {
+                setQuotes([])
+                setQuoteError(undefined)
+            }
+            prevSrcKeyRef.current = srcKey
+            prevDstKeyRef.current = dstKey
+        }
+    }, [srcKey, dstKey, quotes.length])
     const [selectedQuoteIndex, setSelectedQuoteIndex] = useState(0)
     const selectedTrade = quotes[selectedQuoteIndex]?.trade
     const { slippage, setPriceImpact } = useSlippage()
@@ -258,8 +364,21 @@ export function SwapTab({ userAddress }: Props) {
                     )
                     allQuotes = trades.map((t) => ({ label: t.aggregator.toString(), trade: t.trade }))
                 } else {
-                    // todo: add xchain
-                    throw new Error("Cross-chain swaps are not yet supported")
+                    const bridgeTrades = await fetchAllBridgeTrades(
+                        {
+                            slippage,
+                            tradeType: TradeType.EXACT_INPUT,
+                            fromCurrency,
+                            toCurrency,
+                            swapAmount: amountInWei,
+                            caller: userAddress!,
+                            receiver: userAddress!,
+                            order: "CHEAPEST",
+                            usePermit: true,
+                        },
+                        controller
+                    )
+                    allQuotes = bridgeTrades.map((t) => ({ label: t.bridge, trade: t.trade }))
                 }
 
                 if (cancel || controller.signal.aborted) {
@@ -322,20 +441,6 @@ export function SwapTab({ userAddress }: Props) {
         }
     }, [debouncedAmount, debouncedSrcKey, debouncedDstKey, userAddress, slippage, refreshTick])
 
-    // Re-quote every 30s without clearing existing quote
-    // Note: This is disabled to prevent rate limiting issues
-    // The main effect will handle re-quotes when inputs change
-    // useEffect(() => {
-    //     if (!trade || !debouncedAmount || !debouncedSrc || !debouncedDst || !userAddress) return
-    //     const h = setInterval(() => {
-    //         // Trigger re-quote by updating a dependency
-    //         setQuoting(true)
-    //         // The main effect will handle the re-quote
-    //     }, 30000)
-    //     return () => clearInterval(h)
-    // }, [trade, debouncedAmount, debouncedSrc, debouncedDst, userAddress])
-
-    // Extract output amount from selected trade for display
     const quoteOut = useMemo(() => {
         const trade = selectedTrade
         if (!trade?.outputAmount) return undefined
@@ -355,8 +460,8 @@ export function SwapTab({ userAddress }: Props) {
         }
         try {
             // Get token prices
-            const srcPrice = getTokenPrice(srcChainId, srcToken, srcPrices?.[srcChainId || ""])
-            const dstPrice = getTokenPrice(dstChainId, dstToken, dstPrices?.[dstChainId || ""])
+            const srcPrice = getTokenPrice(srcChainId, srcToken, srcPricesMerged)
+            const dstPrice = getTokenPrice(dstChainId, dstToken, dstPricesMerged)
 
             if (!srcPrice || !dstPrice) return undefined
 
@@ -473,7 +578,7 @@ export function SwapTab({ userAddress }: Props) {
                     <div className="flex items-center justify-between text-xs mt-2">
                         <div className="opacity-70">
                             {(() => {
-                                const price = srcToken && srcChainId ? getTokenPrice(srcChainId, srcToken, srcPrices?.[srcChainId || ""]) : undefined
+                                const price = srcToken && srcChainId ? getTokenPrice(srcChainId, srcToken, srcPricesMerged) : undefined
                                 const usd = price && amount ? Number(amount) * price : undefined
                                 return usd !== undefined ? `$${usd.toFixed(2)}` : "$0"
                             })()}
@@ -535,7 +640,7 @@ export function SwapTab({ userAddress }: Props) {
                     <div className="flex items-center justify-between text-xs mt-2">
                         <div className="opacity-70">
                             {(() => {
-                                const price = dstToken && dstChainId ? getTokenPrice(dstChainId, dstToken, dstPrices?.[dstChainId || ""]) : undefined
+                                const price = dstToken && dstChainId ? getTokenPrice(dstChainId, dstToken, dstPricesMerged) : undefined
                                 const usd = price && quoteOut ? Number(quoteOut) * price : undefined
                                 return usd !== undefined ? `$${usd.toFixed(2)}` : "$0"
                             })()}
@@ -555,7 +660,6 @@ export function SwapTab({ userAddress }: Props) {
                         </div>
                     )}
                 </div>
-                {/* Aggregators list - shown directly under Buy panel */}
                 {quoteError ? (
                     <div className="rounded-2xl bg-base-200 p-4 shadow border border-base-300 mt-3">
                         <div className="text-sm text-error">Error: {quoteError}</div>
@@ -571,6 +675,8 @@ export function SwapTab({ userAddress }: Props) {
                             const srcSymbol = srcToken && srcChainId ? lists?.[srcChainId]?.[srcToken.toLowerCase()]?.symbol || "Token" : "Token"
                             const dstSymbol = selectedQuote.trade.outputAmount.currency.symbol
                             const isBest = selectedQuoteIndex === 0
+                            const isBridge = srcChainId !== dstChainId
+                            const getLogo = isBridge ? getBridgeLogo : getAggregatorLogo
 
                             return (
                                 <>
@@ -588,7 +694,7 @@ export function SwapTab({ userAddress }: Props) {
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <Logo
-                                                    src={getAggregatorLogo(selectedQuote.label)}
+                                                    src={getLogo(selectedQuote.label)}
                                                     alt={selectedQuote.label}
                                                     size={20}
                                                     fallbackText={selectedQuote.label.slice(0, 2).toUpperCase()}
@@ -597,7 +703,7 @@ export function SwapTab({ userAddress }: Props) {
                                             </div>
                                         </div>
                                     </div>
-                                    {/* Expanded list - shows all aggregators */}
+                                    {/* Expanded list - shows all aggregators/bridges */}
                                     {quotesExpanded && (
                                         <div className="mt-2 space-y-2 max-h-[240px] overflow-y-auto">
                                             {quotes.map((q, idx) => {
@@ -609,7 +715,7 @@ export function SwapTab({ userAddress }: Props) {
                                                 const outputUsd =
                                                     dstToken && dstChainId
                                                         ? (() => {
-                                                              const price = getTokenPrice(dstChainId, dstToken, dstPrices?.[dstChainId || ""])
+                                                              const price = getTokenPrice(dstChainId, dstToken, dstPricesMerged)
                                                               return price ? output * price : undefined
                                                           })()
                                                         : undefined
@@ -627,7 +733,7 @@ export function SwapTab({ userAddress }: Props) {
                                                     >
                                                         <div className="flex items-center gap-3 flex-1">
                                                             <Logo
-                                                                src={getAggregatorLogo(q.label)}
+                                                                src={getLogo(q.label)}
                                                                 alt={q.label}
                                                                 size={20}
                                                                 fallbackText={q.label.slice(0, 2).toUpperCase()}
@@ -780,6 +886,14 @@ export function SwapTab({ userAddress }: Props) {
                                 })
                             }
                         }}
+                        onReset={() => {
+                            setAmount("")
+                            setQuotes([])
+                            setSelectedQuoteIndex(0)
+                            setQuoteError(undefined)
+                            setQuoting(false)
+                        }}
+                        onResetStateChange={onResetStateChange}
                     />
                 </div>
             )}
@@ -792,6 +906,11 @@ function getAggregatorLogo(aggregatorName: string): string {
     // Normalize aggregator name for URL (lowercase, handle special cases)
     const normalizedName = aggregatorName.toLowerCase().replace(/\s+/g, "-")
     return `https://raw.githubusercontent.com/1delta-DAO/protocol-icons/refs/heads/main/aggregator/${normalizedName}.webp`
+}
+
+function getBridgeLogo(bridgeName: string): string {
+    const normalizedName = bridgeName.toLowerCase().replace(/\s+/g, "-")
+    return `https://raw.githubusercontent.com/1delta-DAO/protocol-icons/refs/heads/main/bridge/${normalizedName}.webp`
 }
 
 function filterNumeric(s: string): string {
@@ -897,6 +1016,8 @@ function ExecuteButton({
     amountWei,
     onDone,
     chains,
+    onReset,
+    onResetStateChange,
 }: {
     trade: GenericTrade
     srcChainId?: string
@@ -906,19 +1027,64 @@ function ExecuteButton({
     amountWei?: string
     onDone: (hashes: { src?: string; dst?: string }) => void
     chains?: ReturnType<typeof useChainsRegistry>["data"]
+    onReset?: () => void
+    onResetStateChange?: (showReset: boolean, resetCallback?: () => void) => void
 }) {
     const [step, setStep] = useState<"idle" | "approving" | "signing" | "broadcast" | "confirmed" | "error">("idle")
     const [srcHash, setSrcHash] = useState<string | undefined>()
+    const [dstHash, setDstHash] = useState<string | undefined>()
     const [isConfirmed, setIsConfirmed] = useState(false)
+    const [isBridgeComplete, setIsBridgeComplete] = useState(false)
+    const [isBridgeTracking, setIsBridgeTracking] = useState(false)
     const [error, setError] = useState<string | undefined>()
     const { sendTransactionAsync, isPending } = useSendTransaction()
     const { writeContractAsync } = useWriteContract()
     const publicClient = usePublicClient()
 
+    const isBridge = useMemo(() => {
+        return Boolean(srcChainId && dstChainId && srcChainId !== dstChainId)
+    }, [srcChainId, dstChainId])
+
     const spender = (trade as any).approvalTarget || (trade as any).target
+    const skipApprove = (trade as any).skipApprove || false
+
+    const { data: currentAllowance } = useReadContract({
+        address: srcToken && srcToken.toLowerCase() !== zeroAddress.toLowerCase() ? srcToken : undefined,
+        abi: ERC20_ABI,
+        functionName: "allowance",
+        args: userAddress && spender ? [userAddress, spender] : undefined,
+        query: {
+            enabled: Boolean(srcToken && userAddress && spender && srcToken.toLowerCase() !== zeroAddress.toLowerCase() && !skipApprove),
+        },
+    })
+
     const needsApproval = useMemo(() => {
-        return Boolean(srcToken && srcToken.toLowerCase() !== zeroAddress.toLowerCase() && spender)
-    }, [srcToken, spender])
+        if (!srcToken || srcToken.toLowerCase() === zeroAddress.toLowerCase() || !spender || skipApprove) {
+            return false
+        }
+        if (!amountWei) return false
+        if (currentAllowance === undefined) return true // Still loading, assume approval needed
+        const requiredAmount = BigInt(amountWei)
+        return currentAllowance < requiredAmount
+    }, [srcToken, spender, amountWei, currentAllowance, skipApprove])
+
+    useEffect(() => {
+        const showReset = Boolean((isBridgeComplete || (!isBridge && isConfirmed)) && srcHash)
+        const resetCallback =
+            showReset && onReset
+                ? () => {
+                      setStep("idle")
+                      setSrcHash(undefined)
+                      setDstHash(undefined)
+                      setIsConfirmed(false)
+                      setIsBridgeComplete(false)
+                      setIsBridgeTracking(false)
+                      setError(undefined)
+                      onReset()
+                  }
+                : undefined
+        onResetStateChange?.(showReset, resetCallback)
+    }, [isBridgeComplete, isBridge, isConfirmed, srcHash, onReset, onResetStateChange])
 
     // Extract transaction data from trade
     const getTransactionData = useCallback(async () => {
@@ -972,7 +1138,6 @@ function ExecuteButton({
             })
             setSrcHash(hash)
             setStep("confirmed")
-            onDone({ src: hash })
 
             // Wait for confirmation asynchronously
             if (publicClient) {
@@ -980,10 +1145,37 @@ function ExecuteButton({
                     .waitForTransactionReceipt({ hash: hash as any })
                     .then(() => {
                         setIsConfirmed(true)
+                        onDone({ src: hash })
+
+                        if (isBridge && trade?.crossChainParams) {
+                            setIsBridgeTracking(true)
+                            trackBridgeCompletion(trade, srcChainId!, dstChainId!, hash, (hashes) => {
+                                if (hashes.dst) {
+                                    setDstHash(hashes.dst)
+                                    setIsBridgeComplete(true)
+                                    setIsBridgeTracking(false)
+                                }
+                                onDone(hashes)
+                            })
+                        }
                     })
                     .catch((err) => {
                         console.error("Error waiting for transaction receipt:", err)
                     })
+            } else {
+                onDone({ src: hash })
+
+                if (isBridge && trade?.crossChainParams) {
+                    setIsBridgeTracking(true)
+                    trackBridgeCompletion(trade, srcChainId!, dstChainId!, hash, (hashes) => {
+                        if (hashes.dst) {
+                            setDstHash(hashes.dst)
+                            setIsBridgeComplete(true)
+                            setIsBridgeTracking(false)
+                        }
+                        onDone(hashes)
+                    })
+                }
             }
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "Transaction failed"
@@ -1018,7 +1210,7 @@ function ExecuteButton({
         <div className="space-y-3">
             {step === "idle" && (
                 <button className="btn btn-primary w-full" onClick={execute} disabled={isPending}>
-                    Swap
+                    {isBridge ? "Bridge" : "Swap"}
                 </button>
             )}
             {error && (
@@ -1034,7 +1226,7 @@ function ExecuteButton({
                         )}
                         {shouldShow("signing") && (
                             <Step
-                                label="Prepare swap/bridge"
+                                label={isBridge ? "Prepare bridge" : "Prepare swap"}
                                 status={step === "signing" ? "active" : step === "error" ? "error" : step === "confirmed" ? "done" : "idle"}
                             />
                         )}
@@ -1051,17 +1243,48 @@ function ExecuteButton({
                 </div>
             )}
             {srcHash && srcChainId && (
-                <div className="text-sm flex items-center gap-2">
-                    <span>Tx hash:</span>
-                    <a
-                        href={buildTransactionUrl(chains || {}, srcChainId, srcHash)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-mono text-primary hover:underline"
-                    >
-                        {srcHash.slice(0, 4)}...{srcHash.slice(-4)}
-                    </a>
-                    {isConfirmed ? <span className="text-success">✓</span> : <span className="loading loading-spinner loading-xs"></span>}
+                <div className="space-y-2">
+                    <div className="text-sm flex items-center gap-2">
+                        <span>Source tx:</span>
+                        <a
+                            href={buildTransactionUrl(chains || {}, srcChainId, srcHash)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-primary hover:underline"
+                        >
+                            {srcHash.slice(0, 4)}...{srcHash.slice(-4)}
+                        </a>
+                        {isConfirmed ? <span className="text-success">✓</span> : <span className="loading loading-spinner loading-xs"></span>}
+                    </div>
+                    {isBridge && dstChainId && (
+                        <div className="text-sm flex items-center gap-2">
+                            <span>Bridge status:</span>
+                            {isBridgeComplete && dstHash ? (
+                                <>
+                                    <span className="text-success">Complete</span>
+                                    <a
+                                        href={buildTransactionUrl(chains || {}, dstChainId, dstHash)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="font-mono text-primary hover:underline"
+                                    >
+                                        Dest: {dstHash.slice(0, 4)}...{dstHash.slice(-4)}
+                                    </a>
+                                    <span className="text-success">✓</span>
+                                </>
+                            ) : isBridgeTracking ? (
+                                <>
+                                    <span className="text-warning">In progress...</span>
+                                    <span className="loading loading-spinner loading-xs"></span>
+                                </>
+                            ) : (
+                                <>
+                                    <span>Waiting for confirmation...</span>
+                                    <span className="loading loading-spinner loading-xs"></span>
+                                </>
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
         </div>
@@ -1101,6 +1324,65 @@ function formatDisplayAmount(val: string): string {
     const maxFrac = intPart.length >= 4 ? 2 : 10
     const frac = fracRaw.slice(0, maxFrac).replace(/0+$/, "")
     return frac ? `${intPart}.${frac}` : intPart
+}
+
+async function trackBridgeCompletion(
+    trade: GenericTrade,
+    srcChainId: string,
+    dstChainId: string,
+    srcHash: string,
+    onDone: (hashes: { src?: string; dst?: string }) => void
+) {
+    if (!trade.crossChainParams) {
+        onDone({ src: srcHash })
+        return
+    }
+
+    try {
+        const { getBridgeStatus } = await import("@1delta/trade-sdk")
+        const { Bridge } = await import("@1delta/bridge-configs")
+
+        const bridgeName = Object.values(Bridge).find((b) => b.toString() === trade.aggregator.toString()) || (trade.aggregator as any)
+
+        const maxAttempts = 60
+        const delayMs = 5000
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                const status = await getBridgeStatus(
+                    bridgeName as any,
+                    {
+                        fromChainId: srcChainId,
+                        toChainId: dstChainId,
+                        fromHash: srcHash,
+                    } as any,
+                    trade.crossChainParams
+                )
+
+                if (status?.toHash) {
+                    console.debug("Bridge completed:", { srcHash, dstHash: status.toHash })
+                    onDone({ src: srcHash, dst: status.toHash })
+                    return
+                }
+
+                if (status?.code) {
+                    console.error("Bridge failed:", status.code, status.message)
+                    onDone({ src: srcHash })
+                    return
+                }
+            } catch (err) {
+                console.debug("Error checking bridge status:", err)
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, delayMs))
+        }
+
+        console.warn("Bridge status check timeout, invalidating source chain balances only")
+        onDone({ src: srcHash })
+    } catch (err) {
+        console.error("Error tracking bridge completion:", err)
+        onDone({ src: srcHash })
+    }
 }
 
 function SelectedTokenInfo({

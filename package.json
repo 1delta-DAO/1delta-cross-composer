@@ -12,10 +12,10 @@
     "fetch-assets": "npx tsx src/lib/assetLists.ts"
   },
   "dependencies": {
-    "@1delta/bridge-configs": "^0.1.1",
+    "@1delta/bridge-configs": "^0.1.2",
     "@1delta/data-sdk": "^0.0.10",
-    "@1delta/lib-utils": "^0.1.1",
-    "@1delta/trade-sdk": "^0.1.1",
+    "@1delta/lib-utils": "^0.1.3",
+    "@1delta/trade-sdk": "^0.1.2",
     "@rainbow-me/rainbowkit": "^2.2.9",
     "@tailwindcss/postcss": "^4.1.17",
     "@tanstack/react-query": "^5.90.7",

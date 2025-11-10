@@ -3,7 +3,7 @@ import type { Address } from "viem"
 
 export type PricesRecord = Record<string, Record<string, { usd: number }>>
 
-const DEXSCREENER_TOKEN_URL = (address: string) => `https://api.dexscreener.com/latest/dex/tokens/${address}`
+const DEXSCREENER_TOKEN_URL = (addresses: string[]) => `https://api.dexscreener.com/latest/dex/tokens/${addresses.join(",")}`
 
 type DexscreenerResponse = {
     schemaVersion?: string
@@ -19,29 +19,41 @@ async function fetchPrices(chainId: string, addresses: Address[]): Promise<Price
     if (addresses.length === 0) return { [chainId]: out }
 
     const uniq = Array.from(new Set(addresses.map((a) => a.toLowerCase())))
-    const responses = await Promise.all(
-        uniq.map(async (addr) => {
-            try {
-                const res = await fetch(DEXSCREENER_TOKEN_URL(addr))
-                if (!res.ok) return { addr, usd: undefined as unknown as number }
-                const json = (await res.json()) as DexscreenerResponse
-                const best = json.pairs?.find((p) => p.priceUsd && p.baseToken?.address?.toLowerCase() === addr)
-                const usd = best?.priceUsd ? Number(best.priceUsd) : undefined
-                return { addr, usd }
-            } catch {
-                return { addr, usd: undefined as unknown as number }
-            }
-        })
-    )
 
-    for (const r of responses) {
-        if (typeof r.usd === "number" && isFinite(r.usd)) out[r.addr] = { usd: r.usd }
-    }
+    try {
+        const res = await fetch(DEXSCREENER_TOKEN_URL(uniq))
+        if (!res.ok) return { [chainId]: out }
+
+        const json = (await res.json()) as DexscreenerResponse
+
+        const priceMap: Record<string, number> = {}
+
+        if (json.pairs) {
+            for (const pair of json.pairs) {
+                if (pair.priceUsd && pair.baseToken?.address) {
+                    const addr = pair.baseToken.address.toLowerCase()
+                    const price = Number(pair.priceUsd)
+
+                    if (!priceMap[addr] && isFinite(price) && price > 0) {
+                        priceMap[addr] = price
+                    }
+                }
+            }
+        }
+
+        for (const addr of uniq) {
+            const price = priceMap[addr]
+            if (price !== undefined) {
+                out[addr] = { usd: price }
+            }
+        }
+    } catch {}
+
     return { [chainId]: out }
 }
 
-export function useDexscreenerPrices(params: { chainId: string; addresses: Address[] }) {
-    const { chainId, addresses } = params
+export function useDexscreenerPrices(params: { chainId: string; addresses: Address[]; enabled?: boolean }) {
+    const { chainId, addresses, enabled = true } = params
     return useQuery({
         queryKey: [
             "prices",
@@ -51,7 +63,7 @@ export function useDexscreenerPrices(params: { chainId: string; addresses: Addre
                 .sort()
                 .join(","),
         ],
-        enabled: Boolean(chainId && addresses && addresses.length > 0),
+        enabled: enabled && Boolean(chainId && addresses && addresses.length > 0),
         queryFn: () => fetchPrices(chainId, addresses),
         staleTime: 1000 * 60 * 2,
         refetchOnWindowFocus: false,
