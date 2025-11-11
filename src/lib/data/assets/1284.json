@@ -127,48 +127,6 @@
         }
       }
     },
-    "0x765277eebeca2e31912c9946eae1021199b39c61": {
-      "chainId": "1284",
-      "decimals": 18,
-      "name": "Multichain Bridged DAI",
-      "address": "0x765277eebeca2e31912c9946eae1021199b39c61",
-      "symbol": "DAI",
-      "logoURI": "https://assets.coingecko.com/coins/images/39799/thumb/dai.png?1724125463",
-      "assetGroup": "Multichain Bridged DAI::DAI",
-      "currencyId": "Multichain Bridged DAI::DAI",
-      "tags": [
-        "multichain",
-        "bridged",
-        "coingecko"
-      ],
-      "props": {
-        "permit": {
-          "type": 1,
-          "version": "1"
-        }
-      }
-    },
-    "0x4792c1ecb969b036eb51330c63bd27899a13d84e": {
-      "chainId": "1284",
-      "decimals": 18,
-      "name": "Multichain Bridged WAVAX",
-      "address": "0x4792c1ecb969b036eb51330c63bd27899a13d84e",
-      "symbol": "WAVAX",
-      "logoURI": "https://assets.coingecko.com/coins/images/53014/thumb/avax.png?1734993474",
-      "assetGroup": "Multichain Bridged WAVAX::WAVAX",
-      "currencyId": "Multichain Bridged WAVAX::WAVAX",
-      "tags": [
-        "multichain",
-        "bridged",
-        "coingecko"
-      ],
-      "props": {
-        "permit": {
-          "type": 1,
-          "version": "1"
-        }
-      }
-    },
     "0x6021d2c27b6fbd6e7608d1f39b41398caee2f824": {
       "chainId": "1284",
       "decimals": 18,
@@ -214,21 +172,6 @@
         "coingecko"
       ]
     },
-    "0x8f552a71efe5eefc207bf75485b356a0b3f01ec9": {
-      "chainId": "1284",
-      "decimals": 6,
-      "name": "Bridged USDC (Nomad)",
-      "address": "0x8f552a71efe5eefc207bf75485b356a0b3f01ec9",
-      "symbol": "USDC",
-      "logoURI": "https://assets.coingecko.com/coins/images/35231/thumb/USDC.jpg?1707925331",
-      "assetGroup": "Bridged USDC (Nomad)::USDC",
-      "currencyId": "Bridged USDC (Nomad)::USDC",
-      "tags": [
-        "bridged",
-        "coingecko",
-        "nomad"
-      ]
-    },
     "0xffffffff8a9736b44ebf188972725bed67bf694e": {
       "chainId": "1284",
       "decimals": 18,
@@ -248,21 +191,6 @@
         }
       }
     },
-    "0x30d2a9f5fdf90ace8c17952cbb4ee48a55d916a7": {
-      "chainId": "1284",
-      "decimals": 18,
-      "name": "Bridged WETH (Nomad)",
-      "address": "0x30d2a9f5fdf90ace8c17952cbb4ee48a55d916a7",
-      "symbol": "WETH",
-      "logoURI": "https://assets.coingecko.com/coins/images/39720/thumb/WETH.PNG?1723732514",
-      "assetGroup": "Bridged WETH (Nomad)::WETH",
-      "currencyId": "Bridged WETH (Nomad)::WETH",
-      "tags": [
-        "bridged",
-        "coingecko",
-        "nomad"
-      ]
-    },
     "0xab3f0245b83feb11d15aaffefd7ad465a59817ed": {
       "chainId": "1284",
       "decimals": 18,
@@ -274,21 +202,6 @@
       "currencyId": "Wrapped Ether (Wormhole)::WETH",
       "tags": [
         "wormhole",
-        "bridged",
-        "coingecko"
-      ]
-    },
-    "0x818ec0a7fe18ff94269904fced6ae3dae6d6dc0b": {
-      "chainId": "1284",
-      "decimals": 6,
-      "name": "Bridged USDC (Multichain)",
-      "address": "0x818ec0a7fe18ff94269904fced6ae3dae6d6dc0b",
-      "symbol": "USDC",
-      "logoURI": "https://assets.coingecko.com/coins/images/35230/thumb/USDC.jpg?1707924914",
-      "assetGroup": "Bridged USDC (Multichain)::USDC",
-      "currencyId": "Bridged USDC (Multichain)::USDC",
-      "tags": [
-        "multichain",
         "bridged",
         "coingecko"
       ]
@@ -481,27 +394,6 @@
         }
       }
     },
-    "0x3405a1bd46b85c5c029483fbecf2f3e611026e45": {
-      "chainId": "1284",
-      "decimals": 18,
-      "name": "Bridged MATIC (Multichain)",
-      "address": "0x3405a1bd46b85c5c029483fbecf2f3e611026e45",
-      "symbol": "MATIC",
-      "logoURI": "https://assets.coingecko.com/coins/images/4713/thumb/polygon.png?1698233745",
-      "assetGroup": "Bridged MATIC (Multichain)::MATIC",
-      "currencyId": "Bridged MATIC (Multichain)::MATIC",
-      "tags": [
-        "coingecko",
-        "multichain",
-        "bridged"
-      ],
-      "props": {
-        "permit": {
-          "type": 1,
-          "version": "1"
-        }
-      }
-    },
     "0x6a2d262d56735dba19dd70682b39f6be9a931d98": {
       "chainId": "1284",
       "decimals": 6,
@@ -653,20 +545,6 @@
         }
       }
     },
-    "0xc234a67a4f840e61ade794be47de455361b52413": {
-      "chainId": "1284",
-      "decimals": 18,
-      "name": "Bridged DAI (Nomad)",
-      "address": "0xc234a67a4f840e61ade794be47de455361b52413",
-      "symbol": "DAI",
-      "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/dai.jpg",
-      "assetGroup": "Bridged DAI (Nomad)::DAI",
-      "currencyId": "Bridged DAI (Nomad)::DAI",
-      "tags": [
-        "nomad",
-        "bridged"
-      ]
-    },
     "0x2cc0a9d8047a5011defe85328a6f26968c8aaa1c": {
       "chainId": "1284",
       "decimals": 18,
@@ -697,20 +575,6 @@
         "bridged"
       ]
     },
-    "0x8e70cd5b4ff3f62659049e74b6649c6603a0e594": {
-      "chainId": "1284",
-      "decimals": 6,
-      "name": "Bridged USDT (Nomad)",
-      "address": "0x8e70cd5b4ff3f62659049e74b6649c6603a0e594",
-      "symbol": "USDT",
-      "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdt.jpg",
-      "assetGroup": "Bridged USDT (Nomad)::USDT",
-      "currencyId": "Bridged USDT (Nomad)::USDT",
-      "tags": [
-        "nomad",
-        "bridged"
-      ]
-    },
     "0x085416975fe14c2a731a97ec38b9bf8135231f62": {
       "chainId": "1284",
       "decimals": 18,
@@ -725,40 +589,6 @@
         "bridged"
       ]
     },
-    "0x1dc78acda13a8bc4408b207c9e48cdbc096d95e0": {
-      "chainId": "1284",
-      "decimals": 8,
-      "name": "Bridged WBTC (Nomad)",
-      "address": "0x1dc78acda13a8bc4408b207c9e48cdbc096d95e0",
-      "symbol": "WBTC",
-      "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/btc.jpg",
-      "assetGroup": "Bridged WBTC (Nomad)::WBTC",
-      "currencyId": "Bridged WBTC (Nomad)::WBTC",
-      "tags": [
-        "nomad",
-        "bridged"
-      ]
-    },
-    "0x2c78f1b70ccf63cdee49f9233e9faa99d43aa07e": {
-      "chainId": "1284",
-      "decimals": 18,
-      "name": "Sushi (Multichain)",
-      "address": "0x2c78f1b70ccf63cdee49f9233e9faa99d43aa07e",
-      "symbol": "SUSHI",
-      "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/sushi.jpg",
-      "assetGroup": "Sushi (Multichain)::SUSHI",
-      "currencyId": "Sushi (Multichain)::SUSHI",
-      "tags": [
-        "multichain",
-        "bridged"
-      ],
-      "props": {
-        "permit": {
-          "type": 1,
-          "version": "1"
-        }
-      }
-    },
     "0xe57ebd2d67b462e9926e04a8e33f01cd0d64346d": {
       "chainId": "1284",
       "decimals": 8,
@@ -772,40 +602,6 @@
         "wormhole",
         "bridged"
       ]
-    },
-    "0xfa9343c3897324496a05fc75abed6bac29f8a40f": {
-      "chainId": "1284",
-      "decimals": 18,
-      "name": "Bridged ETH (Multichain)",
-      "address": "0xfa9343c3897324496a05fc75abed6bac29f8a40f",
-      "symbol": "ETH",
-      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
-      "assetGroup": "Bridged ETH (Multichain)::ETH",
-      "currencyId": "Bridged ETH (Multichain)::ETH",
-      "tags": [
-        "multichain",
-        "bridged"
-      ]
-    },
-    "0x922d641a426dcffaef11680e5358f34d97d112e1": {
-      "chainId": "1284",
-      "decimals": 8,
-      "name": "Bridged WBTC (Multichain)",
-      "address": "0x922d641a426dcffaef11680e5358f34d97d112e1",
-      "symbol": "WBTC",
-      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599/logo.png",
-      "assetGroup": "Bridged WBTC (Multichain)::WBTC",
-      "currencyId": "Bridged WBTC (Multichain)::WBTC",
-      "tags": [
-        "multichain",
-        "bridged"
-      ],
-      "props": {
-        "permit": {
-          "type": 1,
-          "version": "1"
-        }
-      }
     },
     "0xffffffff15e1b7e3df971dd813bc394deb899abf": {
       "chainId": "1284",
@@ -978,26 +774,6 @@
         }
       }
     },
-    "0xc9baa8cfdde8e328787e29b4b078abf2dadc2055": {
-      "chainId": "1284",
-      "decimals": 18,
-      "name": "Bridged BNB (Multichain)",
-      "address": "0xc9baa8cfdde8e328787e29b4b078abf2dadc2055",
-      "symbol": "BNB",
-      "logoURI": "https://assets.coingecko.com/coins/images/825/small/binance-coin-logo.png?1547034615",
-      "assetGroup": "Bridged BNB (Multichain)::BNB",
-      "currencyId": "Bridged BNB (Multichain)::BNB",
-      "tags": [
-        "multichain",
-        "bridged"
-      ],
-      "props": {
-        "permit": {
-          "type": 1,
-          "version": "1"
-        }
-      }
-    },
     "0x0db6729c03c85b0708166ca92801bcb5cac781fc": {
       "chainId": "1284",
       "decimals": 18,
@@ -1045,26 +821,6 @@
       "currencyId": "Axelar Wrapped ATOM::axlATOM",
       "tags": [
         "axelar",
-        "bridged"
-      ],
-      "props": {
-        "permit": {
-          "type": 1,
-          "version": "1"
-        }
-      }
-    },
-    "0xefaeee334f0fd1712f9a8cc375f427d9cdd40d73": {
-      "chainId": "1284",
-      "decimals": 6,
-      "name": "Bridged USDT (Multichain)",
-      "address": "0xefaeee334f0fd1712f9a8cc375f427d9cdd40d73",
-      "symbol": "USDT",
-      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
-      "assetGroup": "Bridged USDT (Multichain)::USDT",
-      "currencyId": "Bridged USDT (Multichain)::USDT",
-      "tags": [
-        "multichain",
         "bridged"
       ],
       "props": {
@@ -1224,20 +980,6 @@
       "currencyId": "ChainLink Token::LINK",
       "tags": [
         "coingecko"
-      ]
-    },
-    "0xa649325aa7c5093d12d6f98eb4378deae68ce23f": {
-      "chainId": "1284",
-      "decimals": 18,
-      "name": "Bridged BUSD (Multichain)",
-      "address": "0xa649325aa7c5093d12d6f98eb4378deae68ce23f",
-      "symbol": "BUSD",
-      "logoURI": "https://raw.githubusercontent.com/solarbeamio/solarbeam-tokenlist/main/assets/moonbeam/0xA649325Aa7C5093d12D6F98EB4378deAe68CE23F/logo.png",
-      "assetGroup": "Bridged BUSD (Multichain)::BUSD",
-      "currencyId": "Bridged BUSD (Multichain)::BUSD",
-      "tags": [
-        "multichain",
-        "bridged"
       ]
     },
     "0x08c98ad2d4856bec0a0eaf18c2a06e7201613f90": {
