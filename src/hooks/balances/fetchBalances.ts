@@ -1,7 +1,7 @@
 import { Address, encodePacked, formatUnits, zeroAddress } from "viem"
 import { BalanceFetcherAbi, MulticallABI } from "../../lib/abi"
 import { multicallViem } from "@1delta/lib-utils/dist/services/multicall/evm"
-import { getViemProvider } from "@1delta/lib-utils/dist/services/provider/viemProvider"
+import { getRpcSelectorEvmClient } from "@1delta/lib-utils"
 import { chains as dataChains } from "@1delta/data-sdk"
 import { loadTokenLists, getTokenFromCache } from "../../lib/data/tokenListsCache"
 import type { RawCurrency } from "@1delta/lib-utils"
@@ -114,7 +114,11 @@ export async function fetchEvmUserTokenDataEnhanced(
         const st = performance.now()
 
         try {
-            const provider = await getViemProvider({ chainId })
+            const provider = await getRpcSelectorEvmClient(chainId)
+            if (!provider) {
+                console.warn("Could not get RPC client for balance fetching")
+                return null
+            }
             const result = await provider.simulateContract({
                 address: BALANCE_FETCHER,
                 abi: BalanceFetcherAbi,
@@ -133,7 +137,10 @@ export async function fetchEvmUserTokenDataEnhanced(
 
     let blockTimestamp: string | undefined
     try {
-        const provider = await getViemProvider({ chainId })
+        const provider = await getRpcSelectorEvmClient(chainId)
+        if (!provider) {
+            throw new Error("Could not get RPC client")
+        }
         const block = await provider.getBlock()
         blockTimestamp = block?.timestamp.toString()
     } catch (e) {

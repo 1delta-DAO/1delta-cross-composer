@@ -2,14 +2,14 @@ import { useState, useEffect, useMemo, useRef } from "react"
 import { useChainsRegistry } from "../../hooks/useChainsRegistry"
 import { SUPPORTED_CHAIN_IDS } from "../../lib/data/chainIds"
 import { Logo } from "../common/Logo"
-import { ChainEnum } from "../../lib/data/chains"
+import { SupportedChainId } from "@1delta/lib-utils"
 
 type Props = {
     value?: string
     onChange: (chainId: string) => void
 }
 
-const RELEVANT_CHAIN_IDS = [ChainEnum.ETHEREUM_MAINNET, ChainEnum.BASE, ChainEnum.ARBITRUM_ONE, ChainEnum.MOONBEAM]
+const RELEVANT_CHAIN_IDS = [SupportedChainId.ETHEREUM_MAINNET, SupportedChainId.BASE, SupportedChainId.ARBITRUM_ONE, SupportedChainId.MOONBEAM]
 
 export function ChainSelector({ value, onChange }: Props) {
     const { data, isLoading } = useChainsRegistry()
@@ -38,14 +38,14 @@ export function ChainSelector({ value, onChange }: Props) {
     const items = useMemo(() => {
         if (!data) return [] as Array<{ id: string; name: string; icon?: string }>
         const entries = Object.entries(data)
-            .filter(([id]) => allowed.has(id as ChainEnum))
+            .filter(([id]) => allowed.has(id as SupportedChainId))
             .map(([id, rec]) => ({ id, name: rec.data.name, icon: rec.data.icon }))
         return entries
             .filter((e) => !query || e.name.toLowerCase().includes(query.toLowerCase()) || idMatches(e.id, query))
             .sort((a, b) => a.name.localeCompare(b.name))
     }, [data, query, allowed])
 
-    const relevant = useMemo(() => items.filter((i) => RELEVANT_CHAIN_IDS.includes(i.id as ChainEnum)).slice(0, 3), [items])
+    const relevant = useMemo(() => items.filter((i) => RELEVANT_CHAIN_IDS.includes(i.id as SupportedChainId)).slice(0, 3), [items])
     const selected = value && data ? data[value] : undefined
 
     return (

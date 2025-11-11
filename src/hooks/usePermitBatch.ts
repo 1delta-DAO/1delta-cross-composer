@@ -5,7 +5,7 @@ import { moonbeam } from "viem/chains"
 import { BATCH_PRECOMPILE, CALL_PERMIT_PRECOMPILE, DOMAIN_SEPARATOR } from "../lib/consts"
 import { BatchCall, PermitBatchParams } from "../lib/types"
 import { BATCH_ABI, CALL_PERMIT_ABI, ERC20_ABI } from "../lib/abi"
-import { getPublicClientForChain } from "../lib/rpc/clientHelper"
+import { getRpcSelectorEvmClient } from "@1delta/lib-utils"
 import { fetchDecimals as fetchDecimalsUtil } from "../utils/tokenUtils"
 
 export function usePermitBatch() {
@@ -17,9 +17,10 @@ export function usePermitBatch() {
     const [loadingDecimals, setLoadingDecimals] = useState<Set<Address>>(new Set())
 
     const fetchNonce = useCallback(
-        async (userAddress: Address): Promise<bigint | null> => {
+        async (userAddress: Address, targetChainId?: number | string): Promise<bigint | null> => {
             try {
-                const publicClient = await getPublicClientForChain(String(chainId))
+                const nonceChainId = targetChainId !== undefined ? String(targetChainId) : String(chainId)
+                const publicClient = await getRpcSelectorEvmClient(nonceChainId)
                 if (!publicClient) {
                     console.error("Could not get public client for fetching nonce")
                     return null
@@ -226,6 +227,7 @@ export function usePermitBatch() {
         createBatchCalls,
         createBatchData,
         fetchDecimals,
+        fetchNonce,
         decimalsCache,
         loadingDecimals,
         isLoading,

@@ -1,11 +1,14 @@
 import { checksumAddress, type Address } from "viem"
 import { ERC20_ABI } from "../lib/abi"
 import { getTokenFromCache } from "../lib/data/tokenListsCache"
-import { getViemProvider } from "@1delta/lib-utils/dist/services/provider/viemProvider"
+import { getRpcSelectorEvmClient } from "@1delta/lib-utils"
 
 export async function checkIsContract(address: Address, chainId: string): Promise<boolean> {
     try {
-        const publicClient = getViemProvider({ chainId })
+        const publicClient = await getRpcSelectorEvmClient(chainId)
+        if (!publicClient) {
+            return false
+        }
         const code = await publicClient.getCode({ address })
         return code !== "0x"
     } catch {
@@ -55,7 +58,11 @@ export async function fetchDecimals(
             return null
         }
 
-        const publicClient = getViemProvider({ chainId })
+        const publicClient = await getRpcSelectorEvmClient(chainId)
+        if (!publicClient) {
+            console.warn(`Could not get RPC client for chain ${chainId}`)
+            return null
+        }
         const decimals = await publicClient.readContract({
             address: checksumAddress(tokenAddress),
             abi: ERC20_ABI,
