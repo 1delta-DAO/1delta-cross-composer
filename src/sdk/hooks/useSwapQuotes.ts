@@ -57,6 +57,7 @@ export function useSwapQuotes({
     const prevSrcKeyRef = useRef<string>(debouncedSrcKey)
     const prevDstKeyRef = useRef<string>(debouncedDstKey)
     const prevIsSameChainRef = useRef<boolean | null>(null)
+    const prevAttachedMessageRef = useRef<Hex | undefined>(attachedMessage)
 
     useEffect(() => {
         if (prevSrcKeyRef.current !== debouncedSrcKey || prevDstKeyRef.current !== debouncedDstKey) {
@@ -67,6 +68,16 @@ export function useSwapQuotes({
             prevDstKeyRef.current = debouncedDstKey
         }
     }, [debouncedSrcKey, debouncedDstKey, quotes.length])
+
+    useEffect(() => {
+        if (prevAttachedMessageRef.current !== attachedMessage) {
+            if (quotes.length > 0) {
+                setQuotes([])
+            }
+            lastQuotedKeyRef.current = null
+            prevAttachedMessageRef.current = attachedMessage
+        }
+    }, [attachedMessage, quotes.length])
 
     const prevTxInProgressRef = useRef(txInProgress)
 
@@ -138,7 +149,12 @@ export function useSwapQuotes({
             return
         }
 
-        const currentKey = `${debouncedAmount}|${debouncedSrcKey}|${debouncedDstKey}|${slippage}|${userAddress || ""}`
+        const messageKey = attachedMessage ? `${attachedMessage.length}|${attachedMessage.slice(0, 10)}|${attachedMessage.slice(-10)}` : ""
+        const gasLimitKey = attachedGasLimit ? attachedGasLimit.toString() : ""
+        const valueKey = attachedValue ? attachedValue.toString() : ""
+        const currentKey = `${debouncedAmount}|${debouncedSrcKey}|${debouncedDstKey}|${slippage}|${
+            userAddress || ""
+        }|${messageKey}|${gasLimitKey}|${valueKey}`
         const now = Date.now()
         const sameAsLast = lastQuotedKeyRef.current === currentKey
         const elapsed = now - lastQuotedAtRef.current
@@ -283,7 +299,7 @@ export function useSwapQuotes({
                     refreshTickRef.current = refreshTick + 1
                     refreshTimeoutRef.current = setTimeout(() => {
                         if (scheduledKey === lastQuotedKeyRef.current) {
-                            setRefreshTick((x) => x + 1)
+                            setRefreshTick((x: number) => x + 1)
                         }
                     }, 30000)
                 }
@@ -322,7 +338,7 @@ export function useSwapQuotes({
     ])
 
     const refreshQuotes = () => {
-        setRefreshTick((x) => x + 1)
+        setRefreshTick((x: number) => x + 1)
     }
 
     const abortQuotes = () => {
