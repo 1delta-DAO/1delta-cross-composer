@@ -10,7 +10,8 @@ import { ERC20_ABI, CALL_PERMIT_ABI } from "../../lib/abi"
 import { BATCH_PRECOMPILE, CALL_PERMIT_PRECOMPILE } from "../../lib/consts"
 import { usePermitBatch } from "../../sdk/hooks/usePermitBatch"
 import { useToast } from "../common/ToastHost"
-import { ActionEditor } from "./ActionEditor"
+import { ActionsList } from "../ActionsList"
+import { LendingActionModal } from "../LendingActionModal"
 
 type PendingAction = {
     id: string
@@ -58,6 +59,7 @@ export function MoonbeamActionsPanel({
     const { sendTransactionAsync: sendTestTransaction } = useSendTransaction()
     const [testTxHash, setTestTxHash] = useState<string | undefined>(undefined)
     const [testingDstCall, setTestingDstCall] = useState(false)
+    const [editingAction, setEditingAction] = useState<PendingAction | null>(null)
     const permitBatch = usePermitBatch()
     const { fetchNonce } = permitBatch
     const { signTypedDataAsync } = useSignTypedData()
@@ -71,18 +73,58 @@ export function MoonbeamActionsPanel({
     return (
         <div className="card bg-base-200 shadow-lg border border-primary/30 mt-4">
             <div className="card-body">
-                <div className="font-medium mb-3">Moonbeam Actions</div>
+                <div className="font-medium mb-3">Destination Actions</div>
                 <DestinationActionSelector
                     dstToken={dstToken}
                     dstChainId={dstChainId}
-                    onAdd={(config, selector) => {
-                        setActions((arr) => [...arr, { id: Math.random().toString(36).slice(2), config, selector, args: [] }])
+                    userAddress={userAddress}
+                    onAdd={(config, selector, args, value) => {
+                        setActions((arr) => [
+                            ...arr,
+                            {
+                                id: Math.random().toString(36).slice(2),
+                                config,
+                                selector,
+                                args: args || [],
+                                value: value,
+                            },
+                        ])
                     }}
+                />
+                <ActionsList
+                    actions={actions}
+                    onRemove={(id) => setActions((arr) => arr.filter((x) => x.id !== id))}
+                    onMoveUp={(id) => {
+                        setActions((arr) => {
+                            const copy = [...arr]
+                            const i = copy.findIndex((x) => x.id === id)
+                            if (i > 0) {
+                                const tmp = copy[i - 1]
+                                copy[i - 1] = copy[i]
+                                copy[i] = tmp
+                            }
+                            return copy
+                        })
+                    }}
+                    onMoveDown={(id) => {
+                        setActions((arr) => {
+                            const copy = [...arr]
+                            const i = copy.findIndex((x) => x.id === id)
+                            if (i >= 0 && i < copy.length - 1) {
+                                const tmp = copy[i + 1]
+                                copy[i + 1] = copy[i]
+                                copy[i] = tmp
+                            }
+                            return copy
+                        })
+                    }}
+                    onEdit={(action) => setEditingAction(action)}
                 />
                 {actions.length > 0 && (
                     <div className="mt-4 flex justify-center">
                         <button
                             className="btn btn-success"
+                            disabled={isEncoding}
                             onClick={async () => {
                                 try {
                                     if (!userAddress) return
@@ -284,46 +326,35 @@ export function MoonbeamActionsPanel({
                         )}
                     </div>
                 )}
-                {actions.length > 0 && (
-                    <div className="mt-4 space-y-3">
-                        {actions.map((a, idx) => (
-                            <ActionEditor
-                                key={a.id}
-                                action={a}
-                                canMoveUp={idx > 0}
-                                canMoveDown={idx < actions.length - 1}
-                                onChange={(next) => setActions((arr) => arr.map((x) => (x.id === a.id ? next : x)))}
-                                onRemove={() => setActions((arr) => arr.filter((x) => x.id !== a.id))}
-                                onMoveUp={() =>
-                                    setActions((arr) => {
-                                        const copy = [...arr]
-                                        const i = copy.findIndex((x) => x.id === a.id)
-                                        if (i > 0) {
-                                            const tmp = copy[i - 1]
-                                            copy[i - 1] = copy[i]
-                                            copy[i] = tmp
-                                        }
-                                        return copy
-                                    })
-                                }
-                                onMoveDown={() =>
-                                    setActions((arr) => {
-                                        const copy = [...arr]
-                                        const i = copy.findIndex((x) => x.id === a.id)
-                                        if (i >= 0 && i < copy.length - 1) {
-                                            const tmp = copy[i + 1]
-                                            copy[i + 1] = copy[i]
-                                            copy[i] = tmp
-                                        }
-                                        return copy
-                                    })
-                                }
-                            />
-                        ))}
-                    </div>
-                )}
             </div>
+            {editingAction && (
+                <LendingActionModal
+                    open={editingAction !== null}
+                    onClose={() => setEditingAction(null)}
+                    actionConfig={editingAction.config}
+                    selector={editingAction.selector}
+                    initialArgs={editingAction.args}
+                    initialValue={editingAction.value}
+                    userAddress={userAddress}
+                    chainId={dstChainId}
+                    onConfirm={(config, selector, args, value) => {
+                        setActions((arr) =>
+                            arr.map((a) =>
+                                a.id === editingAction.id
+                                    ? {
+                                          ...a,
+                                          config,
+                                          selector,
+                                          args: args || [],
+                                          value: value,
+                                      }
+                                    : a
+                            )
+                        )
+                        setEditingAction(null)
+                    }}
+                />
+            )}
         </div>
     )
 }
-
