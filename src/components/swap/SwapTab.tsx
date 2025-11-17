@@ -347,7 +347,7 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
                 <div className="flex justify-center -my-4 relative z-10">
                     <button
                         type="button"
-                        className="btn rounded-2xl bg-[#1F1F1F] border-2 border-[#131313] shadow-lg hover:shadow-xl transition-shadow"
+                        className="btn rounded-2xl bg-base-100 border-2 border-base-100 shadow-lg hover:shadow-xl transition-shadow"
                         onClick={() => {
                             const sc = srcChainId
                             const st = srcToken
@@ -357,7 +357,7 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
                             setDstToken(st)
                         }}
                     >
-                        ↕
+                        <span style={{ fontSize: "30px" }}>↕</span>
                     </button>
                 </div>
                 <TokenOutputSection
