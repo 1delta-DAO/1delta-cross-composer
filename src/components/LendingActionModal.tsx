@@ -34,7 +34,7 @@ function findFunctionBySelector(abi: Abi, selector: Hex): any {
 function formatBalanceWithDecimals(value: string): string {
     const num = parseFloat(value)
     if (isNaN(num)) return value
-    
+
     if (num >= 1) {
         return num.toFixed(4)
     } else {
@@ -68,7 +68,7 @@ export function LendingActionModal({
     const isRepay = useMemo(() => actionConfig?.name?.startsWith("Repay") || false, [actionConfig?.name])
     const isBorrow = useMemo(() => actionConfig?.name?.startsWith("Borrow") || false, [actionConfig?.name])
     const isStaking = useMemo(() => actionConfig?.group === "staking" || (actionConfig?.meta as any)?.useComposer === true, [actionConfig])
-    
+
     // For withdraw: fetch mToken balance (actionConfig.address is the mToken)
     // For deposit/repay/staking: fetch underlying token balance
     const balanceTokenAddress = useMemo(() => {
@@ -92,7 +92,7 @@ export function LendingActionModal({
     const repayMTokenAddress = useMemo(() => {
         return isRepay && actionConfig ? (actionConfig.address as Address | undefined) : undefined
     }, [isRepay, actionConfig])
-    
+
     const { data: borrowBalance } = useBorrowBalance({
         chainId: chainId || SupportedChainId.MOONBEAM,
         userAddress,
@@ -145,7 +145,7 @@ export function LendingActionModal({
     // Format balance for display - MUST be called before early return
     const displayBalance = useMemo(() => {
         if (!actionConfig) return null
-        
+
         // For repay: show borrow balance (debt)
         if (isRepay && borrowBalance?.raw) {
             const decimals = (actionConfig.meta as any)?.decimals || 18
@@ -158,7 +158,7 @@ export function LendingActionModal({
                 return null
             }
         }
-        
+
         // For withdraw/deposit/staking: show token balance
         if (tokenBalance?.raw) {
             const decimals = (actionConfig.meta as any)?.decimals || 18
@@ -171,7 +171,7 @@ export function LendingActionModal({
                 return null
             }
         }
-        
+
         return null
     }, [tokenBalance, borrowBalance, actionConfig, isRepay])
 
@@ -193,28 +193,25 @@ export function LendingActionModal({
         if (amountInputIndex < 0 || !args[amountInputIndex]) return false
         // Skip validation for staking when useMax is enabled (amount will be 0)
         if (isStaking && useMax) return false
-        
+
         try {
             const enteredAmount = BigInt(String(args[amountInputIndex]))
-            
+
             // For repay: compare with borrow balance (debt)
             if (isRepay && borrowBalance?.raw) {
                 return enteredAmount > BigInt(borrowBalance.raw)
             }
-            
+
             // For deposit/withdraw/staking: compare with token balance
             if ((isDeposit || isWithdraw || isStaking) && tokenBalance?.raw) {
                 return enteredAmount > BigInt(tokenBalance.raw)
             }
-            
+
             return false
         } catch {
             return false
         }
     }, [args, amountInputIndex, isRepay, isDeposit, isWithdraw, isStaking, useMax, borrowBalance, tokenBalance])
-
-    // Early return after ALL hooks are called
-    if (!open || !actionConfig || !selector) return null
 
     const handleConfirm = () => {
         const finalArgs = [...args]
@@ -228,7 +225,7 @@ export function LendingActionModal({
 
     const handleMaxClick = () => {
         if (amountInputIndex < 0) return
-        
+
         const newArgs = [...args]
         // For repay: use borrow balance (debt)
         // For withdraw: use mToken balance
@@ -256,6 +253,9 @@ export function LendingActionModal({
         }
     }, [useMax, isStaking, amountInputIndex])
 
+    // Early return after ALL hooks are called
+    if (!open || !actionConfig || !selector) return null
+
     const inputCount = (fnAbi?.inputs?.length || 0) + (fnAbi?.stateMutability === "payable" ? 1 : 0)
     const useSingleColumn = inputCount === 1
 
@@ -268,19 +268,17 @@ export function LendingActionModal({
                         ✕
                     </button>
                 </div>
-                {actionConfig.description && (
-                    <div className="text-sm opacity-70 mb-4">{actionConfig.description}</div>
-                )}
+                {actionConfig.description && <div className="text-sm opacity-70 mb-4">{actionConfig.description}</div>}
                 {fnAbi ? (
                     <div className="space-y-4">
                         <div className={useSingleColumn ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 gap-4"}>
                             {fnAbi.inputs?.map((inp: any, i: number) => {
                                 const isAmountInput = i === amountInputIndex && inp.type === "uint256"
-                                const showMaxButton = isAmountInput && (
-                                    (isRepay && borrowBalance?.raw && BigInt(borrowBalance.raw) > 0n) ||
-                                    (!isRepay && displayBalance && BigInt(displayBalance.raw) > 0n)
-                                )
-                                
+                                const showMaxButton =
+                                    isAmountInput &&
+                                    ((isRepay && borrowBalance?.raw && BigInt(borrowBalance.raw) > 0n) ||
+                                        (!isRepay && displayBalance && BigInt(displayBalance.raw) > 0n))
+
                                 return (
                                     <div className="form-control" key={i}>
                                         <div className="flex items-center justify-between mb-1">
@@ -303,16 +301,10 @@ export function LendingActionModal({
                                                         </span>
                                                     )}
                                                     {isRepay && hasDebt !== null && !hasDebt && (
-                                                        <span className="text-xs text-warning">
-                                                            No debt to repay
-                                                        </span>
+                                                        <span className="text-xs text-warning">No debt to repay</span>
                                                     )}
                                                     {showMaxButton && (
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-xs btn-ghost"
-                                                            onClick={handleMaxClick}
-                                                        >
+                                                        <button type="button" className="btn btn-xs btn-ghost" onClick={handleMaxClick}>
                                                             Max
                                                         </button>
                                                     )}
@@ -363,8 +355,19 @@ export function LendingActionModal({
                                         )}
                                         {isAmountInput && exceedsBalance && (
                                             <span className="label-text-alt text-warning mt-1 flex items-center gap-1">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="h-4 w-4"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                                                    />
                                                 </svg>
                                                 Amount exceeds available {isRepay ? "debt" : "balance"}
                                             </span>
@@ -423,4 +426,3 @@ export function LendingActionModal({
         </div>
     )
 }
-

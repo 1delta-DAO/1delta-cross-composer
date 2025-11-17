@@ -5,8 +5,9 @@ import { SupportedChainId, TradeType } from "@1delta/lib-utils"
 import { getCurrency, convertAmountToWei } from "../trade-helpers/utils"
 import { fetchAllAggregatorTrades } from "../trade-helpers/aggregatorSelector"
 import { fetchAllBridgeTrades } from "../trade-helpers/bridgeSelector"
-import { CALL_PERMIT_PRECOMPILE, MOCK_RECEIVER_ADDRESS } from "../../lib/consts"
+import { MOCK_RECEIVER_ADDRESS } from "../../lib/consts"
 import { useToast } from "../../components/common/ToastHost"
+import type { DestinationCall } from "../../lib/types/destinationAction"
 
 type Quote = { label: string; trade: GenericTrade }
 
@@ -21,9 +22,7 @@ export function useSwapQuotes({
     slippage,
     userAddress,
     txInProgress,
-    attachedMessage,
-    attachedGasLimit,
-    attachedValue,
+    destinationCalls,
 }: {
     srcChainId?: string
     srcToken?: Address
@@ -35,9 +34,7 @@ export function useSwapQuotes({
     slippage: number
     userAddress?: Address
     txInProgress: boolean
-    attachedMessage?: Hex
-    attachedGasLimit?: bigint
-    attachedValue?: bigint
+    destinationCalls?: DestinationCall[]
 }) {
     const [quoting, setQuoting] = useState(false)
     const [quotes, setQuotes] = useState<Quote[]>([])
@@ -57,7 +54,7 @@ export function useSwapQuotes({
     const prevSrcKeyRef = useRef<string>(debouncedSrcKey)
     const prevDstKeyRef = useRef<string>(debouncedDstKey)
     const prevIsSameChainRef = useRef<boolean | null>(null)
-    const prevAttachedMessageRef = useRef<Hex | undefined>(attachedMessage)
+    const prevDestinationCallsKeyRef = useRef<string>("")
 
     useEffect(() => {
         if (prevSrcKeyRef.current !== debouncedSrcKey || prevDstKeyRef.current !== debouncedDstKey) {
@@ -69,15 +66,25 @@ export function useSwapQuotes({
         }
     }, [debouncedSrcKey, debouncedDstKey, quotes.length])
 
+    const destinationCallsKey = JSON.stringify(
+        (destinationCalls || []).map((c) => ({
+            t: c.target.toLowerCase(),
+            v: c.value ? c.value.toString() : "",
+            dStart: c.calldata.slice(0, 10),
+            dEnd: c.calldata.slice(-10),
+            g: c.gasLimit ? c.gasLimit.toString() : "",
+        }))
+    )
+
     useEffect(() => {
-        if (prevAttachedMessageRef.current !== attachedMessage) {
+        if (prevDestinationCallsKeyRef.current !== destinationCallsKey) {
             if (quotes.length > 0) {
                 setQuotes([])
             }
             lastQuotedKeyRef.current = null
-            prevAttachedMessageRef.current = attachedMessage
+            prevDestinationCallsKeyRef.current = destinationCallsKey
         }
-    }, [attachedMessage, quotes.length])
+    }, [destinationCallsKey, quotes.length])
 
     const receiverAddress = userAddress || MOCK_RECEIVER_ADDRESS
 
@@ -151,10 +158,7 @@ export function useSwapQuotes({
             return
         }
 
-        const messageKey = attachedMessage ? `${attachedMessage.length}|${attachedMessage.slice(0, 10)}|${attachedMessage.slice(-10)}` : ""
-        const gasLimitKey = attachedGasLimit ? attachedGasLimit.toString() : ""
-        const valueKey = attachedValue ? attachedValue.toString() : ""
-        const currentKey = `${debouncedAmount}|${debouncedSrcKey}|${debouncedDstKey}|${slippage}|${receiverAddress}|${messageKey}|${gasLimitKey}|${valueKey}`
+        const currentKey = `${debouncedAmount}|${debouncedSrcKey}|${debouncedDstKey}|${slippage}|${receiverAddress}|${destinationCallsKey}`
         const now = Date.now()
         const sameAsLast = lastQuotedKeyRef.current === currentKey
         const elapsed = now - lastQuotedAtRef.current
@@ -233,16 +237,14 @@ export function useSwapQuotes({
                 } else {
                     let additionalCalls: Array<{ callType: 0; target: string; value?: bigint; callData: Hex }> | undefined
                     let destinationGasLimit: bigint | undefined
-                    if (dc === SupportedChainId.MOONBEAM && attachedMessage) {
-                        additionalCalls = [
-                            {
-                                callType: 0, // DEFAULT
-                                target: CALL_PERMIT_PRECOMPILE as Address,
-                                value: (attachedValue ?? 0n) as any,
-                                callData: attachedMessage as Hex,
-                            },
-                        ] as any
-                        destinationGasLimit = attachedGasLimit
+                    if (destinationCalls && destinationCalls.length > 0) {
+                        additionalCalls = destinationCalls.map((c) => ({
+                            callType: 0,
+                            target: c.target,
+                            value: c.value && c.value > 0n ? c.value : undefined,
+                            callData: c.calldata,
+                        })) as any
+                        destinationGasLimit = destinationCalls.reduce((acc, c) => acc + (c.gasLimit || 0n), 0n)
                     }
 
                     const bridgeTrades = await fetchAllBridgeTrades(
@@ -256,7 +258,7 @@ export function useSwapQuotes({
                             receiver: receiverAddress,
                             order: "CHEAPEST",
                             usePermit: true,
-                            ...(additionalCalls ? { additionalCalls } : attachedMessage ? { message: attachedMessage as string } : {}),
+                            ...(additionalCalls ? { additionalCalls } : {}),
                             destinationGasLimit,
                         } as any,
                         controller
@@ -332,9 +334,8 @@ export function useSwapQuotes({
         srcToken,
         dstChainId,
         dstToken,
-        attachedMessage,
-        attachedGasLimit,
-        attachedValue,
+        destinationCallsKey,
+        destinationCalls,
         receiverAddress,
     ])
 

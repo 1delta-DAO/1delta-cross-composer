@@ -7,7 +7,7 @@ import { SupportedChainId } from "../../sdk/types"
 import { buildTransactionUrl } from "../../lib/explorer"
 import { ERC20_ABI } from "../../lib/abi"
 import { encodeFunctionData, parseUnits } from "viem"
-import type { DestinationActionConfig } from "../../lib/types/destinationAction"
+import type { DestinationActionConfig, DestinationCall } from "../../lib/types/destinationAction"
 import { useChainsRegistry } from "../../sdk/hooks/useChainsRegistry"
 import { usePermitBatch } from "../../sdk/hooks/usePermitBatch"
 import { useToast } from "../common/ToastHost"
@@ -118,7 +118,7 @@ type ExecuteButtonProps = {
     onResetStateChange?: (showReset: boolean, resetCallback?: () => void) => void
     onTransactionStart?: () => void
     actions?: Array<{ id: string; config: DestinationActionConfig; selector: Hex; args: any[]; value?: string }>
-    permit?: ReturnType<typeof usePermitBatch>
+    destinationCalls?: DestinationCall[]
 }
 
 export default function ExecuteButton({
@@ -134,7 +134,7 @@ export default function ExecuteButton({
     onResetStateChange,
     onTransactionStart,
     actions,
-    permit,
+    destinationCalls,
 }: ExecuteButtonProps) {
     const { isConnected } = useAccount()
     const [step, setStep] = useState<"idle" | "approving" | "signing" | "broadcast" | "confirmed" | "error">("idle")
@@ -255,78 +255,13 @@ export default function ExecuteButton({
                 throw new Error("Failed to get transaction data from trade")
             }
 
-            // Same-chain Moonbeam with actions
             let hash: Address
-            if (srcChainId === SupportedChainId.MOONBEAM && dstChainId === SupportedChainId.MOONBEAM && actions && actions.length > 0) {
-                if (!permit?.executeSelfTransmit) {
-                    setStep("broadcast")
-                    hash = await sendTransactionAsync({
-                        to: txData.to as Address,
-                        data: txData.calldata as Hex,
-                        value: txData.value ? BigInt(txData.value.toString()) : BigInt(0),
-                    })
-                } else {
-                    // Build batch calls: optionally approve, then swap, then actions
-                    const calls: Array<{ target: Address; value: bigint; callData: Hex; gasLimit: bigint }> = []
-                    if (needsApproval && srcToken && amountWei && spender) {
-                        const approveCalldata = encodeFunctionData({
-                            abi: ERC20_ABI,
-                            functionName: "approve",
-                            args: [spender as Address, BigInt(amountWei)],
-                        })
-                        calls.push({
-                            target: srcToken,
-                            value: 0n,
-                            callData: approveCalldata as Hex,
-                            gasLimit: BigInt(100000),
-                        })
-                    }
-                    // swap call from aggregator
-                    calls.push({
-                        target: txData.to as Address,
-                        value: txData.value ? BigInt(txData.value.toString()) : 0n,
-                        callData: txData.calldata as Hex,
-                        gasLimit: BigInt(300000),
-                    })
-                    // encode user actions
-                    try {
-                        const { encodeDestinationActions } = await import("../../sdk/trade-helpers/destinationActions")
-                        const encoded = encodeDestinationActions(
-                            actions.map((a) => ({
-                                config: a.config,
-                                selector: a.selector,
-                                args: a.args,
-                                value: a.value ? parseUnits(a.value, 18) : 0n,
-                            }))
-                        )
-                        for (const c of encoded) {
-                            calls.push({
-                                target: c.target,
-                                value: c.value ?? 0n,
-                                callData: c.calldata as Hex,
-                                gasLimit: BigInt(100000),
-                            })
-                        }
-                    } catch (err) {
-                        throw new Error("Failed to encode Moonbeam actions")
-                    }
-                    const deadline = BigInt(Math.floor(Date.now() / 1000) + 60 * 30)
-                    setStep("broadcast")
-                    const { hash: txHash } = await permit.executeSelfTransmit({
-                        from: userAddress as Address,
-                        calls,
-                        deadline,
-                    } as any)
-                    hash = txHash as Address
-                }
-            } else {
-                setStep("broadcast")
-                hash = await sendTransactionAsync({
-                    to: txData.to as Address,
-                    data: txData.calldata as Hex,
-                    value: txData.value ? BigInt(txData.value.toString()) : BigInt(0),
-                })
-            }
+            setStep("broadcast")
+            hash = await sendTransactionAsync({
+                to: txData.to as Address,
+                data: txData.calldata as Hex,
+                value: txData.value ? BigInt(txData.value.toString()) : BigInt(0),
+            })
             setSrcHash(hash)
             setStep("confirmed")
 
@@ -350,6 +285,30 @@ export default function ExecuteButton({
                                 }
                                 onDone(hashes)
                             })
+                        }
+
+                        if (
+                            !isBridge &&
+                            srcChainId === SupportedChainId.MOONBEAM &&
+                            dstChainId === SupportedChainId.MOONBEAM &&
+                            destinationCalls &&
+                            destinationCalls.length > 0 &&
+                            userAddress
+                        ) {
+                            ;(async () => {
+                                try {
+                                    for (const call of destinationCalls) {
+                                        await sendTransactionAsync({
+                                            to: call.target,
+                                            data: call.calldata,
+                                            value: (call.value ?? 0n) as any,
+                                        })
+                                    }
+                                } catch (e) {
+                                    console.error("Destination actions execution failed:", e)
+                                    toast.showError("Failed to execute destination actions")
+                                }
+                            })()
                         }
                     })
                     .catch((err) => {
@@ -387,7 +346,9 @@ export default function ExecuteButton({
         srcChainId,
         dstChainId,
         actions,
-        permit,
+        destinationCalls,
+        actions,
+        destinationCalls,
         writeContractAsync,
         getTransactionData,
         sendTransactionAsync,

@@ -67,3 +67,7 @@ export interface EncodedDestinationAction {
     calldata: Hex
     value?: bigint
 }
+
+export interface DestinationCall extends EncodedDestinationAction {
+    gasLimit?: bigint
+}

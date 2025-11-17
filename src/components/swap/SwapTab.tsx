@@ -13,7 +13,6 @@ import { useDebounce } from "../../hooks/useDebounce"
 import { CurrencyHandler, SupportedChainId } from "../../sdk/types"
 import { useQueryClient } from "@tanstack/react-query"
 import { useSlippage } from "../../contexts/SlippageContext"
-import { usePermitBatch } from "../../sdk/hooks/usePermitBatch"
 import { useSwapQuotes } from "../../sdk/hooks/useSwapQuotes"
 import { usePriceImpact } from "../../hooks/usePriceImpact"
 import { TokenInputSection } from "./TokenInputSection"
@@ -22,7 +21,7 @@ import { QuoteDisplay } from "./QuoteDisplay"
 import ExecuteButton from "./ExecuteButton"
 import { MoonbeamActionsPanel } from "./MoonbeamActionsPanel"
 import { formatDisplayAmount, pickPreferredToken } from "./swapUtils"
-import type { DestinationActionConfig } from "../../lib/types/destinationAction"
+import type { DestinationActionConfig, DestinationCall } from "../../lib/types/destinationAction"
 
 type PendingAction = {
     id: string
@@ -229,9 +228,7 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
 
     const { slippage, setPriceImpact } = useSlippage()
     const [txInProgress, setTxInProgress] = useState(false)
-    const [attachedMessage, setAttachedMessage] = useState<Hex | undefined>(undefined)
-    const [attachedGasLimit, setAttachedGasLimit] = useState<bigint | undefined>(undefined)
-    const [attachedValue, setAttachedValue] = useState<bigint | undefined>(undefined)
+    const [destinationCalls, setDestinationCalls] = useState<DestinationCall[]>([])
 
     const { quotes, quoting, selectedQuoteIndex, setSelectedQuoteIndex, amountWei, refreshQuotes, abortQuotes } = useSwapQuotes({
         srcChainId,
@@ -244,9 +241,7 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
         slippage,
         userAddress,
         txInProgress,
-        attachedMessage,
-        attachedGasLimit,
-        attachedValue,
+        destinationCalls,
     })
 
     const selectedTrade = quotes[selectedQuoteIndex]?.trade
@@ -299,7 +294,6 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
     }, [dstChainId, dstTokensMap, chains, srcChainId, dstToken])
 
     const queryClient = useQueryClient()
-    const permitBatch = usePermitBatch()
     const [actions, setActions] = useState<PendingAction[]>([])
     const [sellModalOpen, setSellModalOpen] = useState(false)
     const [buyModalOpen, setBuyModalOpen] = useState(false)
@@ -312,9 +306,7 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
         setDstToken(zeroAddress)
         setSrcChainId(SupportedChainId.BASE)
         setDstChainId(SupportedChainId.MOONBEAM)
-        setAttachedMessage(undefined)
-        setAttachedGasLimit(undefined)
-        setAttachedValue(undefined)
+        setDestinationCalls([])
         setActions([])
         abortQuotes()
     }, [abortQuotes])
@@ -428,12 +420,8 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
                 currentChainId={currentChainId}
                 isEncoding={isEncoding}
                 setIsEncoding={setIsEncoding}
-                attachedMessage={attachedMessage}
-                setAttachedMessage={setAttachedMessage}
-                attachedGasLimit={attachedGasLimit}
-                setAttachedGasLimit={setAttachedGasLimit}
-                attachedValue={attachedValue}
-                setAttachedValue={setAttachedValue}
+                destinationCalls={destinationCalls}
+                setDestinationCalls={setDestinationCalls}
                 actions={actions}
                 setActions={setActions}
                 onRefreshQuotes={refreshQuotes}
@@ -448,7 +436,7 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
                         srcToken={srcToken}
                         amountWei={amountWei}
                         actions={actions}
-                        permit={permitBatch}
+                        destinationCalls={destinationCalls}
                         chains={chains}
                         onDone={(hashes) => {
                             // Invalidate all balance queries for src/dst chains and tokens

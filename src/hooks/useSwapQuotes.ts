@@ -5,8 +5,9 @@ import { SupportedChainId, TradeType } from "@1delta/lib-utils"
 import { getCurrency, convertAmountToWei } from "../lib/trade-helpers/utils"
 import { fetchAllAggregatorTrades } from "../lib/trade-helpers/aggregatorSelector"
 import { fetchAllBridgeTrades } from "../lib/trade-helpers/bridgeSelector"
-import { CALL_PERMIT_PRECOMPILE, MOCK_RECEIVER_ADDRESS } from "../lib/consts"
+import { MOCK_RECEIVER_ADDRESS } from "../lib/consts"
 import { useToast } from "../components/common/ToastHost"
+import type { DestinationCall } from "../lib/types/destinationAction"
 
 type Quote = { label: string; trade: GenericTrade }
 
@@ -21,9 +22,7 @@ export function useSwapQuotes({
     slippage,
     userAddress,
     txInProgress,
-    attachedMessage,
-    attachedGasLimit,
-    attachedValue,
+    destinationCalls,
 }: {
     srcChainId?: string
     srcToken?: Address
@@ -35,9 +34,7 @@ export function useSwapQuotes({
     slippage: number
     userAddress?: Address
     txInProgress: boolean
-    attachedMessage?: Hex
-    attachedGasLimit?: bigint
-    attachedValue?: bigint
+    destinationCalls?: DestinationCall[]
 }) {
     const [quoting, setQuoting] = useState(false)
     const [quotes, setQuotes] = useState<Quote[]>([])
@@ -60,6 +57,7 @@ export function useSwapQuotes({
     const prevSrcKeyRef = useRef<string>(debouncedSrcKey)
     const prevDstKeyRef = useRef<string>(debouncedDstKey)
     const prevIsSameChainRef = useRef<boolean | null>(null)
+    const prevDestinationCallsKeyRef = useRef<string>("")
 
     // Clear quotes immediately when token/chain changes (before debounce completes)
     // This ensures UI feedback is immediate while still debouncing the actual fetch
@@ -75,6 +73,16 @@ export function useSwapQuotes({
         }
     }, [debouncedSrcKey, debouncedDstKey, quotes.length])
 
+    const destinationCallsKey = JSON.stringify(
+        (destinationCalls || []).map((c) => ({
+            t: c.target.toLowerCase(),
+            v: c.value ? c.value.toString() : "",
+            dStart: c.calldata.slice(0, 10),
+            dEnd: c.calldata.slice(-10),
+            g: c.gasLimit ? c.gasLimit.toString() : "",
+        }))
+    )
+
     // Track previous txInProgress to detect when transaction completes
     const prevTxInProgressRef = useRef(txInProgress)
 
@@ -82,6 +90,14 @@ export function useSwapQuotes({
 
     // Quote on input changes (keep prior quote visible while updating)
     useEffect(() => {
+        if (prevDestinationCallsKeyRef.current !== destinationCallsKey) {
+            if (quotes.length > 0) {
+                setQuotes([])
+            }
+            lastQuotedKeyRef.current = null
+            prevDestinationCallsKeyRef.current = destinationCallsKey
+        }
+
         // Stop fetching quotes if transaction is in progress
         if (txInProgress) {
             console.debug("Skipping quote fetch: transaction in progress")
@@ -162,7 +178,7 @@ export function useSwapQuotes({
         }
 
         // Prevent unnecessary re-quote if nothing changed and 30s not elapsed
-        const currentKey = `${debouncedAmount}|${debouncedSrcKey}|${debouncedDstKey}|${slippage}|${receiverAddress}`
+        const currentKey = `${debouncedAmount}|${debouncedSrcKey}|${debouncedDstKey}|${slippage}|${receiverAddress}|${destinationCallsKey}`
         const now = Date.now()
         const sameAsLast = lastQuotedKeyRef.current === currentKey
         const elapsed = now - lastQuotedAtRef.current
@@ -245,20 +261,16 @@ export function useSwapQuotes({
                     )
                     allQuotes = trades.map((t) => ({ label: t.aggregator.toString(), trade: t.trade }))
                 } else {
-                    // Cross-chain: build Axelar SimpleSquidCall[] for permit precompile (preferred)
                     let additionalCalls: Array<{ callType: 0; target: string; value?: bigint; callData: Hex }> | undefined
                     let destinationGasLimit: bigint | undefined
-                    if (dc === SupportedChainId.MOONBEAM && attachedMessage) {
-                        // Use the signed permit precompile call as the single destination call for Squid
-                        additionalCalls = [
-                            {
-                                callType: 0, // DEFAULT
-                                target: CALL_PERMIT_PRECOMPILE as Address,
-                                value: (attachedValue ?? 0n) as any,
-                                callData: attachedMessage as Hex,
-                            },
-                        ] as any
-                        destinationGasLimit = attachedGasLimit
+                    if (destinationCalls && destinationCalls.length > 0) {
+                        additionalCalls = destinationCalls.map((c) => ({
+                            callType: 0,
+                            target: c.target,
+                            value: c.value && c.value > 0n ? c.value : undefined,
+                            callData: c.calldata,
+                        })) as any
+                        destinationGasLimit = destinationCalls.reduce((acc, c) => acc + (c.gasLimit || 0n), 0n)
                     }
 
                     const bridgeTrades = await fetchAllBridgeTrades(
@@ -272,8 +284,7 @@ export function useSwapQuotes({
                             receiver: receiverAddress,
                             order: "CHEAPEST",
                             usePermit: true,
-                            // Prefer composed calls over message; message kept for backward-compat
-                            ...(additionalCalls ? { additionalCalls } : attachedMessage ? { message: attachedMessage as string } : {}),
+                            ...(additionalCalls ? { additionalCalls } : {}),
                             destinationGasLimit,
                         } as any,
                         controller
@@ -351,9 +362,8 @@ export function useSwapQuotes({
         srcToken,
         dstChainId,
         dstToken,
-        attachedMessage,
-        attachedGasLimit,
-        attachedValue,
+        destinationCallsKey,
+        destinationCalls,
         receiverAddress,
     ])
 
