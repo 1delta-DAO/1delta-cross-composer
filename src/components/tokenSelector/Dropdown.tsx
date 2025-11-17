@@ -37,11 +37,7 @@ export function TokenSelectorDropdownMode({
 }: DropdownProps) {
     return (
         <div className="relative" ref={dropdownRef}>
-            <button
-                type="button"
-                className="btn btn-outline w-full flex items-center gap-2"
-                onClick={() => setOpen(!open)}
-            >
+            <button type="button" className="btn btn-outline w-full flex items-center gap-2" onClick={() => setOpen(!open)}>
                 <Logo src={selected?.logoURI} alt={selected?.symbol || "Token"} fallbackText={selected?.symbol || "T"} />
                 <span className="truncate">{selected?.symbol || (listsLoading ? "Loading tokens..." : "Select token")}</span>
                 <span className="ml-auto tab">▼</span>
@@ -97,4 +93,3 @@ export function TokenSelectorDropdownMode({
         </div>
     )
 }
-

@@ -31,20 +31,20 @@ export default function App() {
             {/* NAVBAR */}
             <div className="navbar bg-base-100 shadow-lg">
                 <div className="flex flex-row p-2 grow">
-                <div className="flex-1">
-                    <div className="flex items-center space-x-2">
-                    {/* Use theme primary instead of fixed gradient */}
-                    <h1 className="text-3xl font-bold text-primary">Allocator</h1>
-                    </div>
-                </div>
-                <div className="flex-none flex gap-3 items-center">
-                    <div className="flex-none flex gap-3 items-center">
-                    <ThemeSwitcher />
+                    <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                            {/* Use theme primary instead of fixed gradient */}
+                            <h1 className="text-3xl font-bold text-primary">Allocator</h1>
+                        </div>
                     </div>
                     <div className="flex-none flex gap-3 items-center">
-                    <WalletConnect />
+                        <div className="flex-none flex gap-3 items-center">
+                            <ThemeSwitcher />
+                        </div>
+                        <div className="flex-none flex gap-3 items-center">
+                            <WalletConnect />
+                        </div>
                     </div>
-                </div>
                 </div>
             </div>
 
@@ -65,17 +65,13 @@ export default function App() {
                         <div className="w-full max-w-[500px] min-w-[300px] flex items-center justify-between">
                             <div className="join">
                                 <button
-                                    className={`btn btn-sm join-item ${
-                                        activeTab === "swap" ? "btn-primary" : "btn-ghost"
-                                    }`}
+                                    className={`btn btn-sm join-item ${activeTab === "swap" ? "btn-primary" : "btn-ghost"}`}
                                     onClick={() => setActiveTab("swap")}
                                 >
                                     Swap
                                 </button>
                                 <button
-                                    className={`btn btn-sm join-item ${
-                                        activeTab === "transactions" ? "btn-primary" : "btn-ghost"
-                                    }`}
+                                    className={`btn btn-sm join-item ${activeTab === "transactions" ? "btn-primary" : "btn-ghost"}`}
                                     onClick={() => setActiveTab("transactions")}
                                 >
                                     Transactions
@@ -129,9 +125,7 @@ export default function App() {
                                                     <div className="card-body">
                                                         <h3 className="card-title text-lg">Transaction Hash</h3>
                                                         <div className="flex flex-row gap-2 items-center pt-2">
-                                                            <p className="flex-1 font-mono text-s w-10/11 border rounded-md p-2">
-                                                                {transactionHash}
-                                                            </p>
+                                                            <p className="flex-1 font-mono text-s w-10/11 border rounded-md p-2">{transactionHash}</p>
                                                         </div>
                                                     </div>
                                                 </div>

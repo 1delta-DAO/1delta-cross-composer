@@ -33,21 +33,7 @@ type TokenRowData = {
 }
 
 // Stablecoin symbols (common stablecoins)
-const STABLECOIN_SYMBOLS = new Set([
-    "USDC",
-    "USDT",
-    "DAI",
-    "BUSD",
-    "FRAX",
-    "USDD",
-    "USDE",
-    "TUSD",
-    "LUSD",
-    "SUSD",
-    "GUSD",
-    "MIM",
-    "DOLA",
-])
+const STABLECOIN_SYMBOLS = new Set(["USDC", "USDT", "DAI", "BUSD", "FRAX", "USDD", "USDE", "TUSD", "LUSD", "SUSD", "GUSD", "MIM", "DOLA"])
 
 // LST (Liquid Staking Token) patterns - common LST symbols
 const LST_SYMBOLS = new Set(["STETH", "RETH", "CBETH", "SFRXETH", "WBETH", "STSOL", "MSOL", "JITOSOL"])
@@ -119,10 +105,7 @@ export function TokenSelector({
             return relevantTokens.some((a) => a.toLowerCase() === addrLower)
         }
 
-        const addTokenIfNotIncluded = (
-            candidates: [string, any][],
-            selector: (candidates: [string, any][]) => [string, any] | undefined
-        ) => {
+        const addTokenIfNotIncluded = (candidates: [string, any][], selector: (candidates: [string, any][]) => [string, any] | undefined) => {
             if (candidates.length === 0) return
             const selected = selector(candidates)
             if (selected && !isAlreadyIncluded(selected[0])) {
@@ -207,15 +190,7 @@ export function TokenSelector({
         const symbol = (token as any)?.symbol?.toUpperCase?.() || ""
         const assetGroup = (token as any)?.assetGroup || ""
         if (assetGroup === "USDC") return 1
-        if (
-            symbol === "USDC" ||
-            symbol === "USDT" ||
-            symbol === "DAI" ||
-            symbol === "USDBC" ||
-            symbol === "XCUSDC" ||
-            symbol === "XCUSDT"
-        )
-            return 1
+        if (symbol === "USDC" || symbol === "USDT" || symbol === "DAI" || symbol === "USDBC" || symbol === "XCUSDC" || symbol === "XCUSDT") return 1
         return undefined
     }, [])
 
@@ -347,18 +322,7 @@ export function TokenSelector({
             // Quaternary: Alphabetically by symbol
             return a.token.symbol.localeCompare(b.token.symbol)
         })
-    }, [
-        allAddrs,
-        tokensMap,
-        searchQuery,
-        balances,
-        prices,
-        chainId,
-        excludeAddresses,
-        getTokenCategory,
-        relevant,
-        getStablecoinFallbackPrice,
-    ])
+    }, [allAddrs, tokensMap, searchQuery, balances, prices, chainId, excludeAddresses, getTokenCategory, relevant, getStablecoinFallbackPrice])
 
     const selected = value ? tokensMap[value.toLowerCase()] : undefined
 
