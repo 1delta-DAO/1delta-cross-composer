@@ -30,7 +30,7 @@ export default function App() {
 
             {/* NAVBAR */}
             <div className="navbar bg-base-100 shadow-lg">
-                <div className="flex flex-row p-2 flex-grow">
+                <div className="flex flex-row p-2 grow">
                 <div className="flex-1">
                     <div className="flex items-center space-x-2">
                     {/* Use theme primary instead of fixed gradient */}
@@ -53,7 +53,7 @@ export default function App() {
                 {!isConnected ? (
                     <div className="hero min-h-[60vh]">
                         <div className="flex flex-col items-center justify-center">
-                            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4">
+                            <h1 className="text-4xl font-bold bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent mb-4">
                                 Connect Your Wallet
                             </h1>
                             <ConnectButton />
