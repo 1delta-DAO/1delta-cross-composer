@@ -3,7 +3,7 @@ import { Address, Hex, Abi } from "viem"
 /**
  * Destination action type enum
  */
-export type DestinationActionType = "game_token" | "buy_ticket" | "lending"
+export type DestinationActionType = "game_token" | "buy_ticket" | "lending" | "staking"
 
 /**
  * Structured interface for destination actions (game-related actions on Moonbeam)
@@ -32,6 +32,14 @@ export interface DestinationAction {
         preApproveAmountArgIndex?: number
         /** If true, insert Comptroller enterMarkets before main (for lending) */
         enterMarketBefore?: boolean
+        /** If true, action uses 1delta composer wrapped in permit precompile call */
+        useComposer?: boolean
+        /** Output token address (e.g., staked token) */
+        stakedToken?: Address
+        /** Composer contract address */
+        composerAddress?: Address
+        /** Call forwarder contract address */
+        callForwarderAddress?: Address
     }
     /** Display name */
     name: string
@@ -58,4 +66,8 @@ export interface EncodedDestinationAction {
     target: Address
     calldata: Hex
     value?: bigint
+}
+
+export interface DestinationCall extends EncodedDestinationAction {
+    gasLimit?: bigint
 }

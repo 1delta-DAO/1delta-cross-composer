@@ -1,6 +1,6 @@
 import type { Address } from "viem"
 import { ChainSelector } from "../swap/ChainSelector"
-import { TokenSelector } from "../swap/TokenSelector"
+import { TokenSelector } from "../tokenSelector"
 import { zeroAddress } from "viem"
 
 type Props = {
@@ -42,14 +42,17 @@ export function TokenSelectorModal({
 
     return (
         <div className="modal modal-open" onClick={onClose}>
-            <div className="modal-box max-w-2xl h-[90vh] max-h-[90vh] p-0" onClick={(e) => e.stopPropagation()}>
-                <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-bold px-4 py-3">Select a token</h3>
+            <div className="modal-box max-w-2xl max-h-[90dvh] p-0 flex flex-col" onClick={(e) => e.stopPropagation()}>
+                {/* header */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-base-300 shrink-0">
+                    <h3 className="font-bold">Select a token</h3>
                     <button className="btn btn-sm btn-ghost" onClick={onClose}>
                         ✕
                     </button>
                 </div>
-                <div className="px-4 pb-2">
+
+                {/* search + chain selector */}
+                <div className="px-4 py-3 shrink-0">
                     <div className="flex items-center gap-2">
                         <input
                             className="input input-bordered flex-1"
@@ -62,19 +65,23 @@ export function TokenSelectorModal({
                         </div>
                     </div>
                 </div>
-                <div className="px-4 pb-4 h-[calc(90vh-110px)] overflow-auto">
+
+                {/* token list (scrollable area) */}
+                <div className="flex-1 px-4 pb-4 overflow-y-auto">
                     {chainId && (
-                        <TokenSelector
-                            chainId={chainId}
-                            userAddress={userAddress}
-                            value={tokenValue}
-                            onChange={handleTokenSelect}
-                            excludeAddresses={excludeAddresses}
-                            query={query}
-                            onQueryChange={onQueryChange}
-                            showSearch={false}
-                            listMode={true}
-                        />
+                        <div className="h-full">
+                            <TokenSelector
+                                chainId={chainId}
+                                userAddress={userAddress}
+                                value={tokenValue}
+                                onChange={handleTokenSelect}
+                                excludeAddresses={excludeAddresses}
+                                query={query}
+                                onQueryChange={onQueryChange}
+                                showSearch={false}
+                                listMode={true}
+                            />
+                        </div>
                     )}
                 </div>
             </div>

@@ -157,7 +157,7 @@ export function LendingSubPanel({ onAdd, dstToken, userAddress, chainId }: Lendi
 
     return (
         <>
-            <div className="card bg-base-200 shadow-sm border border-base-300">
+            <div className="card bg-base-200 shadow-sm border border-base-200">
                 <div className="card-body p-4">
                     <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
                         <div className="font-medium">Lending Actions</div>

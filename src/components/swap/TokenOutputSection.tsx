@@ -29,7 +29,7 @@ export function TokenOutputSection({
     const usd = price && quoteOut ? Number(quoteOut) * price : undefined
 
     return (
-        <div className="rounded-2xl bg-[#1F1F1F] p-4 shadow ">
+        <div className="rounded-2xl bg-base-200 p-4 shadow border border-base-300 relative group">
             <div className="text-sm opacity-70">Buy</div>
             <div className="flex items-center gap-3 mt-1">
                 <div className="text-4xl font-semibold flex-1 text-left">{quoteOut ?? "0"}</div>

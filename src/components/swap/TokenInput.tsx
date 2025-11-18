@@ -37,7 +37,7 @@ export function TokenInput({
     const tokenInfo = token && chainId ? tokenLists?.[chainId]?.[token.toLowerCase()] : undefined
 
     return (
-        <div className="rounded-2xl #131313 p-4 shadow border border-[#1F1F1F] relative group">
+        <div className="rounded-2xl bg-base-200 p-4 shadow border border-base-300 relative group">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <div className="text-sm opacity-70">{label}</div>

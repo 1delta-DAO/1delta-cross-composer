@@ -1,0 +1,64 @@
+/* --- RainbowKit modal themed by DaisyUI/DaisyUI variables --- */
+
+[data-rk] .rk-dialog {
+  background-color: hsl(var(--color-base-100));
+  color: hsl(var(--color-base-content));
+  border: 1px solid hsl(var(--color-base-300));
+  border-radius: var(--radius-box);
+}
+
+[data-rk] .rk-dialog-header {
+  background-color: hsl(var(--color-base-100));
+  color: hsl(var(--color-base-content));
+  border-bottom: 1px solid hsl(var(--color-base-300));
+}
+
+[data-rk] .rk-dialog-body {
+  background-color: hsl(var(--color-base-100));
+  color: hsl(var(--color-base-content));
+}
+
+[data-rk] .rk-qr-code-container {
+  background-color: hsl(var(--color-base-200));
+  border: 1px solid hsl(var(--color-base-300));
+  border-radius: var(--radius-box);
+}
+
+[data-rk] .rk-chain-icon,
+[data-rk] .rk-wallet-icon {
+  border-radius: var(--radius-box);
+}
+
+/* Buttons inside RainbowKit modal */
+[data-rk] button {
+  border-radius: var(--radius-box);
+  background-color: hsl(var(--color-base-200));
+  color: hsl(var(--color-base-content));
+  border: 1px solid hsl(var(--color-base-300)) !important;
+}
+
+[data-rk] button:hover {
+  background-color: hsl(var(--color-primary));
+  color: hsl(var(--color-primary-content));
+  border-color: hsl(var(--color-primary));
+}
+
+/* Sections inside modal */
+[data-rk] .rk-list-item {
+  border-radius: var(--radius-box);
+  background-color: hsl(var(--color-base-200));
+  color: hsl(var(--color-base-content));
+  border: 1px solid hsl(var(--color-base-300));
+}
+
+[data-rk] .rk-list-item:hover {
+  background-color: hsl(var(--color-primary));
+  color: hsl(var(--color-primary-content));
+  border-color: hsl(var(--color-primary));
+}
+
+/* Terminals need monospace */
+:root[data-theme="terminal"] [data-rk] {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace !important;
+}

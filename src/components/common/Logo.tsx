@@ -11,6 +11,7 @@ type Props = {
 export function Logo({ src, alt, size = 20, fallbackText, className }: Props) {
     const [error, setError] = useState(false)
     const dimension = { width: size, height: size }
+
     if (!src || error) {
         return (
             <div
@@ -23,15 +24,14 @@ export function Logo({ src, alt, size = 20, fallbackText, className }: Props) {
             </div>
         )
     }
+
     return (
         <img
             src={src}
             alt={alt}
             onError={() => setError(true)}
+            className={"rounded-full object-contain bg-base-100 " + (className || "")}
             style={dimension}
-            className={"rounded " + (className || "")}
         />
     )
 }
-
-
