@@ -31,14 +31,12 @@ function getFunctionNameFromSelector(abi: Abi, selector: Hex): string | undefine
 
 function encodeDestinationAction(input: PendingActionInput): EncodedDestinationAction {
     const { config, selector, args, value, functionName } = input
-    
+
     const meta = config?.meta || {}
     if (meta.useComposer) {
-        throw new Error(
-            `Composer-based actions must be encoded in MoonbeamActionsPanel where signing is available. Action: ${config?.name || ""}`
-        )
+        throw new Error(`Composer-based actions must be encoded in ActionsPanel where signing is available. Action: ${config?.name || ""}`)
     }
-    
+
     if (!config?.abi || !Array.isArray(config.abi)) {
         throw new Error(`Invalid ABI for action ${config?.name || ""}`)
     }
