@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import type { OlderfallListing } from "../sdk/utils/sequenceMarketplace"
-import { fetchOlderfallListings } from "../sdk/utils/sequenceMarketplace"
+import type { OlderfallListing } from "../lib/sequence/marketplace"
+import { fetchOlderfallListings } from "../lib/sequence/marketplace"
 
 export function useOlderfallListings(enabled: boolean) {
     const [loading, setLoading] = useState(false)

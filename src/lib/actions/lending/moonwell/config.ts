@@ -1,9 +1,11 @@
-import { type Hex } from "viem"
+import { encodeFunctionData, toFunctionSelector, type Abi, type Address, type Hex } from "viem"
 import type { DestinationActionConfig } from "../../../types/destinationAction"
 import { MTOKEN_ABI } from "./mTokenAbi"
 import type { MoonwellMarket } from "../../../../hooks/useMoonwellMarkets"
 import { getCachedMarkets, isMarketsReady } from "../../../moonwell/marketCache"
 import { SupportedChainId } from "@1delta/lib-utils"
+import { ERC20_ABI } from "../../../abi"
+import { MOONWELL_COMPTROLLER } from "../../../moonwell/consts"
 
 const base: Omit<DestinationActionConfig, "functionSelectors" | "name" | "description" | "defaultFunctionSelector" | "address"> = {
     abi: MTOKEN_ABI,
@@ -46,12 +48,19 @@ const actionTemplates: Omit<DestinationActionConfig, "address">[] = [
     },
 ]
 
-/**
- * Generates destination actions for a Moonwell market
- * @param market The Moonwell market data
- * @param dstToken Optional destination token address to filter actions (e.g., Mint only when dstToken matches underlying)
- * @returns Array of destination action configs for the market
- */
+function getFunctionNameFromSelector(abi: Abi, selector: Hex): string | undefined {
+    const functions = (abi as any[]).filter((x: any) => x?.type === "function")
+    for (const fn of functions) {
+        try {
+            const fnSelector = toFunctionSelector(fn)
+            if (fnSelector.toLowerCase() === selector.toLowerCase()) {
+                return fn.name
+            }
+        } catch {}
+    }
+    return undefined
+}
+
 export function getActionsForMarket(market: MoonwellMarket, dstToken?: string): DestinationActionConfig[] {
     const symbol = market.symbol || ""
     const underlyingLower = (market.underlying || "").toLowerCase()
@@ -79,17 +88,88 @@ export function getActionsForMarket(market: MoonwellMarket, dstToken?: string): 
                 ? `Withdraw ${symbol} from Moonwell`
                 : `Repay borrowed ${symbol} on Moonwell`
 
+        const finalMeta = {
+            ...template.meta,
+            underlying: market.underlying,
+            symbol: market.symbol,
+            decimals: market.decimals,
+            supportedChainIds: [SupportedChainId.MOONBEAM, SupportedChainId.BASE, SupportedChainId.OPBNB_MAINNET, SupportedChainId.MOONRIVER],
+        }
+
         items.push({
             ...template,
             address: market.mToken,
             name: actionName,
             description: actionDescription,
             meta: {
-                ...template.meta,
-                underlying: market.underlying,
-                symbol: market.symbol,
-                decimals: market.decimals,
-                supportedChainIds: [SupportedChainId.MOONBEAM, SupportedChainId.BASE, SupportedChainId.OPBNB_MAINNET, SupportedChainId.MOONRIVER],
+                ...finalMeta,
+            },
+            buildCalls: async (ctx) => {
+                const calls: { target: Address; calldata: Hex; value?: bigint }[] = []
+                const meta = finalMeta as any
+                const selector = ctx.selector
+                const args = ctx.args || []
+                const value = ctx.value ?? 0n
+
+                if (meta.preApproveFromUnderlying) {
+                    const underlyingAddr = (meta.underlying || "") as Address
+                    const idx = typeof meta.preApproveAmountArgIndex === "number" ? meta.preApproveAmountArgIndex : 0
+                    const amountArg = args[idx]
+                    if (underlyingAddr && amountArg !== undefined) {
+                        const approveCalldata = encodeFunctionData({
+                            abi: ERC20_ABI,
+                            functionName: "approve",
+                            args: [market.mToken, BigInt(String(amountArg))],
+                        })
+                        calls.push({
+                            target: underlyingAddr,
+                            calldata: approveCalldata as Hex,
+                            value: 0n,
+                        })
+                    }
+                }
+
+                if (meta.enterMarketBefore) {
+                    const enterData = encodeFunctionData({
+                        abi: [
+                            {
+                                inputs: [{ internalType: "address[]", name: "cTokens", type: "address[]" }],
+                                name: "enterMarkets",
+                                outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }],
+                                stateMutability: "nonpayable",
+                                type: "function",
+                            },
+                        ] as Abi,
+                        functionName: "enterMarkets",
+                        args: [[market.mToken]],
+                    })
+                    calls.push({
+                        target: MOONWELL_COMPTROLLER as Address,
+                        calldata: enterData as Hex,
+                        value: 0n,
+                    })
+                }
+
+                const functionName =
+                    getFunctionNameFromSelector(MTOKEN_ABI as Abi, selector) || MTOKEN_ABI.find((x: any) => x?.type === "function")?.name
+
+                if (!functionName) {
+                    throw new Error(`Could not determine function name for Moonwell action ${actionName}`)
+                }
+
+                const mainCalldata = encodeFunctionData({
+                    abi: MTOKEN_ABI as Abi,
+                    functionName,
+                    args: args as any[],
+                })
+
+                calls.push({
+                    target: market.mToken,
+                    calldata: mainCalldata as Hex,
+                    value,
+                })
+
+                return calls
             },
         } as DestinationActionConfig)
     }
