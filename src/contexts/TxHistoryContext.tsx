@@ -35,39 +35,35 @@ const TxHistoryContext = createContext<TxHistoryContextValue>({
 })
 
 export function TxHistoryProvider({ children }: { children: ReactNode }) {
-    const [entries, setEntries] = useState<TxHistoryEntry[]>([])
-
-    useEffect(() => {
+    const [entries, setEntries] = useState<TxHistoryEntry[]>(() => {
         try {
-            if (typeof window === "undefined") return
+            if (typeof window === "undefined") return []
             const raw = window.localStorage.getItem(STORAGE_KEY)
-            if (!raw) return
+            if (!raw) return []
             const parsed = JSON.parse(raw) as TxHistoryEntry[]
             if (Array.isArray(parsed)) {
-                setEntries(parsed)
+                return parsed
             }
+            return []
         } catch {
+            return []
         }
-    }, [])
+    })
 
     useEffect(() => {
         try {
             if (typeof window === "undefined") return
             window.localStorage.setItem(STORAGE_KEY, JSON.stringify(entries))
-        } catch {
-        }
+        } catch {}
     }, [entries])
 
-    const createEntry = useCallback(
-        (entry: Omit<TxHistoryEntry, "id" | "createdAt"> & { id?: string; createdAt?: number }) => {
-            const id = entry.id || `${Date.now()}-${Math.random().toString(36).slice(2)}`
-            const createdAt = entry.createdAt || Date.now()
-            const full: TxHistoryEntry = { ...entry, id, createdAt }
-            setEntries((prev) => [full, ...prev])
-            return id
-        },
-        []
-    )
+    const createEntry = useCallback((entry: Omit<TxHistoryEntry, "id" | "createdAt"> & { id?: string; createdAt?: number }) => {
+        const id = entry.id || `${Date.now()}-${Math.random().toString(36).slice(2)}`
+        const createdAt = entry.createdAt || Date.now()
+        const full: TxHistoryEntry = { ...entry, id, createdAt }
+        setEntries((prev) => [full, ...prev])
+        return id
+    }, [])
 
     const updateEntry = useCallback((id: string, patch: Partial<TxHistoryEntry>) => {
         setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)))
@@ -79,13 +75,9 @@ export function TxHistoryProvider({ children }: { children: ReactNode }) {
 
     const isPolling = entries.some((e) => e.status === "pending")
 
-    return (
-        <TxHistoryContext.Provider value={{ entries, createEntry, updateEntry, clearAll, isPolling }}>{children}</TxHistoryContext.Provider>
-    )
+    return <TxHistoryContext.Provider value={{ entries, createEntry, updateEntry, clearAll, isPolling }}>{children}</TxHistoryContext.Provider>
 }
 
 export function useTxHistory() {
     return useContext(TxHistoryContext)
 }
-
-
