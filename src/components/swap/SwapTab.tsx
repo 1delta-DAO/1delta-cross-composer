@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import type { Address, Hex } from "viem"
 import { zeroAddress } from "viem"
 import { useChainId, useSwitchChain } from "wagmi"
@@ -35,6 +35,8 @@ type Props = {
     userAddress?: Address
     onResetStateChange?: (showReset: boolean, resetCallback?: () => void) => void
 }
+
+const DEFAULT_BUFFER_BPS = 50
 
 export function SwapTab({ userAddress, onResetStateChange }: Props) {
     const { data: chains } = useChainsRegistry()
@@ -299,6 +301,74 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
     const [buyModalOpen, setBuyModalOpen] = useState(false)
     const [modalSellQuery, setModalSellQuery] = useState("")
     const [modalBuyQuery, setModalBuyQuery] = useState("")
+    const lastAppliedActionIdRef = useRef<string | null>(null)
+
+    useEffect(() => {
+        const pricedAction = actions.find((a) => {
+            const meta = (a.config as any).meta || {}
+            return (
+                typeof meta.minDstAmountRaw === "string" &&
+                typeof meta.minDstAmountDecimals === "number" &&
+                typeof meta.minDstChainId === "string" &&
+                typeof meta.minDstToken === "string"
+            )
+        })
+        if (!pricedAction) {
+            return
+        }
+        if (lastAppliedActionIdRef.current === pricedAction.id) {
+            return
+        }
+        const meta = (pricedAction.config as any).meta || {}
+        const minDstToken = meta.minDstToken as Address
+        const minDstChainId = meta.minDstChainId as string
+        const minDstAmountRaw = meta.minDstAmountRaw as string
+        const minDstAmountDecimals = meta.minDstAmountDecimals as number
+        const bufferBps = typeof meta.minDstAmountBufferBps === "number" ? meta.minDstAmountBufferBps : DEFAULT_BUFFER_BPS
+        if (!minDstToken || !minDstChainId || !minDstAmountRaw || minDstAmountDecimals == null) {
+            return
+        }
+        if (dstChainId !== minDstChainId) {
+            setDstChainId(minDstChainId)
+        }
+        if (!dstToken || dstToken.toLowerCase() !== minDstToken.toLowerCase()) {
+            setDstToken(minDstToken)
+        }
+        const srcPriceEntry =
+            srcToken && srcChainId && srcPricesMerged
+                ? srcPricesMerged[srcTokenPriceAddr?.toLowerCase() || ""] || srcPricesMerged[srcToken.toLowerCase()]
+                : undefined
+        const dstPriceEntry =
+            minDstToken && dstChainId && dstPricesMerged
+                ? dstPricesMerged[minDstToken.toLowerCase()] || (dstTokenPriceAddr ? dstPricesMerged[dstTokenPriceAddr.toLowerCase()] : undefined)
+                : undefined
+        const srcUsd = srcPriceEntry && typeof srcPriceEntry.usd === "number" ? srcPriceEntry.usd : undefined
+        const dstUsd = dstPriceEntry && typeof dstPriceEntry.usd === "number" ? dstPriceEntry.usd : undefined
+        if (!srcUsd || !dstUsd) {
+            return
+        }
+        const base = Number(minDstAmountRaw)
+        if (!isFinite(base) || base <= 0) {
+            return
+        }
+        const divisor = Math.pow(10, minDstAmountDecimals)
+        const minDstAmountHuman = base / divisor
+        if (!isFinite(minDstAmountHuman) || minDstAmountHuman <= 0) {
+            return
+        }
+        const requiredUsd = minDstAmountHuman * dstUsd
+        if (!isFinite(requiredUsd) || requiredUsd <= 0) {
+            return
+        }
+        const bufferFactor = 1 + bufferBps / 10000
+        const srcAmountHuman = (requiredUsd / srcUsd) * bufferFactor
+        if (!isFinite(srcAmountHuman) || srcAmountHuman <= 0) {
+            return
+        }
+        const formatted = srcAmountHuman.toString()
+        setAmount(formatted)
+        lastAppliedActionIdRef.current = pricedAction.id
+    }, [actions, dstChainId, dstToken, srcToken, srcChainId, srcPricesMerged, dstPricesMerged, srcTokenPriceAddr, dstTokenPriceAddr])
 
     const handleReset = useCallback(() => {
         setAmount("")
@@ -308,6 +378,7 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
         setDstChainId(SupportedChainId.MOONBEAM)
         setDestinationCalls([])
         setActions([])
+        setTxInProgress(false)
         abortQuotes()
     }, [abortQuotes])
 
@@ -425,6 +496,7 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
                 actions={actions}
                 setActions={setActions}
                 onRefreshQuotes={refreshQuotes}
+                tokenLists={lists}
             />
             {quotes.length > 0 && selectedTrade && (
                 <div className="mt-4">
@@ -460,6 +532,9 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
                         onTransactionStart={() => {
                             setTxInProgress(true)
                             abortQuotes()
+                        }}
+                        onTransactionEnd={() => {
+                            setTxInProgress(false)
                         }}
                         onReset={() => {
                             setAmount("")
