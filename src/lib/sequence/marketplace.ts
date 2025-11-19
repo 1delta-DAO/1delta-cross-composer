@@ -1,4 +1,4 @@
-import { OLDERFALL_ARMORS_ADDRESS, SEQUENCE_MARKETPLACE_API_URL, SEQUENCE_PROJECT_ACCESS_KEY } from "../../lib/sequence/market"
+import { OLDERFALL_ARMORS_ADDRESS, SEQUENCE_MARKETPLACE_API_URL, SEQUENCE_PROJECT_ACCESS_KEY } from "./market"
 
 export type OlderfallListing = {
     orderId: string

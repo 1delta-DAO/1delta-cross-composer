@@ -1,7 +1,8 @@
-import { toFunctionSelector, type Abi, type Hex } from "viem"
+import { toFunctionSelector, type Abi, type Address, type Hex } from "viem"
 import type { DestinationActionConfig } from "../../../types/destinationAction"
 import { SEQUENCE_MARKET_ABI, SEQUENCE_MARKET_ADDRESS, OLDERFALL_ARMORS_ADDRESS } from "../../../sequence/market"
 import { SupportedChainId } from "@1delta/lib-utils"
+import { generateOlderfallBuySteps } from "../../../sequence/marketplace"
 
 const base: Omit<DestinationActionConfig, "functionSelectors" | "name" | "description" | "defaultFunctionSelector" | "address"> = {
     abi: SEQUENCE_MARKET_ABI as Abi,
@@ -27,6 +28,35 @@ const olderfallBuyConfig: DestinationActionConfig = {
         underlying: OLDERFALL_ARMORS_ADDRESS,
         symbol: "OLDERFALL_ARMOR",
         supportedChainIds: [SupportedChainId.POLYGON_MAINNET, SupportedChainId.MOONBEAM],
+    },
+    buildCalls: async (ctx) => {
+        const meta = (olderfallBuyConfig.meta || {}) as any
+        const chainId = ctx.dstChainId
+        const buyer = ctx.userAddress
+        const orderId = String(ctx.args?.[0] ?? "")
+        const tokenId = String(meta.sequenceTokenId ?? "")
+
+        if (!chainId || !buyer || !orderId || !tokenId) {
+            return []
+        }
+
+        const steps = await generateOlderfallBuySteps({
+            chainId,
+            buyer,
+            orderId,
+            tokenId,
+            quantity: "1",
+        })
+
+        return steps.map((step) => {
+            const rawValue = step.value || ""
+            const v = rawValue && rawValue !== "0" ? BigInt(rawValue) : 0n
+            return {
+                target: step.to as Address,
+                calldata: step.data as Hex,
+                value: v,
+            }
+        })
     },
 }
 
