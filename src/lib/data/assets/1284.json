@@ -11,11 +11,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/29988/thumb/phala.jpg?1696528913",
       "assetGroup": "PHA",
       "currencyId": "Phala::XCPHA",
-      "tags": [
-        "coingecko",
-        "polkadot",
-        "bridged"
-      ],
+      "tags": ["coingecko", "polkadot", "bridged"],
       "props": {
         "permit": {
           "type": 1,
@@ -32,9 +28,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/15880/thumb/icon___gradient_1.png?1696515495",
       "assetGroup": "Subsocial::SUB",
       "currencyId": "Subsocial::SUB",
-      "tags": [
-        "coingecko"
-      ],
+      "tags": ["coingecko"],
       "props": {
         "permit": {
           "type": 1,
@@ -51,10 +45,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/23688/thumb/Moonbeam_WGLMR_ICON.png?1716655228",
       "assetGroup": "GLMR",
       "currencyId": "Wrapped Glimmer::WGLMR",
-      "tags": [
-        "coingecko",
-        "wnative"
-      ],
+      "tags": ["coingecko", "wnative"],
       "props": {
         "wnative": true
       }
@@ -68,9 +59,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/22893/thumb/glint.png?1696522190",
       "assetGroup": "BeamSwap::GLINT",
       "currencyId": "BeamSwap::GLINT",
-      "tags": [
-        "coingecko"
-      ]
+      "tags": ["coingecko"]
     },
     "0xffffffffa893ad19e540e172c10d78d4d479b5cf": {
       "chainId": "1284",
@@ -81,11 +70,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/29986/thumb/astar.jpg?1696528911",
       "assetGroup": "Astar::XCASTR",
       "currencyId": "Astar::XCASTR",
-      "tags": [
-        "coingecko",
-        "polkadot",
-        "bridged"
-      ],
+      "tags": ["coingecko", "polkadot", "bridged"],
       "props": {
         "permit": {
           "type": 1,
@@ -102,9 +87,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/26133/thumb/WELL.png?1696525221",
       "assetGroup": "WELL",
       "currencyId": "Moonwell::WELL",
-      "tags": [
-        "coingecko"
-      ]
+      "tags": ["coingecko"]
     },
     "0xffffffffea09fb06d082fd1275cd48b191cbcd1d": {
       "chainId": "1284",
@@ -115,11 +98,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/29019/thumb/usdt.png?1696527990",
       "assetGroup": "USDT",
       "currencyId": "xcUSDT::XCUSDT",
-      "tags": [
-        "coingecko",
-        "polkadot",
-        "bridged"
-      ],
+      "tags": ["coingecko", "polkadot", "bridged"],
       "props": {
         "permit": {
           "type": 1,
@@ -136,9 +115,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/35286/thumb/photo_2024-12-05_05-17-52.jpg?1733694753",
       "assetGroup": "Cypress::CP",
       "currencyId": "Cypress::CP",
-      "tags": [
-        "coingecko"
-      ]
+      "tags": ["coingecko"]
     },
     "0xe3e43888fa7803cdc7bea478ab327cf1a0dc11a7": {
       "chainId": "1284",
@@ -149,9 +126,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/24310/thumb/Solarflare.png?1696523491",
       "assetGroup": "Solarflare::FLARE",
       "currencyId": "Solarflare::FLARE",
-      "tags": [
-        "coingecko"
-      ],
+      "tags": ["coingecko"],
       "props": {
         "permit": {
           "type": 1,
@@ -168,9 +143,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/33872/thumb/stDOT.png?1703132036",
       "assetGroup": "StellaSwap Staked DOT::STDOT",
       "currencyId": "StellaSwap Staked DOT::STDOT",
-      "tags": [
-        "coingecko"
-      ]
+      "tags": ["coingecko"]
     },
     "0xffffffff8a9736b44ebf188972725bed67bf694e": {
       "chainId": "1284",
@@ -181,9 +154,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/39413/thumb/round_icon_dark_on_bright_background_%281%29.png?1722180372",
       "assetGroup": "Apillon::NCTR",
       "currencyId": "Apillon::NCTR",
-      "tags": [
-        "coingecko"
-      ],
+      "tags": ["coingecko"],
       "props": {
         "permit": {
           "type": 1,
@@ -200,11 +171,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/39965/thumb/weth.png?1724953086",
       "assetGroup": "ETH",
       "currencyId": "Wrapped Ether (Wormhole)::WETH",
-      "tags": [
-        "wormhole",
-        "bridged",
-        "coingecko"
-      ]
+      "tags": ["wormhole", "bridged", "coingecko"]
     },
     "0x0e358838ce72d5e61e0018a2ffac4bec5f4c88d2": {
       "chainId": "1284",
@@ -215,9 +182,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/22801/thumb/stellaswap.jpg?1696522104",
       "assetGroup": "StellaSwap::STELLA",
       "currencyId": "StellaSwap::STELLA",
-      "tags": [
-        "coingecko"
-      ]
+      "tags": ["coingecko"]
     },
     "0xffffffff1fcacbd218edc0eba20fc2308c778080": {
       "chainId": "1284",
@@ -228,9 +193,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/26044/thumb/polkadot-asset_32.png?1696525125",
       "assetGroup": "xcDOT::DOT",
       "currencyId": "xcDOT::DOT",
-      "tags": [
-        "coingecko"
-      ],
+      "tags": ["coingecko"],
       "props": {
         "permit": {
           "type": 1,
@@ -247,9 +210,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/26217/thumb/interBTC_for_Exchanges.png?1696525302",
       "assetGroup": "interBTC::IBTC",
       "currencyId": "interBTC::IBTC",
-      "tags": [
-        "coingecko"
-      ],
+      "tags": ["coingecko"],
       "props": {
         "permit": {
           "type": 1,
@@ -266,9 +227,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/28089/thumb/b77170dd-1dd1-4581-91b2-e352794fa045.jpg?1696527099",
       "assetGroup": "Hippo Wallet::HPO",
       "currencyId": "Hippo Wallet::HPO",
-      "tags": [
-        "coingecko"
-      ]
+      "tags": ["coingecko"]
     },
     "0x322e86852e492a7ee17f28a78c663da38fb33bfb": {
       "chainId": "1284",
@@ -279,9 +238,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/13422/thumb/frax-logo.png?1739780303",
       "assetGroup": "FRAX",
       "currencyId": "Frax::FRAX",
-      "tags": [
-        "coingecko"
-      ],
+      "tags": ["coingecko"],
       "props": {
         "permit": {
           "type": 1,
@@ -298,9 +255,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/28284/thumb/frxETH_icon.png?1696527284",
       "assetGroup": "FRXETH",
       "currencyId": "Frax Ether::frxETH",
-      "tags": [
-        "coingecko"
-      ],
+      "tags": ["coingecko"],
       "props": {
         "permit": {
           "type": 1,
@@ -317,9 +272,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/28285/thumb/sfrxETH_icon.png?1696527285",
       "assetGroup": "SFRXETH",
       "currencyId": "Staked Frax Ether::sfrxETH",
-      "tags": [
-        "coingecko"
-      ],
+      "tags": ["coingecko"],
       "props": {
         "permit": {
           "type": 1,
@@ -352,9 +305,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/32715/thumb/WELLE-TKN-1.png?1699000890",
       "assetGroup": "Welle::WELLE",
       "currencyId": "Welle::WELLE",
-      "tags": [
-        "coingecko"
-      ]
+      "tags": ["coingecko"]
     },
     "0xfeb25f3fddad13f82c4d6dbc1481516f62236429": {
       "chainId": "1284",
@@ -365,9 +316,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/40062/thumb/IconGreen400.png?1725459580",
       "assetGroup": "BRLA",
       "currencyId": "BRLA Digital BRLA::BRLA",
-      "tags": [
-        "coingecko"
-      ],
+      "tags": ["coingecko"],
       "props": {
         "permit": {
           "type": 1,
@@ -384,9 +333,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/18656/thumb/download_%281%29_%281%29.png?1696518126",
       "assetGroup": "RMRK::RMRK",
       "currencyId": "RMRK::RMRK",
-      "tags": [
-        "coingecko"
-      ],
+      "tags": ["coingecko"],
       "props": {
         "permit": {
           "type": 1,
@@ -403,11 +350,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/24823/thumb/usdc.png?1696523981",
       "assetGroup": "Bridged USDC (Celer)::CEUSDC",
       "currencyId": "Bridged USDC (Celer)::CEUSDC",
-      "tags": [
-        "celer",
-        "bridged",
-        "coingecko"
-      ]
+      "tags": ["celer", "bridged", "coingecko"]
     },
     "0x1581929770be3275a82068c1135b6dd59c5334ed": {
       "chainId": "1284",
@@ -418,9 +361,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/15621/thumb/alium.png?1696515255",
       "assetGroup": "Alium Finance::ALM",
       "currencyId": "Alium Finance::ALM",
-      "tags": [
-        "coingecko"
-      ]
+      "tags": ["coingecko"]
     },
     "0xa423e7eeb60547d9c7b65005477b63ae7ce67e62": {
       "chainId": "1284",
@@ -441,11 +382,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/26476/thumb/uausdc_D_3x.png?1696525548",
       "assetGroup": "USDC",
       "currencyId": "Bridged USDC (Axelar)::AXLUSDC",
-      "tags": [
-        "axelar",
-        "bridged",
-        "coingecko"
-      ],
+      "tags": ["axelar", "bridged", "coingecko"],
       "props": {
         "permit": {
           "type": 1,
@@ -462,9 +399,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/15264/thumb/mimatic-red.png?1696514916",
       "assetGroup": "MIMATIC",
       "currencyId": "Mai Stablecoin::miMATIC",
-      "tags": [
-        "coingecko"
-      ]
+      "tags": ["coingecko"]
     },
     "0x467719ad09025fcc6cf6f8311755809d45a5e5f3": {
       "chainId": "1284",
@@ -475,9 +410,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/27277/thumb/V-65_xQ1_400x400.jpeg?1696526329",
       "assetGroup": "AXL",
       "currencyId": "Axelar::AXL",
-      "tags": [
-        "coingecko"
-      ],
+      "tags": ["coingecko"],
       "props": {
         "permit": {
           "type": 1,
@@ -494,10 +427,7 @@
       "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/network/moonbeam/0x14dF360966a1c4582d2b18EDbdae432EA0A27575.jpg",
       "assetGroup": "DAI",
       "currencyId": "Axelar Wrapped DAI::axlDAI",
-      "tags": [
-        "axelar",
-        "bridged"
-      ],
+      "tags": ["axelar", "bridged"],
       "props": {
         "permit": {
           "type": 1,
@@ -514,10 +444,7 @@
       "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/network/moonbeam/0x85a8B472d116585E2cc10eB1e0e3E3127E1f5D3f.jpg",
       "assetGroup": "Axelar Wrapped ETH::axlETH",
       "currencyId": "Axelar Wrapped ETH::axlETH",
-      "tags": [
-        "axelar",
-        "bridged"
-      ],
+      "tags": ["axelar", "bridged"],
       "props": {
         "permit": {
           "type": 1,
@@ -534,10 +461,7 @@
       "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/network/moonbeam/0xDFd74aF792bC6D45D1803F425CE62Dd16f8Ae038.jpg",
       "assetGroup": "USDT",
       "currencyId": "Axelar Wrapped USDT::axlUSDT",
-      "tags": [
-        "axelar",
-        "bridged"
-      ],
+      "tags": ["axelar", "bridged"],
       "props": {
         "permit": {
           "type": 1,
@@ -570,10 +494,7 @@
       "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/network/moonbeam/0x931715FEE2d06333043d11F658C8CE934aC61D0c.jpg",
       "assetGroup": "USD Coin (Wormhole)::wh.USDC",
       "currencyId": "USD Coin (Wormhole)::wh.USDC",
-      "tags": [
-        "wormhole",
-        "bridged"
-      ]
+      "tags": ["wormhole", "bridged"]
     },
     "0x085416975fe14c2a731a97ec38b9bf8135231f62": {
       "chainId": "1284",
@@ -584,10 +505,7 @@
       "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/ust.jpg",
       "assetGroup": "TerraUSD (Axelar)::UST",
       "currencyId": "TerraUSD (Axelar)::UST",
-      "tags": [
-        "axelar",
-        "bridged"
-      ]
+      "tags": ["axelar", "bridged"]
     },
     "0xe57ebd2d67b462e9926e04a8e33f01cd0d64346d": {
       "chainId": "1284",
@@ -598,10 +516,7 @@
       "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/network/moonbeam/0xE57eBd2d67B462E9926e04a8e33f01cD0D64346D.jpg",
       "assetGroup": "Wrapped BTC (Wormhole)::wh.WBTC",
       "currencyId": "Wrapped BTC (Wormhole)::wh.WBTC",
-      "tags": [
-        "wormhole",
-        "bridged"
-      ]
+      "tags": ["wormhole", "bridged"]
     },
     "0xffffffff15e1b7e3df971dd813bc394deb899abf": {
       "chainId": "1284",
@@ -612,10 +527,7 @@
       "logoURI": "https://static.debank.com/image/mobm_token/logo_url/0xffffffff15e1b7e3df971dd813bc394deb899abf/e5a3f58c8e94ba24423a1245ba4227cb.png",
       "assetGroup": "Bifrost Voucher DOT::xcvDOT",
       "currencyId": "Bifrost Voucher DOT::xcvDOT",
-      "tags": [
-        "polkadot",
-        "bridged"
-      ],
+      "tags": ["polkadot", "bridged"],
       "props": {
         "permit": {
           "type": 1,
@@ -632,10 +544,7 @@
       "logoURI": "https://static.debank.com/image/mobm_token/logo_url/0xffffffff4c1cbcd97597339702436d4f18a375ab/14d666b3eec8c29f8d507a9b5664a0b4.png",
       "assetGroup": "Interlay::xcINTR",
       "currencyId": "Interlay::xcINTR",
-      "tags": [
-        "polkadot",
-        "bridged"
-      ],
+      "tags": ["polkadot", "bridged"],
       "props": {
         "permit": {
           "type": 1,
@@ -652,10 +561,7 @@
       "logoURI": "https://static.debank.com/image/project/logo_url/bifrost/12a460bd2dd0f869030571119f280ba0.png",
       "assetGroup": "BNC::xcBNC",
       "currencyId": "BNC::xcBNC",
-      "tags": [
-        "polkadot",
-        "bridged"
-      ],
+      "tags": ["polkadot", "bridged"],
       "props": {
         "permit": {
           "type": 1,
@@ -672,10 +578,7 @@
       "logoURI": "https://static.debank.com/image/project/logo_url/mantabridge/84bd75bca44bd4ce46e14e71bcb3be51.png",
       "assetGroup": "Manta::xcMANTA",
       "currencyId": "Manta::xcMANTA",
-      "tags": [
-        "polkadot",
-        "bridged"
-      ],
+      "tags": ["polkadot", "bridged"],
       "props": {
         "permit": {
           "type": 1,
@@ -692,10 +595,7 @@
       "logoURI": "https://static.debank.com/image/chain/logo_url/mobm/a8442077d76b258297181c3e6eb8c9cc.png",
       "assetGroup": "Bifrost Voucher GLMR::xcvGLMR",
       "currencyId": "Bifrost Voucher GLMR::xcvGLMR",
-      "tags": [
-        "polkadot",
-        "bridged"
-      ],
+      "tags": ["polkadot", "bridged"],
       "props": {
         "permit": {
           "type": 1,
@@ -712,10 +612,7 @@
       "logoURI": "https://static.debank.com/image/mobm_token/logo_url/0xffffffffa922fef94566104a6e5a35a4fcddaa9f/a0078a52d053752b1a83206de57101a4.png",
       "assetGroup": "Acala::xcACA",
       "currencyId": "Acala::xcACA",
-      "tags": [
-        "polkadot",
-        "bridged"
-      ],
+      "tags": ["polkadot", "bridged"],
       "props": {
         "permit": {
           "type": 1,
@@ -731,10 +628,7 @@
       "symbol": "xcDED",
       "assetGroup": "DED::xcDED",
       "currencyId": "DED::xcDED",
-      "tags": [
-        "polkadot",
-        "bridged"
-      ],
+      "tags": ["polkadot", "bridged"],
       "props": {
         "permit": {
           "type": 1,
@@ -819,10 +713,7 @@
       "logoURI": "https://static.debank.com/image/bsc_token/logo_url/0x0eb3a705fc54725037cc9e008bdede697f62f335/b91685db7e70217cf1c7f1bb7993ab40.png",
       "assetGroup": "Axelar Wrapped ATOM::axlATOM",
       "currencyId": "Axelar Wrapped ATOM::axlATOM",
-      "tags": [
-        "axelar",
-        "bridged"
-      ],
+      "tags": ["axelar", "bridged"],
       "props": {
         "permit": {
           "type": 1,
@@ -885,10 +776,7 @@
       "logoURI": "https://static.debank.com/image/movr_token/logo_url/0xffffffff893264794d9d57e1e0e21e0042af5a0a/fd049786331b33bc6205de366961bb2d.png",
       "assetGroup": "xcRMRK::xcRMRK",
       "currencyId": "xcRMRK::xcRMRK",
-      "tags": [
-        "polkadot",
-        "bridged"
-      ]
+      "tags": ["polkadot", "bridged"]
     },
     "0xc806b0600cbafa0b197562a9f7e3b9856866e9bf": {
       "chainId": "1284",
@@ -944,11 +832,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/68438/thumb/usdc.jpg?1755740037",
       "assetGroup": "USDC",
       "currencyId": "xcUSDC::XCUSDC",
-      "tags": [
-        "coingecko",
-        "polkadot",
-        "bridged"
-      ],
+      "tags": ["coingecko", "polkadot", "bridged"],
       "props": {
         "permit": {
           "type": 1,
@@ -965,9 +849,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/68189/thumb/GU-logo.png?1755024305",
       "assetGroup": "Gu::GU",
       "currencyId": "Gu::GU",
-      "tags": [
-        "coingecko"
-      ]
+      "tags": ["coingecko"]
     },
     "0x012414a392f9fa442a3109f1320c439c45518ac3": {
       "chainId": "1284",
@@ -978,9 +860,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/877/thumb/chainlink-new-logo.png?1696502009",
       "assetGroup": "LINK",
       "currencyId": "ChainLink Token::LINK",
-      "tags": [
-        "coingecko"
-      ]
+      "tags": ["coingecko"]
     },
     "0x08c98ad2d4856bec0a0eaf18c2a06e7201613f90": {
       "chainId": "1284",
@@ -1011,10 +891,7 @@
       "logoURI": "https://raw.githubusercontent.com/solarbeamio/solarbeam-tokenlist/main/assets/moonbeam/0x31DAB3430f3081dfF3Ccd80F17AD98583437B213/logo.png",
       "assetGroup": "Axelar Wrapped LUNA::LUNA",
       "currencyId": "Axelar Wrapped LUNA::LUNA",
-      "tags": [
-        "axelar",
-        "bridged"
-      ]
+      "tags": ["axelar", "bridged"]
     },
     "0xf6ad62cca52a5d3c5d567303347e013c2dadec92": {
       "chainId": "1284",
@@ -1025,9 +902,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/34343/thumb/Meridian_Icon.png?1720634198",
       "assetGroup": "MST",
       "currencyId": "Meridian MST::MST",
-      "tags": [
-        "coingecko"
-      ]
+      "tags": ["coingecko"]
     },
     "0x0000000000000000000000000000000000000000": {
       "chainId": "1284",
@@ -1038,11 +913,7 @@
       "logoURI": "https://raw.githubusercontent.com/1delta-DAO/asset-icons/main/native/glmr.webp",
       "assetGroup": "GLMR",
       "currencyId": "Glimmer::GLMR",
-      "tags": [
-        "native",
-        "coingecko",
-        "wrapped:0xacc15dc74880c9944775448304b263d191c6077f"
-      ],
+      "tags": ["native", "coingecko", "wrapped:0xacc15dc74880c9944775448304b263d191c6077f"],
       "props": {
         "isNative": true,
         "wrapped": "0xacc15dc74880c9944775448304b263d191c6077f"

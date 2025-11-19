@@ -2,25 +2,25 @@ import { fetchAggregatorTrade, getAvailableAggregators, TradeAggregator } from "
 import type { GenericTrade, AggregatorApiInput } from "@1delta/lib-utils"
 
 export async function fetchAllAggregatorTrades(
-    chainId: string,
-    input: AggregatorApiInput,
-    controller?: AbortController
+  chainId: string,
+  input: AggregatorApiInput,
+  controller?: AbortController,
 ): Promise<Array<{ aggregator: string; trade: GenericTrade }>> {
-    const availableAggregators = getAvailableAggregators(chainId)
-    if (availableAggregators.length === 0) return []
+  const availableAggregators = getAvailableAggregators(chainId)
+  if (availableAggregators.length === 0) return []
 
-    const results = await Promise.all(
-        availableAggregators.map(async (aggregatorName: string) => {
-            try {
-                const aggregator = aggregatorName as TradeAggregator
-                const trade = await fetchAggregatorTrade(aggregator, input, controller)
-                if (trade) return { aggregator: aggregatorName, trade }
-            } catch {}
-            return undefined
-        })
-    )
+  const results = await Promise.all(
+    availableAggregators.map(async (aggregatorName: string) => {
+      try {
+        const aggregator = aggregatorName as TradeAggregator
+        const trade = await fetchAggregatorTrade(aggregator, input, controller)
+        if (trade) return { aggregator: aggregatorName, trade }
+      } catch {}
+      return undefined
+    }),
+  )
 
-    const trades = results.filter(Boolean) as Array<{ aggregator: string; trade: GenericTrade }>
+  const trades = results.filter(Boolean) as Array<{ aggregator: string; trade: GenericTrade }>
 
-    return trades.sort((a, b) => b.trade.outputAmountRealized - a.trade.outputAmountRealized)
+  return trades.sort((a, b) => b.trade.outputAmountRealized - a.trade.outputAmountRealized)
 }

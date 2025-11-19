@@ -11,9 +11,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/7c3b25b6-3680-4f2e-a51e-23223551baeb.svg",
       "assetGroup": "sUSDai Plasma::SY-sUSDai",
       "currencyId": "sUSDai Plasma::SY-sUSDai",
-      "tags": [
-        "SY"
-      ],
+      "tags": ["SY"],
       "props": {
         "pendle": {
           "tokenType": "SY",
@@ -34,9 +32,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/7783425e-1b88-42bd-bb26-5900d2a42b66.svg",
       "assetGroup": "PT sUSDai (USDai) Plasma::PT-sUSDai-18DEC2025",
       "currencyId": "PT sUSDai (USDai) Plasma::PT-sUSDai-18DEC2025",
-      "tags": [
-        "PT"
-      ],
+      "tags": ["PT"],
       "props": {
         "pendle": {
           "tokenType": "PT"
@@ -52,9 +48,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/713d9135-7d9e-4150-876f-cb3e1985cbda.svg",
       "assetGroup": "YT sUSDai (USDai) Plasma::YT-sUSDai-18DEC2025",
       "currencyId": "YT sUSDai (USDai) Plasma::YT-sUSDai-18DEC2025",
-      "tags": [
-        "YT"
-      ],
+      "tags": ["YT"],
       "props": {
         "pendle": {
           "tokenType": "YT"
@@ -70,9 +64,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/601b63d5-13c2-4b95-aba6-c2b1e74f37ad.svg",
       "assetGroup": "sUSDe Plasma::SY-sUSDE",
       "currencyId": "sUSDe Plasma::SY-sUSDE",
-      "tags": [
-        "SY"
-      ],
+      "tags": ["SY"],
       "props": {
         "pendle": {
           "tokenType": "SY",
@@ -93,9 +85,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/6f77480b-c00e-444d-8065-1f3858b4399d.svg",
       "assetGroup": "PT sUSDe (USDe) Plasma::PT-sUSDE-15JAN2026",
       "currencyId": "PT sUSDe (USDe) Plasma::PT-sUSDE-15JAN2026",
-      "tags": [
-        "PT"
-      ],
+      "tags": ["PT"],
       "props": {
         "pendle": {
           "tokenType": "PT",
@@ -116,9 +106,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/e6879e1f-fa5f-450f-80b1-615de6d46080.svg",
       "assetGroup": "YT sUSDe (USDe) Plasma::YT-sUSDE-15JAN2026",
       "currencyId": "YT sUSDe (USDe) Plasma::YT-sUSDE-15JAN2026",
-      "tags": [
-        "YT"
-      ],
+      "tags": ["YT"],
       "props": {
         "pendle": {
           "tokenType": "YT",
@@ -139,9 +127,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/8237db65-0112-4cf3-9a6c-9fe52afac81d.svg",
       "assetGroup": "USDe Plasma::SY-USDe",
       "currencyId": "USDe Plasma::SY-USDe",
-      "tags": [
-        "SY"
-      ],
+      "tags": ["SY"],
       "props": {
         "pendle": {
           "tokenType": "SY",
@@ -162,9 +148,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/63ff672d-8b27-431d-8f62-122a4de8fed8.svg",
       "assetGroup": "PT USDe (USDe) Plasma::PT-USDe-15JAN2026",
       "currencyId": "PT USDe (USDe) Plasma::PT-USDe-15JAN2026",
-      "tags": [
-        "PT"
-      ],
+      "tags": ["PT"],
       "props": {
         "pendle": {
           "tokenType": "PT",
@@ -185,9 +169,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/e0660f9f-33dd-4940-ac6c-7475ed88a868.svg",
       "assetGroup": "YT USDe (USDe) Plasma::YT-USDe-15JAN2026",
       "currencyId": "YT USDe (USDe) Plasma::YT-USDe-15JAN2026",
-      "tags": [
-        "YT"
-      ],
+      "tags": ["YT"],
       "props": {
         "pendle": {
           "tokenType": "YT",
@@ -208,9 +190,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/d744d184-f4dd-49b4-aa2f-0cd46f58fe3f.svg",
       "assetGroup": "syrupUSDT Plasma::SY-syrupUSDT",
       "currencyId": "syrupUSDT Plasma::SY-syrupUSDT",
-      "tags": [
-        "SY"
-      ],
+      "tags": ["SY"],
       "props": {
         "pendle": {
           "tokenType": "SY",
@@ -231,10 +211,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/55f1c813-9f03-45ad-aa1d-f0aeea30eb20.svg",
       "assetGroup": "PT syrupUSDT (USDT0) Plasma::PT-syrupUSDT-29JAN2026",
       "currencyId": "PT syrupUSDT (USDT0) Plasma::PT-syrupUSDT-29JAN2026",
-      "tags": [
-        "PT",
-        "biconomy-gas-token"
-      ],
+      "tags": ["PT", "biconomy-gas-token"],
       "props": {
         "pendle": {
           "tokenType": "PT",
@@ -255,10 +232,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/5abc9323-0b35-4853-96ce-798e493ddbbb.svg",
       "assetGroup": "YT syrupUSDT (USDT0) Plasma::YT-syrupUSDT-29JAN2026",
       "currencyId": "YT syrupUSDT (USDT0) Plasma::YT-syrupUSDT-29JAN2026",
-      "tags": [
-        "YT",
-        "biconomy-gas-token"
-      ],
+      "tags": ["YT", "biconomy-gas-token"],
       "props": {
         "pendle": {
           "tokenType": "YT",
@@ -279,9 +253,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/64ba43f1-7d32-4891-a099-9f4cef1e2c58.svg",
       "assetGroup": "USDai Plasma::SY-USDai",
       "currencyId": "USDai Plasma::SY-USDai",
-      "tags": [
-        "SY"
-      ],
+      "tags": ["SY"],
       "props": {
         "pendle": {
           "tokenType": "SY",
@@ -302,9 +274,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/98acb0d9-60d5-4ccb-b68a-92b78deeef10.svg",
       "assetGroup": "PT USDai (USDai) Plasma::PT-USDai-18DEC2025",
       "currencyId": "PT USDai (USDai) Plasma::PT-USDai-18DEC2025",
-      "tags": [
-        "PT"
-      ],
+      "tags": ["PT"],
       "props": {
         "pendle": {
           "tokenType": "PT"
@@ -320,9 +290,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/4ec0b933-1118-46e1-9c42-e91e18aef7de.svg",
       "assetGroup": "YT USDai (USDai) Plasma::YT-USDai-18DEC2025",
       "currencyId": "YT USDai (USDai) Plasma::YT-USDai-18DEC2025",
-      "tags": [
-        "YT"
-      ],
+      "tags": ["YT"],
       "props": {
         "pendle": {
           "tokenType": "YT"
@@ -338,10 +306,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/98acb0d9-60d5-4ccb-b68a-92b78deeef10.svg",
       "assetGroup": "PT USDai (USDai) Plasma::PT-USDai-19MAR2026",
       "currencyId": "PT USDai (USDai) Plasma::PT-USDai-19MAR2026",
-      "tags": [
-        "PT",
-        "biconomy-gas-token"
-      ],
+      "tags": ["PT", "biconomy-gas-token"],
       "props": {
         "pendle": {
           "tokenType": "PT",
@@ -362,10 +327,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/4ec0b933-1118-46e1-9c42-e91e18aef7de.svg",
       "assetGroup": "YT USDai (USDai) Plasma::YT-USDai-19MAR2026",
       "currencyId": "YT USDai (USDai) Plasma::YT-USDai-19MAR2026",
-      "tags": [
-        "YT",
-        "biconomy-gas-token"
-      ],
+      "tags": ["YT", "biconomy-gas-token"],
       "props": {
         "pendle": {
           "tokenType": "YT",
@@ -386,10 +348,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/7783425e-1b88-42bd-bb26-5900d2a42b66.svg",
       "assetGroup": "PT sUSDai (USDai) Plasma::PT-sUSDai-19MAR2026",
       "currencyId": "PT sUSDai (USDai) Plasma::PT-sUSDai-19MAR2026",
-      "tags": [
-        "PT",
-        "biconomy-gas-token"
-      ],
+      "tags": ["PT", "biconomy-gas-token"],
       "props": {
         "pendle": {
           "tokenType": "PT",
@@ -410,10 +369,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/713d9135-7d9e-4150-876f-cb3e1985cbda.svg",
       "assetGroup": "YT sUSDai (USDai) Plasma::YT-sUSDai-19MAR2026",
       "currencyId": "YT sUSDai (USDai) Plasma::YT-sUSDai-19MAR2026",
-      "tags": [
-        "YT",
-        "biconomy-gas-token"
-      ],
+      "tags": ["YT", "biconomy-gas-token"],
       "props": {
         "pendle": {
           "tokenType": "YT",
@@ -434,9 +390,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/cd692ee8-da80-44b6-aac1-7769446edd61.svg",
       "assetGroup": "fUSDT0 Plasma::SY-fUSDT0",
       "currencyId": "fUSDT0 Plasma::SY-fUSDT0",
-      "tags": [
-        "SY"
-      ],
+      "tags": ["SY"],
       "props": {
         "pendle": {
           "tokenType": "SY",
@@ -457,9 +411,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/2d5ca365-03f6-4045-851a-8762d440548c.svg",
       "assetGroup": "YT fUSDT0 (USDT0) Plasma::YT-fUSDT0-26FEB2026",
       "currencyId": "YT fUSDT0 (USDT0) Plasma::YT-fUSDT0-26FEB2026",
-      "tags": [
-        "YT"
-      ],
+      "tags": ["YT"],
       "props": {
         "pendle": {
           "tokenType": "YT",
@@ -480,9 +432,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/b881b173-8e77-45e0-a138-6374d57f8a61.svg",
       "assetGroup": "PT fUSDT0 (USDT0) Plasma::PT-fUSDT0-26FEB2026",
       "currencyId": "PT fUSDT0 (USDT0) Plasma::PT-fUSDT0-26FEB2026",
-      "tags": [
-        "PT"
-      ],
+      "tags": ["PT"],
       "props": {
         "pendle": {
           "tokenType": "PT",
@@ -503,9 +453,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/bac668ed-a77b-498f-9a25-c6ed75f24525.svg",
       "assetGroup": "aUSDT0 Plasma::SY-aPlaUSDT0",
       "currencyId": "aUSDT0 Plasma::SY-aPlaUSDT0",
-      "tags": [
-        "SY"
-      ],
+      "tags": ["SY"],
       "props": {
         "pendle": {
           "tokenType": "SY",
@@ -526,9 +474,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/24a2bb11-30f5-4316-a03c-baf47fea57fa.svg",
       "assetGroup": "PT aUSDT0 (USDT0) Plasma::PT-aPlaUSDT0-26FEB2026",
       "currencyId": "PT aUSDT0 (USDT0) Plasma::PT-aPlaUSDT0-26FEB2026",
-      "tags": [
-        "PT"
-      ],
+      "tags": ["PT"],
       "props": {
         "pendle": {
           "tokenType": "PT",
@@ -549,9 +495,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/bd55d85e-08c5-4787-8b40-dd14e22cce48.svg",
       "assetGroup": "YT aUSDT0 (USDT0) Plasma::YT-aPlaUSDT0-26FEB2026",
       "currencyId": "YT aUSDT0 (USDT0) Plasma::YT-aPlaUSDT0-26FEB2026",
-      "tags": [
-        "YT"
-      ],
+      "tags": ["YT"],
       "props": {
         "pendle": {
           "tokenType": "YT",
@@ -572,9 +516,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/f6983f77-9002-4e38-ad75-990446731c41.svg",
       "assetGroup": "PlasmaUSD Plasma::SY-PlasmaUSD",
       "currencyId": "PlasmaUSD Plasma::SY-PlasmaUSD",
-      "tags": [
-        "SY"
-      ],
+      "tags": ["SY"],
       "props": {
         "pendle": {
           "tokenType": "SY",
@@ -595,9 +537,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/1c60f809-c99a-4976-b149-4cedb058ab79.svg",
       "assetGroup": "PT PlasmaUSD (USDT0) Plasma::PT-PlasmaUSD-29JAN2026",
       "currencyId": "PT PlasmaUSD (USDT0) Plasma::PT-PlasmaUSD-29JAN2026",
-      "tags": [
-        "PT"
-      ],
+      "tags": ["PT"],
       "props": {
         "pendle": {
           "tokenType": "PT",
@@ -618,9 +558,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/3d509060-0add-4dda-9ee6-d404af141b1c.svg",
       "assetGroup": "YT PlasmaUSD (USDT0) Plasma::YT-PlasmaUSD-29JAN2026",
       "currencyId": "YT PlasmaUSD (USDT0) Plasma::YT-PlasmaUSD-29JAN2026",
-      "tags": [
-        "YT"
-      ],
+      "tags": ["YT"],
       "props": {
         "pendle": {
           "tokenType": "YT",
@@ -641,9 +579,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/3c209ca7-7d9e-45ee-ae96-d444299447f3.svg",
       "assetGroup": "splUSD Plasma::SY-splUSD",
       "currencyId": "splUSD Plasma::SY-splUSD",
-      "tags": [
-        "SY"
-      ],
+      "tags": ["SY"],
       "props": {
         "pendle": {
           "tokenType": "SY",
@@ -664,9 +600,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/4863b2a2-e6be-42b3-a328-65105aebde2a.svg",
       "assetGroup": "PT splUSD (plUSD) Plasma::PT-splUSD-29JAN2026",
       "currencyId": "PT splUSD (plUSD) Plasma::PT-splUSD-29JAN2026",
-      "tags": [
-        "PT"
-      ],
+      "tags": ["PT"],
       "props": {
         "pendle": {
           "tokenType": "PT",
@@ -687,9 +621,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/d409eaba-8e64-450d-a4b1-48dd9bb2cc26.svg",
       "assetGroup": "YT splUSD (plUSD) Plasma::YT-splUSD-29JAN2026",
       "currencyId": "YT splUSD (plUSD) Plasma::YT-splUSD-29JAN2026",
-      "tags": [
-        "YT"
-      ],
+      "tags": ["YT"],
       "props": {
         "pendle": {
           "tokenType": "YT",
@@ -710,9 +642,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/c4a5befc-d44a-4344-9337-b8fd8fe7e6b2.svg",
       "assetGroup": "mHYPER Plasma::SY-mHYPER",
       "currencyId": "mHYPER Plasma::SY-mHYPER",
-      "tags": [
-        "SY"
-      ],
+      "tags": ["SY"],
       "props": {
         "pendle": {
           "tokenType": "SY",
@@ -733,9 +663,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/1131fb94-1cf2-4916-8204-44ed706dec8b.svg",
       "assetGroup": "PT mHYPER (USDT0) Plasma::PT-mHYPER-29JAN2026",
       "currencyId": "PT mHYPER (USDT0) Plasma::PT-mHYPER-29JAN2026",
-      "tags": [
-        "PT"
-      ],
+      "tags": ["PT"],
       "props": {
         "pendle": {
           "tokenType": "PT",
@@ -756,9 +684,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/28aa7f4a-9a35-47c5-8d31-2572de8adfee.svg",
       "assetGroup": "YT mHYPER (USDT0) Plasma::YT-mHYPER-29JAN2026",
       "currencyId": "YT mHYPER (USDT0) Plasma::YT-mHYPER-29JAN2026",
-      "tags": [
-        "YT"
-      ],
+      "tags": ["YT"],
       "props": {
         "pendle": {
           "tokenType": "YT",
@@ -779,9 +705,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/afecc057-b881-4315-a6c3-cb2efb71169a.svg",
       "assetGroup": "RLP Plasma::SY-RLP",
       "currencyId": "RLP Plasma::SY-RLP",
-      "tags": [
-        "SY"
-      ],
+      "tags": ["SY"],
       "props": {
         "pendle": {
           "tokenType": "SY",
@@ -802,9 +726,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/15b3aaeb-78e6-469a-8cb5-87ee792e5d95.svg",
       "assetGroup": "PT RLP (USDT0) Plasma::PT-RLP-26FEB2026",
       "currencyId": "PT RLP (USDT0) Plasma::PT-RLP-26FEB2026",
-      "tags": [
-        "PT"
-      ],
+      "tags": ["PT"],
       "props": {
         "pendle": {
           "tokenType": "PT",
@@ -825,9 +747,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/db32441a-1b9f-46d1-92c9-7007dbb9260e.svg",
       "assetGroup": "YT RLP (USDT0) Plasma::YT-RLP-26FEB2026",
       "currencyId": "YT RLP (USDT0) Plasma::YT-RLP-26FEB2026",
-      "tags": [
-        "YT"
-      ],
+      "tags": ["YT"],
       "props": {
         "pendle": {
           "tokenType": "YT",
@@ -848,9 +768,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/c7594efb-64e6-4409-a549-084cef57e5f3.svg",
       "assetGroup": "wstUSR Plasma::SY-wstUSR",
       "currencyId": "wstUSR Plasma::SY-wstUSR",
-      "tags": [
-        "SY"
-      ],
+      "tags": ["SY"],
       "props": {
         "pendle": {
           "tokenType": "SY",
@@ -871,9 +789,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/580b10b1-3933-4b8d-ab74-a42654c53e48.svg",
       "assetGroup": "PT wstUSR (USR) Plasma::PT-wstUSR-26FEB2026",
       "currencyId": "PT wstUSR (USR) Plasma::PT-wstUSR-26FEB2026",
-      "tags": [
-        "PT"
-      ],
+      "tags": ["PT"],
       "props": {
         "pendle": {
           "tokenType": "PT",
@@ -894,9 +810,7 @@
       "logoURI": "https://storage.googleapis.com/prod-pendle-bucket-a/images/uploads/4e1a3911-544f-45b5-a0d2-5b8eb7fab7c6.svg",
       "assetGroup": "YT wstUSR (USR) Plasma::YT-wstUSR-26FEB2026",
       "currencyId": "YT wstUSR (USR) Plasma::YT-wstUSR-26FEB2026",
-      "tags": [
-        "YT"
-      ],
+      "tags": ["YT"],
       "props": {
         "pendle": {
           "tokenType": "YT",
@@ -917,10 +831,7 @@
       "logoURI": "https://raw.githubusercontent.com/balancer/tokenlists/main/src/assets/images/tokens/0x6100e367285b01f48d07953803a2d8dca5d19873.png",
       "assetGroup": "XPL",
       "currencyId": "Wrapped XPL::WXPL",
-      "tags": [
-        "biconomy-gas-token",
-        "wnative"
-      ],
+      "tags": ["biconomy-gas-token", "wnative"],
       "props": {
         "wnative": true
       }
@@ -934,9 +845,7 @@
       "logoURI": "https://raw.githubusercontent.com/balancer/tokenlists/main/src/assets/images/tokens/0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb.png",
       "assetGroup": "USDT0::USDT0",
       "currencyId": "USDT0::USDT0",
-      "tags": [
-        "biconomy-gas-token"
-      ],
+      "tags": ["biconomy-gas-token"],
       "props": {
         "permit": {
           "type": 1,
@@ -953,9 +862,7 @@
       "logoURI": "https://raw.githubusercontent.com/balancer/tokenlists/main/src/assets/images/tokens/0x9895d81bb462a195b4922ed7de0e3acd007c32cb.png",
       "assetGroup": "ETH",
       "currencyId": "WETH::WETH",
-      "tags": [
-        "biconomy-gas-token"
-      ]
+      "tags": ["biconomy-gas-token"]
     },
     "0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34": {
       "chainId": "9745",
@@ -966,9 +873,7 @@
       "logoURI": "https://raw.githubusercontent.com/balancer/tokenlists/main/src/assets/images/tokens/0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34.png",
       "assetGroup": "USDE",
       "currencyId": "USDe::USDe",
-      "tags": [
-        "biconomy-gas-token"
-      ]
+      "tags": ["biconomy-gas-token"]
     },
     "0x211cc4dd073734da055fbf44a2b4667d5e5fe5d2": {
       "chainId": "9745",
@@ -979,9 +884,7 @@
       "logoURI": "https://raw.githubusercontent.com/balancer/tokenlists/main/src/assets/images/tokens/0x211cc4dd073734da055fbf44a2b4667d5e5fe5d2.png",
       "assetGroup": "SUSDE",
       "currencyId": "Staked USDe::sUSDe",
-      "tags": [
-        "biconomy-gas-token"
-      ]
+      "tags": ["biconomy-gas-token"]
     },
     "0xa3d68b74bf0528fdd07263c60d6488749044914b": {
       "chainId": "9745",
@@ -992,9 +895,7 @@
       "logoURI": "https://raw.githubusercontent.com/balancer/tokenlists/main/src/assets/images/tokens/0xa3d68b74bf0528fdd07263c60d6488749044914b.png",
       "assetGroup": "WEETH",
       "currencyId": "Wrapped eETH::weETH",
-      "tags": [
-        "biconomy-gas-token"
-      ]
+      "tags": ["biconomy-gas-token"]
     },
     "0x1b64b9025eebb9a6239575df9ea4b9ac46d4d193": {
       "chainId": "9745",
@@ -1005,9 +906,7 @@
       "logoURI": "https://raw.githubusercontent.com/balancer/tokenlists/main/src/assets/images/tokens/0x1b64b9025eebb9a6239575df9ea4b9ac46d4d193.png",
       "assetGroup": "XAUt0::XAUt0",
       "currencyId": "XAUt0::XAUt0",
-      "tags": [
-        "biconomy-gas-token"
-      ],
+      "tags": ["biconomy-gas-token"],
       "props": {
         "permit": {
           "type": 1,
@@ -1024,9 +923,7 @@
       "logoURI": "https://raw.githubusercontent.com/balancer/tokenlists/main/src/assets/images/tokens/0x58538e6a46e07434d7e7375bc268d3cb839c0133.png",
       "assetGroup": "ENA::ENA",
       "currencyId": "ENA::ENA",
-      "tags": [
-        "biconomy-gas-token"
-      ]
+      "tags": ["biconomy-gas-token"]
     },
     "0x0a1a1a107e45b7ced86833863f482bc5f4ed82ef": {
       "chainId": "9745",
@@ -1053,9 +950,7 @@
       "logoURI": "https://raw.githubusercontent.com/balancer/tokenlists/main/src/assets/images/tokens/0x0b2b2b2076d95dda7817e785989fe353fe955ef9.png",
       "assetGroup": "Staked USDai::sUSDai",
       "currencyId": "Staked USDai::sUSDai",
-      "tags": [
-        "biconomy-gas-token"
-      ],
+      "tags": ["biconomy-gas-token"],
       "props": {
         "permit": {
           "type": 1,
@@ -1072,9 +967,7 @@
       "logoURI": "https://raw.githubusercontent.com/balancer/tokenlists/main/src/assets/images/tokens/0x87e617c7484ade79fcd90db58beb82b057facb48.png",
       "assetGroup": "OpenEden Open Dollar::USDO",
       "currencyId": "OpenEden Open Dollar::USDO",
-      "tags": [
-        "biconomy-gas-token"
-      ],
+      "tags": ["biconomy-gas-token"],
       "props": {
         "permit": {
           "type": 1,
@@ -1091,9 +984,7 @@
       "logoURI": "https://raw.githubusercontent.com/balancer/tokenlists/main/src/assets/images/tokens/0xbeee5862649ef24c1f1d5e799505f67f1e7bab9a.png",
       "assetGroup": "Compounding Open Dollar::cUSDO",
       "currencyId": "Compounding Open Dollar::cUSDO",
-      "tags": [
-        "biconomy-gas-token"
-      ],
+      "tags": ["biconomy-gas-token"],
       "props": {
         "permit": {
           "type": 1,
@@ -1110,9 +1001,7 @@
       "logoURI": "https://raw.githubusercontent.com/balancer/tokenlists/main/src/assets/images/tokens/0x9ecaf80c1303cca8791afbc0ad405c8a35e8d9f1.png",
       "assetGroup": "RSETH",
       "currencyId": "KelpDao Restaked ETH::rsETH",
-      "tags": [
-        "biconomy-gas-token"
-      ]
+      "tags": ["biconomy-gas-token"]
     },
     "0x92a01ab7317ac318b39b00eb6704ba56f0245d7a": {
       "chainId": "9745",
@@ -1123,9 +1012,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/69560/standard/trillions.png?1759039612",
       "assetGroup": "trillions::trillions",
       "currencyId": "trillions::trillions",
-      "tags": [
-        "biconomy-gas-token"
-      ]
+      "tags": ["biconomy-gas-token"]
     },
     "0xe561fe05c39075312aa9bc6af79ddae981461359": {
       "chainId": "9745",
@@ -1136,9 +1023,7 @@
       "logoURI": "https://raw.githubusercontent.com/balancer/tokenlists/main/src/assets/images/tokens/0xe561fe05c39075312aa9bc6af79ddae981461359.png",
       "assetGroup": "RSETH",
       "currencyId": "Wrapped rsETH::wrsETH",
-      "tags": [
-        "biconomy-gas-token"
-      ],
+      "tags": ["biconomy-gas-token"],
       "props": {
         "permit": {
           "type": 1,
@@ -1235,9 +1120,7 @@
       "logoURI": "https://raw.githubusercontent.com/balancer/tokenlists/main/src/assets/images/tokens/0x6eaf19b2fc24552925db245f9ff613157a7dbb4c_9745.png",
       "assetGroup": "Staked Stream USD::xUSD",
       "currencyId": "Staked Stream USD::xUSD",
-      "tags": [
-        "biconomy-gas-token"
-      ]
+      "tags": ["biconomy-gas-token"]
     },
     "0xb1b385542b6e80f77b94393ba8342c3af699f15c": {
       "chainId": "9745",
@@ -1248,9 +1131,7 @@
       "logoURI": "https://static.debank.com/image/eth_token/logo_url/0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110/791c489bf30421cfded8d372726503e6.png",
       "assetGroup": "Resolv USR::USR",
       "currencyId": "Resolv USR::USR",
-      "tags": [
-        "biconomy-gas-token"
-      ]
+      "tags": ["biconomy-gas-token"]
     },
     "0x35533f54740f1f1aa4179e57ba37039dfa16868b": {
       "chainId": "9745",
@@ -1261,9 +1142,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/40017/thumb/orangeLogo..png?1725344586",
       "assetGroup": "Resolv RLP::RLP",
       "currencyId": "Resolv RLP::RLP",
-      "tags": [
-        "biconomy-gas-token"
-      ]
+      "tags": ["biconomy-gas-token"]
     },
     "0x2a52b289ba68bbd02676640aa9f605700c9e5699": {
       "chainId": "9745",
@@ -1274,9 +1153,7 @@
       "logoURI": "https://assets.coingecko.com/coins/images/51880/thumb/USR_LOGO.png?1732098841",
       "assetGroup": "Resolv wstUSR::WSTUSR",
       "currencyId": "Resolv wstUSR::WSTUSR",
-      "tags": [
-        "biconomy-gas-token"
-      ]
+      "tags": ["biconomy-gas-token"]
     },
     "0xd1074e0ae85610ddba0147e29ebe0d8e5873a000": {
       "chainId": "9745",
@@ -1307,9 +1184,7 @@
       "logoURI": "https://cdn.dexscreener.com/cms/images/d0f11a422d97abbb3e4a38226cd3a631aeddc4db89ebd7b987bd2c93d1c741be",
       "assetGroup": "Sparkle::SPARK",
       "currencyId": "Sparkle::SPARK",
-      "tags": [
-        "biconomy-gas-token"
-      ]
+      "tags": ["biconomy-gas-token"]
     },
     "0xfc8a5aeefad8cc23f629489cdc6b0ec883d04702": {
       "chainId": "9745",
@@ -1320,9 +1195,7 @@
       "logoURI": "https://cdn.dexscreener.com/cms/images/a237b293803fff90df6a92d02a405a5e3cc409795aa4a84261a939fd7a622897",
       "assetGroup": "BANKLESS::BANKLESS",
       "currencyId": "BANKLESS::BANKLESS",
-      "tags": [
-        "biconomy-gas-token"
-      ]
+      "tags": ["biconomy-gas-token"]
     },
     "0xdab1d6f39a375e643752bd2c5a374a933cbeec72": {
       "chainId": "9745",
@@ -1333,9 +1206,7 @@
       "logoURI": "https://cdn.dexscreener.com/cms/images/fb454a04a2964f2a001c40322aeaf75543edf4657fc0cd315e1c9c74bd0a069c",
       "assetGroup": "Xploy::Xploy",
       "currencyId": "Xploy::Xploy",
-      "tags": [
-        "biconomy-gas-token"
-      ]
+      "tags": ["biconomy-gas-token"]
     },
     "0x54ef95b1eb3024e578b429b2883ab888a12a96a9": {
       "chainId": "9745",
@@ -1346,9 +1217,7 @@
       "logoURI": "https://cdn.dexscreener.com/cms/images/0e51138cf2d4d29570103ba19f2c8ceaf381c8095064d8d87b2bf5a8a6724280",
       "assetGroup": "LUNA::LUNA",
       "currencyId": "LUNA::LUNA",
-      "tags": [
-        "biconomy-gas-token"
-      ]
+      "tags": ["biconomy-gas-token"]
     },
     "0xc328eba438550736e8fa053a1b990783fca8a047": {
       "chainId": "9745",
@@ -1359,9 +1228,7 @@
       "logoURI": "https://cdn.dexscreener.com/cms/images/02db979b28da03b9e1fd816e3d4d7d685ff498c552809e717c50ec861f3901bd",
       "assetGroup": "TREVEE::TREVEE",
       "currencyId": "TREVEE::TREVEE",
-      "tags": [
-        "biconomy-gas-token"
-      ]
+      "tags": ["biconomy-gas-token"]
     },
     "0x6d4573f3fc333fd196b6fdb90a13e81dc52f6097": {
       "chainId": "9745",
@@ -1372,9 +1239,7 @@
       "logoURI": "https://cdn.dexscreener.com/cms/images/56c9b8e6604b49d56e29cbda9e03edc651cd184b075d1447c1a67ce1091164a4",
       "assetGroup": "Plasmatic Instant Payment System::PIPS",
       "currencyId": "Plasmatic Instant Payment System::PIPS",
-      "tags": [
-        "biconomy-gas-token"
-      ]
+      "tags": ["biconomy-gas-token"]
     },
     "0xa9c251f8304b1b3fc2b9e8fcae78d94eff82ac66": {
       "chainId": "9745",
@@ -1465,9 +1330,7 @@
       "logoURI": "https://raw.githubusercontent.com/gluexprotocol/tokens_registry/main/assets/tokens/9745/lith.svg",
       "assetGroup": "Lithos::LITH",
       "currencyId": "Lithos::LITH",
-      "tags": [
-        "biconomy-gas-token"
-      ]
+      "tags": ["biconomy-gas-token"]
     },
     "0xe48d935e6c9e735463cccf29a7f11e32bc09136e": {
       "chainId": "9745",
@@ -1488,11 +1351,7 @@
       "logoURI": "https://raw.githubusercontent.com/1delta-DAO/asset-icons/main/native/xpl.webp",
       "assetGroup": "XPL",
       "currencyId": "Plasma::XPL",
-      "tags": [
-        "native",
-        "biconomy-gas-token",
-        "wrapped:0x6100e367285b01f48d07953803a2d8dca5d19873"
-      ],
+      "tags": ["native", "biconomy-gas-token", "wrapped:0x6100e367285b01f48d07953803a2d8dca5d19873"],
       "props": {
         "isNative": true,
         "wrapped": "0x6100e367285b01f48d07953803a2d8dca5d19873"

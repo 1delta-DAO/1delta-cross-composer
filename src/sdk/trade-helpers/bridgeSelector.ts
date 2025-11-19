@@ -12,84 +12,84 @@ import { fetchAcrossTradeWithSwaps } from "@1delta/trade-sdk/dist/composedTrades
 type ExtendedBridgeInput = BaseComposedInput & BaseBridgeInput
 
 function getCurrency(chainId: string | undefined, tokenAddress: string | undefined): RawCurrency {
-    if (!chainId || !tokenAddress) {
-        throw new Error("Invalid currency parameters")
-    }
-    const currency = getCurrencyRaw(chainId, tokenAddress as Address)
-    if (!currency) {
-        throw new Error(`Currency not found for ${chainId}:${tokenAddress}`)
-    }
-    return currency
+  if (!chainId || !tokenAddress) {
+    throw new Error("Invalid currency parameters")
+  }
+  const currency = getCurrencyRaw(chainId, tokenAddress as Address)
+  if (!currency) {
+    throw new Error(`Currency not found for ${chainId}:${tokenAddress}`)
+  }
+  return currency
 }
 
 export async function fetchAllBridgeTrades(
-    input: ExtendedBridgeInput,
-    controller?: AbortController
+  input: ExtendedBridgeInput,
+  controller?: AbortController,
 ): Promise<Array<{ bridge: string; trade: GenericTrade }>> {
-    const availableBridges = getBridges()
-    const hasAdditionalCalls = Boolean(input.additionalCalls && input.additionalCalls.length > 0)
+  const availableBridges = getBridges()
+  const hasAdditionalCalls = Boolean(input.additionalCalls && input.additionalCalls.length > 0)
 
-    console.debug(
-        "Fetching from bridges:",
-        availableBridges.map((b) => (b.toString ? b.toString() : String(b)))
-    )
-    if (availableBridges.length === 0) return []
+  console.debug(
+    "Fetching from bridges:",
+    availableBridges.map((b) => (b.toString ? b.toString() : String(b))),
+  )
+  if (availableBridges.length === 0) return []
 
-    const results = await Promise.all(
-        availableBridges.map(async (bridge: Bridge) => {
-            try {
-                let trade: GenericTrade | undefined
+  const results = await Promise.all(
+    availableBridges.map(async (bridge: Bridge) => {
+      try {
+        let trade: GenericTrade | undefined
 
-                if (hasAdditionalCalls) {
-                    if (bridge === Bridge.AXELAR || bridge === Bridge.ACROSS) {
-                        const composedInput = {
-                            ...input,
-                            additionalCalls: (input.additionalCalls || []) as DeltaCall[],
-                        } as BaseComposedInput
+        if (hasAdditionalCalls) {
+          if (bridge === Bridge.AXELAR || bridge === Bridge.ACROSS) {
+            const composedInput = {
+              ...input,
+              additionalCalls: (input.additionalCalls || []) as DeltaCall[],
+            } as BaseComposedInput
 
-                        if (bridge === Bridge.AXELAR) {
-                            trade = await fetchAxelarTradeWithSwaps(composedInput, getCurrency, getPricesCallback, controller)
-                        } else {
-                            trade = await fetchAcrossTradeWithSwaps(composedInput, getCurrency, controller)
-                        }
-                    } else {
-                        return undefined
-                    }
-                } else {
-                    const baseInput: BaseBridgeInput = {
-                        slippage: input.slippage,
-                        tradeType: input.tradeType,
-                        fromCurrency: input.fromCurrency,
-                        toCurrency: input.toCurrency,
-                        swapAmount: input.swapAmount,
-                        caller: input.caller,
-                        receiver: input.receiver,
-                        order: input.order,
-                        message: input.message,
-                        usePermit: input.usePermit,
-                        destinationGasLimit: input.destinationGasLimit,
-                    }
-
-                    trade = await fetchBridgeTradeWithoutComposed(bridge, baseInput, controller || new AbortController())
-                }
-
-                if (trade) return { bridge: bridge.toString(), trade }
-            } catch (error) {
-                console.debug("Error fetching trade from ${bridge}:", {
-                    bridge,
-                    error,
-                    input,
-                })
+            if (bridge === Bridge.AXELAR) {
+              trade = await fetchAxelarTradeWithSwaps(composedInput, getCurrency, getPricesCallback, controller)
+            } else {
+              trade = await fetchAcrossTradeWithSwaps(composedInput, getCurrency, controller)
             }
+          } else {
             return undefined
+          }
+        } else {
+          const baseInput: BaseBridgeInput = {
+            slippage: input.slippage,
+            tradeType: input.tradeType,
+            fromCurrency: input.fromCurrency,
+            toCurrency: input.toCurrency,
+            swapAmount: input.swapAmount,
+            caller: input.caller,
+            receiver: input.receiver,
+            order: input.order,
+            message: input.message,
+            usePermit: input.usePermit,
+            destinationGasLimit: input.destinationGasLimit,
+          }
+
+          trade = await fetchBridgeTradeWithoutComposed(bridge, baseInput, controller || new AbortController())
+        }
+
+        if (trade) return { bridge: bridge.toString(), trade }
+      } catch (error) {
+        console.debug("Error fetching trade from ${bridge}:", {
+          bridge,
+          error,
+          input,
         })
-    )
+      }
+      return undefined
+    }),
+  )
 
-    const trades = (results.filter(Boolean) as Array<{ bridge: string; trade: GenericTrade }>).filter(({ trade }) => {
-        const hasAssemble = typeof (trade as any)?.assemble === "function"
-        const hasTx = Boolean((trade as any)?.transaction)
-        return hasAssemble || hasTx
-    })
+  const trades = (results.filter(Boolean) as Array<{ bridge: string; trade: GenericTrade }>).filter(({ trade }) => {
+    const hasAssemble = typeof (trade as any)?.assemble === "function"
+    const hasTx = Boolean((trade as any)?.transaction)
+    return hasAssemble || hasTx
+  })
 
-    return trades.sort((a, b) => b.trade.outputAmountRealized - a.trade.outputAmountRealized)
+  return trades.sort((a, b) => b.trade.outputAmountRealized - a.trade.outputAmountRealized)
 }

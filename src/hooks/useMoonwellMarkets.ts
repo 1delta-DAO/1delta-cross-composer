@@ -7,38 +7,38 @@ export type { MoonwellMarket }
 export { MOONWELL_LENS, MOONWELL_COMPTROLLER, MOONWELL_UNDERLYING_TO_MTOKEN }
 
 export function useMoonwellMarkets(chainId?: string) {
-    const [markets, setMarkets] = useState<MoonwellMarket[] | undefined>(getCachedMarkets())
-    const [loading, setLoading] = useState(isMarketsLoading())
-    const [error, setError] = useState<string | undefined>(getMarketsError())
+  const [markets, setMarkets] = useState<MoonwellMarket[] | undefined>(getCachedMarkets())
+  const [loading, setLoading] = useState(isMarketsLoading())
+  const [error, setError] = useState<string | undefined>(getMarketsError())
 
-    useEffect(() => {
-        setMarkets(getCachedMarkets())
-        setLoading(isMarketsLoading())
-        setError(getMarketsError())
+  useEffect(() => {
+    setMarkets(getCachedMarkets())
+    setLoading(isMarketsLoading())
+    setError(getMarketsError())
 
-        // Subscribe to cache changes
-        const unsubscribe = subscribeToCacheChanges(() => {
-            setMarkets(getCachedMarkets())
-            setLoading(isMarketsLoading())
-            setError(getMarketsError())
-        })
+    // Subscribe to cache changes
+    const unsubscribe = subscribeToCacheChanges(() => {
+      setMarkets(getCachedMarkets())
+      setLoading(isMarketsLoading())
+      setError(getMarketsError())
+    })
 
-        return unsubscribe
-    }, [])
+    return unsubscribe
+  }, [])
 
-    const filteredMarkets = useMemo(() => {
-        if (!chainId || chainId !== SupportedChainId.MOONBEAM) {
-            return undefined
-        }
-        return markets
-    }, [markets, chainId])
+  const filteredMarkets = useMemo(() => {
+    if (!chainId || chainId !== SupportedChainId.MOONBEAM) {
+      return undefined
+    }
+    return markets
+  }, [markets, chainId])
 
-    return useMemo(
-        () => ({
-            markets: filteredMarkets,
-            loading,
-            error,
-        }),
-        [filteredMarkets, loading, error]
-    )
+  return useMemo(
+    () => ({
+      markets: filteredMarkets,
+      loading,
+      error,
+    }),
+    [filteredMarkets, loading, error],
+  )
 }
