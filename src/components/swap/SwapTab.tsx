@@ -19,7 +19,7 @@ import { TokenInputSection } from "./TokenInputSection"
 import { TokenOutputSection } from "./TokenOutputSection"
 import { QuoteDisplay } from "./QuoteDisplay"
 import ExecuteButton from "./ExecuteButton"
-import { MoonbeamActionsPanel } from "./MoonbeamActionsPanel"
+import { ActionsPanel } from "./ActionsPanel"
 import { formatDisplayAmount, pickPreferredToken } from "./swapUtils"
 import type { DestinationActionConfig, DestinationCall } from "../../lib/types/destinationAction"
 
@@ -484,7 +484,7 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
                 userAddress={userAddress}
                 excludeAddresses={srcChainId === dstChainId && srcToken ? [srcToken] : []}
             />
-            <MoonbeamActionsPanel
+            <ActionsPanel
                 dstChainId={dstChainId}
                 dstToken={dstToken}
                 userAddress={userAddress}
