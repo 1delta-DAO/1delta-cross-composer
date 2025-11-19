@@ -7,6 +7,7 @@ import { TradeSdkWalletSync } from "./sdk/trade-helpers/walletClient"
 import { SwapSlippageSelector } from "./components/swap/SwapSlippageSelector"
 import { ThemeSwitcher } from "./components/themeSwitcher"
 import { WalletConnect } from "./components/connect"
+import { TxHistoryButton } from "./components/history/TxHistoryButton"
 
 export default function App() {
     const { address, isConnected } = useAccount()
@@ -38,6 +39,7 @@ export default function App() {
                     </div>
                     <div className="flex-none flex gap-3 items-center">
                         <div className="flex-none flex gap-3 items-center">
+                            <TxHistoryButton />
                             <ThemeSwitcher />
                         </div>
                         <div className="flex-none flex gap-3 items-center">

@@ -9,6 +9,7 @@ import { config } from "./wagmi"
 import App from "./App"
 import { ToastProvider } from "./components/common/ToastHost"
 import { SlippageProvider } from "./contexts/SlippageContext"
+import { TxHistoryProvider } from "./contexts/TxHistoryContext"
 import { initAll } from "./sdk/trade-helpers/initialize"
 import { rainbowDaisyTheme } from "./rainbowkitTheme"
 
@@ -26,7 +27,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                 <RainbowKitProvider theme={rainbowDaisyTheme}>
                     <ToastProvider>
                         <SlippageProvider>
-                            <App />
+                            <TxHistoryProvider>
+                                <App />
+                            </TxHistoryProvider>
                         </SlippageProvider>
                     </ToastProvider>
                 </RainbowKitProvider>
