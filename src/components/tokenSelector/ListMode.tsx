@@ -1,10 +1,10 @@
-import { FixedSizeList as List, ListChildComponentProps } from "react-window"
+import { List, type RowComponentProps } from "react-window"
 import { RelevantTokensBar } from "./RelevantTokens"
 import { TokenRow } from "./TokenRow"
 import { CommonViewProps } from "./types"
 
-const ROW_HEIGHT = 56 // adjust if your row is taller/shorter
-const LIST_HEIGHT = 620 // visible area height
+const ROW_HEIGHT = 56
+const LIST_HEIGHT = 620
 
 export function TokenSelectorListMode({
     chainId,
@@ -21,12 +21,12 @@ export function TokenSelectorListMode({
 }: CommonViewProps) {
     const itemCount = rows.length
 
-    const renderRow = ({ index, style }: ListChildComponentProps) => {
+    const renderRow = ({ index, style }: RowComponentProps) => {
         const { addr, token } = rows[index]
 
         return (
             <TokenRow
-                style={style} // important: let react-window control positioning
+                style={style}
                 addr={addr}
                 token={token}
                 chainId={chainId}
@@ -48,9 +48,14 @@ export function TokenSelectorListMode({
             {relevant.length > 0 && <div className="divider my-1" />}
 
             <div className="w-full">
-                <List height={LIST_HEIGHT} itemCount={itemCount} itemSize={ROW_HEIGHT} width="100%">
-                    {renderRow}
-                </List>
+                <List
+                    defaultHeight={LIST_HEIGHT}
+                    rowCount={itemCount}
+                    rowHeight={ROW_HEIGHT}
+                    rowComponent={renderRow}
+                    rowProps={{} as any}
+                    style={{ width: "100%", height: LIST_HEIGHT }}
+                />
             </div>
         </div>
     )
