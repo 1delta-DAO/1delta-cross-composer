@@ -43,5 +43,11 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.20.6",
     "typescript": "5.9.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "@1delta/bridge-configs": "^0.1.4",
+      "@1delta/lib-utils": "^0.1.4"
+    }
   }
 }
