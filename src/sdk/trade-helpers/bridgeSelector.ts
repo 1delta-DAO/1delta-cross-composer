@@ -44,7 +44,7 @@ export async function fetchAllBridgeTrades(
           if (bridge === Bridge.AXELAR || bridge === Bridge.ACROSS) {
             const composedInput = {
               ...input,
-              additionalCalls: (input.additionalCalls || []) as DeltaCall[],
+              additionalCalls: input.additionalCalls || [],
             } as BaseComposedInput
 
             if (bridge === Bridge.AXELAR) {
@@ -57,17 +57,7 @@ export async function fetchAllBridgeTrades(
           }
         } else {
           const baseInput: BaseBridgeInput = {
-            slippage: input.slippage,
-            tradeType: input.tradeType,
-            fromCurrency: input.fromCurrency,
-            toCurrency: input.toCurrency,
-            swapAmount: input.swapAmount,
-            caller: input.caller,
-            receiver: input.receiver,
-            order: input.order,
-            message: input.message,
-            usePermit: input.usePermit,
-            destinationGasLimit: input.destinationGasLimit,
+            ...input,
           }
 
           trade = await fetchBridgeTradeWithoutComposed(bridge, baseInput, controller || new AbortController())
