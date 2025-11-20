@@ -426,8 +426,11 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
           onTokenClick={() => setSellModalOpen(true)}
           onReset={handleReset}
           onPercentageClick={(p) => {
-            const bal =
-              srcTokenBalance?.value || (srcCurrency ? srcBalances?.[srcCurrency.chainId]?.[srcCurrency.address.toLowerCase()]?.value : undefined)
+            const bal = srcTokenBalance
+              ? CurrencyHandler.toExactNumber(srcTokenBalance)
+              : srcCurrency
+                ? srcBalances?.[srcCurrency.chainId]?.[srcCurrency.address.toLowerCase()]?.value
+                : undefined
             const n = bal ? Number(bal) : 0
             setAmount(n > 0 ? ((n * p) / 100).toString() : "")
           }}

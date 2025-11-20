@@ -1,13 +1,14 @@
 import type { Address } from "viem"
 import { Logo } from "../common/Logo"
 import { filterNumeric, getTokenPrice } from "./swapUtils"
-import type { RawCurrency } from "../../types/currency"
+import type { RawCurrency, RawCurrencyAmount } from "../../types/currency"
+import { CurrencyHandler } from "@1delta/lib-utils/dist/services/currency/currencyUtils"
 
 type TokenInputSectionProps = {
   amount: string
   onAmountChange: (value: string) => void
   srcCurrency?: RawCurrency
-  srcTokenBalance?: { value?: string }
+  srcTokenBalance?: RawCurrencyAmount
   srcBalances?: Record<string, Record<string, { value?: string }>>
   srcPricesMerged?: Record<string, { usd: number }>
   lists?: Record<string, Record<string, any>>
@@ -31,7 +32,11 @@ export function TokenInputSection({
   const srcToken = srcCurrency?.address as Address | undefined
   const srcChainId = srcCurrency?.chainId
 
-  const balance = srcTokenBalance?.value || (srcToken && srcChainId ? srcBalances?.[srcChainId]?.[srcToken.toLowerCase()]?.value : undefined)
+  const balance = srcTokenBalance
+    ? CurrencyHandler.toExactNumber(srcTokenBalance).toString()
+    : srcToken && srcChainId
+      ? srcBalances?.[srcChainId]?.[srcToken.toLowerCase()]?.value
+      : undefined
 
   const price = srcToken && srcChainId ? getTokenPrice(srcChainId, srcToken, srcPricesMerged) : undefined
   const usd = price && amount ? Number(amount) * price : undefined

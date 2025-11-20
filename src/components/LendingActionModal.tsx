@@ -6,6 +6,7 @@ import { useTokenBalance } from "../hooks/balances/useTokenBalance"
 import { useBorrowBalance } from "../hooks/balances/useBorrowBalance"
 import { useAccountLiquidity } from "../hooks/balances/useAccountLiquidity"
 import { SupportedChainId } from "../sdk/types"
+import { CurrencyHandler } from "@1delta/lib-utils/dist/services/currency/currencyUtils"
 
 type LendingActionModalProps = {
   open: boolean
@@ -76,7 +77,15 @@ export function LendingActionModal({
     if (isWithdraw) {
       return actionConfig.address as Address
     } else if (isDeposit || isRepay || isStaking) {
-      return (actionConfig.meta as any)?.underlying as Address | undefined
+      const underlying = (actionConfig.meta as any)?.underlying
+      if (!underlying) return undefined
+      if (typeof underlying === "string") {
+        return underlying as Address
+      }
+      if (typeof underlying === "object" && underlying !== null && "address" in underlying) {
+        return underlying.address as Address
+      }
+      return undefined
     }
     return undefined
   }, [actionConfig, isWithdraw, isDeposit, isRepay, isStaking])
@@ -160,13 +169,12 @@ export function LendingActionModal({
     }
 
     // For withdraw/deposit/staking: show token balance
-    if (tokenBalance?.raw) {
-      const decimals = actionConfig.meta?.underlying?.decimals ?? 18
+    if (tokenBalance) {
       try {
-        const fullFormatted = formatUnits(BigInt(tokenBalance.raw), decimals)
-        const formatted = formatBalanceWithDecimals(fullFormatted)
-        const symbol = actionConfig.meta?.underlying?.symbol || ""
-        return { formatted, symbol, raw: tokenBalance.raw, isDebt: false }
+        const fullFormatted = CurrencyHandler.toExactNumber(tokenBalance)
+        const formatted = formatBalanceWithDecimals(fullFormatted.toString())
+        const symbol = tokenBalance.currency.symbol || ""
+        return { formatted, symbol, raw: tokenBalance.amount.toString(), isDebt: false }
       } catch {
         return null
       }
@@ -203,8 +211,8 @@ export function LendingActionModal({
       }
 
       // For deposit/withdraw/staking: compare with token balance
-      if ((isDeposit || isWithdraw || isStaking) && tokenBalance?.raw) {
-        return enteredAmount > BigInt(tokenBalance.raw)
+      if ((isDeposit || isWithdraw || isStaking) && tokenBalance) {
+        return enteredAmount > tokenBalance.amount
       }
 
       return false
@@ -233,8 +241,8 @@ export function LendingActionModal({
     // For deposit: use underlying token balance
     if (isRepay && borrowBalance?.raw) {
       newArgs[amountInputIndex] = borrowBalance.raw
-    } else if (tokenBalance?.raw) {
-      newArgs[amountInputIndex] = tokenBalance.raw
+    } else if (tokenBalance) {
+      newArgs[amountInputIndex] = tokenBalance.amount.toString()
     }
     setArgs(newArgs)
   }

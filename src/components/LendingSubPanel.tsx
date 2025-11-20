@@ -38,9 +38,9 @@ function MarketTokenCardWithBalance({
 
   const shouldShowDeposit = useMemo(() => {
     if (isDstToken) return true
-    if (!tokenBalance?.raw) return false
+    if (!tokenBalance) return false
     try {
-      return BigInt(tokenBalance.raw) > 0n
+      return tokenBalance.amount > 0n
     } catch {
       return false
     }
