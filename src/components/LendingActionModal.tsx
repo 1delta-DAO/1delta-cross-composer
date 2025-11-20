@@ -214,6 +214,7 @@ export function LendingActionModal({
   }, [args, amountInputIndex, isRepay, isDeposit, isWithdraw, isStaking, useMax, borrowBalance, tokenBalance])
 
   const handleConfirm = () => {
+    if (!actionConfig || !selector) return
     const finalArgs = [...args]
     // For staking with max checkbox, set amount to 0
     if (isStaking && useMax && amountInputIndex >= 0) {

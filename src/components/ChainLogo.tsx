@@ -1,4 +1,3 @@
-import React from "react"
 import { getChainConfig } from "../lib/chains"
 
 interface ChainLogoProps {
@@ -18,11 +17,13 @@ export default function ChainLogo({ chainId, size = 24, className = "" }: ChainL
     )
   }
 
-  if (chainConfig.logoURI) {
+  const logoUri = (chainConfig as any).logoURI as string | undefined
+
+  if (logoUri) {
     return (
       <>
         <img
-          src={chainConfig.logoURI}
+          src={logoUri}
           alt={chainConfig.name}
           className={`rounded-full ${className}`}
           style={{ width: size, height: size }}
