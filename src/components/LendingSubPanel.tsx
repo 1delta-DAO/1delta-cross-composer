@@ -3,7 +3,7 @@ import type { Hex, Address } from "viem"
 import type { DestinationActionConfig } from "../lib/types/destinationAction"
 import { getCachedMarkets, isMarketsReady, isMarketsLoading, subscribeToCacheChanges, type MoonwellMarket } from "../lib/moonwell/marketCache"
 import { getActionsForMarket } from "../lib/actions/lending/moonwell/config"
-import { LendingActionModal } from "./LendingActionModal"
+import { GenericActionModal } from "./actions/generic/GenericActionModal"
 import { MarketTokenCard } from "./card/MarketTokenCard"
 import { useTokenBalance } from "../hooks/balances/useTokenBalance"
 import { SupportedChainId } from "../sdk/types"
@@ -205,7 +205,10 @@ export function LendingSubPanel({ onAdd, dstToken, userAddress, chainId }: Lendi
                       const repayAction = actions.find((a) => a.name.startsWith("Repay"))
 
                       return (
-                        <div key={market.mTokenCurrency.address} className="card bg-base-100 border border-base-300 hover:border-primary/50 transition-colors group">
+                        <div
+                          key={market.mTokenCurrency.address}
+                          className="card bg-base-100 border border-base-300 hover:border-primary/50 transition-colors group"
+                        >
                           <div className="card-body p-3">
                             <div className="font-medium text-sm">{market.symbol || "Unknown"}</div>
                             <div className="flex gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -238,7 +241,7 @@ export function LendingSubPanel({ onAdd, dstToken, userAddress, chainId }: Lendi
         </div>
       </div>
 
-      <LendingActionModal
+      <GenericActionModal
         open={modalAction !== null}
         onClose={() => setModalAction(null)}
         actionConfig={modalAction?.config || null}

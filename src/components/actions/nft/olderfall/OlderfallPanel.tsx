@@ -173,12 +173,12 @@ export function OlderfallPanel({ dstToken, dstChainId, userAddress, tokenLists, 
 
   const hasOlderfall = olderfallActions.length > 0
 
+  const { listings: olderfallListings, loading: olderfallLoading } = useOlderfallListings(hasOlderfall, dstChainId)
+
   // If no actions or no onAdd callback, don't render anything
   if (!hasOlderfall || !onAdd) {
     return null
   }
-
-  const { listings: olderfallListings, loading: olderfallLoading } = useOlderfallListings(hasOlderfall, dstChainId)
 
   const handleAddClick = () => {
     if (!selectedOlderfallOrderId || !userAddress) return

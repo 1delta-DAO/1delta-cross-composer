@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from "react"
 import type { Abi, Hex, Address } from "viem"
 import { formatUnits, toFunctionSelector, parseUnits, parseUnits as parseUnitsFn } from "viem"
-import type { DestinationActionConfig } from "../lib/types/destinationAction"
-import { useTokenBalance } from "../hooks/balances/useTokenBalance"
-import { useBorrowBalance } from "../hooks/balances/useBorrowBalance"
-import { useAccountLiquidity } from "../hooks/balances/useAccountLiquidity"
-import { SupportedChainId } from "../sdk/types"
+import type { DestinationActionConfig } from "../../../lib/types/destinationAction"
+import { useTokenBalance } from "../../../hooks/balances/useTokenBalance"
+import { useBorrowBalance } from "../../../hooks/balances/useBorrowBalance"
+import { useAccountLiquidity } from "../../../hooks/balances/useAccountLiquidity"
+import { SupportedChainId } from "../../../sdk/types"
 import { CurrencyHandler } from "@1delta/lib-utils/dist/services/currency/currencyUtils"
 
 type LendingActionModalProps = {
@@ -43,7 +43,7 @@ function formatBalanceWithDecimals(value: string): string {
   }
 }
 
-export function LendingActionModal({
+export function GenericActionModal({
   open,
   onClose,
   actionConfig,
