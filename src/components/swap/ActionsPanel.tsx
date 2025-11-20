@@ -1,9 +1,6 @@
 import { useState } from "react"
 import type { Address, Hex } from "viem"
 import { parseUnits } from "viem"
-import { useSendTransaction, useSwitchChain } from "wagmi"
-import { moonbeam } from "viem/chains"
-import { SupportedChainId } from "../../sdk/types"
 import DestinationActionSelector from "../DestinationActionSelector"
 import type { DestinationActionConfig, DestinationCall } from "../../lib/types/destinationAction"
 import { useToast } from "../common/ToastHost"
@@ -18,7 +15,7 @@ type PendingAction = {
   value?: string
 }
 
-type MoonbeamActionsPanelProps = {
+type ActionsPanelProps = {
   dstChainId?: string
   dstToken?: Address
   userAddress?: Address
@@ -37,23 +34,63 @@ export function ActionsPanel({
   dstChainId,
   dstToken,
   userAddress,
-  currentChainId,
   isEncoding,
   setIsEncoding,
-  destinationCalls,
   setDestinationCalls,
   actions,
   setActions,
   onRefreshQuotes,
   tokenLists,
-}: MoonbeamActionsPanelProps) {
-  const { sendTransactionAsync: sendTestTransaction } = useSendTransaction()
-  const [testTxHash, setTestTxHash] = useState<string | undefined>(undefined)
-  const [testingDstCall, setTestingDstCall] = useState(false)
+}: ActionsPanelProps) {
   const [editingAction, setEditingAction] = useState<PendingAction | null>(null)
   const [encodedActions, setEncodedActions] = useState<PendingAction[]>([])
-  const { switchChainAsync } = useSwitchChain()
   const toast = useToast()
+
+  const handleEncodeClick = async () => {
+    try {
+      if (!userAddress) return
+      setIsEncoding(true)
+      const allCalls: DestinationCall[] = []
+
+      for (const a of actions) {
+        const cfg = a.config as DestinationActionConfig
+        const hasBuilder = typeof cfg.buildCalls === "function"
+        const ctxValue = a.value ? parseUnits(a.value, 18) : 0n
+
+        if (hasBuilder && cfg.buildCalls) {
+          const encoded = await cfg.buildCalls({
+            userAddress,
+            dstChainId,
+            selector: a.selector,
+            args: a.args,
+            value: ctxValue,
+          })
+
+          for (const c of encoded) {
+            allCalls.push({
+              target: c.target,
+              value: c.value ?? 0n,
+              calldata: c.calldata as Hex,
+              callType: c.callType,
+              balanceOfInjectIndex: c.balanceOfInjectIndex,
+              tokenAddress: c.tokenAddress,
+              gasLimit: 600000n,
+            })
+          }
+        }
+      }
+
+      setDestinationCalls(allCalls)
+      console.log("allCalls", allCalls)
+      setEncodedActions(actions)
+      onRefreshQuotes()
+    } catch (e) {
+      console.error("Failed to encode destination calls:", e)
+      toast.showError("Failed to encode destination calls")
+    } finally {
+      setIsEncoding(false)
+    }
+  }
 
   return (
     <div className="card bg-base-200 shadow-lg border border-primary/30 mt-4">
@@ -111,121 +148,29 @@ export function ActionsPanel({
           </>
         ) : (
           <div className="space-y-2">
-            <div className="text-sm font-semibold opacity-70">Encoded Actions ({encodedActions.length})</div>
             <ActionsList actions={encodedActions} />
-            <button
-              className="btn btn-xs btn-outline"
-              type="button"
-              onClick={() => {
-                setEncodedActions([])
-                setDestinationCalls([])
-                onRefreshQuotes()
-              }}
-            >
-              Clear encoded actions
-            </button>
+            <div className="flex justify-center">
+              <button
+                className="btn btn-xs btn-outline"
+                type="button"
+                onClick={() => {
+                  setEncodedActions([])
+                  setDestinationCalls([])
+                  onRefreshQuotes()
+                }}
+              >
+                Clear encoded actions
+              </button>
+            </div>
           </div>
         )}
         {encodedActions.length === 0 && actions.length > 0 && (
           <div className="mt-4 space-y-3">
             <div className="flex justify-center">
-              <button
-                className="btn btn-success"
-                disabled={isEncoding}
-                onClick={async () => {
-                  try {
-                    if (!userAddress) return
-                    setIsEncoding(true)
-                    const allCalls: DestinationCall[] = []
-
-                    for (const a of actions) {
-                      const cfg = a.config as DestinationActionConfig
-                      const hasBuilder = typeof cfg.buildCalls === "function"
-                      const ctxValue = a.value ? parseUnits(a.value, 18) : 0n
-
-                      if (hasBuilder && cfg.buildCalls) {
-                        const encoded = await cfg.buildCalls({
-                          userAddress,
-                          dstChainId,
-                          selector: a.selector,
-                          args: a.args,
-                          value: ctxValue,
-                        })
-
-                        for (const c of encoded) {
-                          allCalls.push({
-                            target: c.target,
-                            value: c.value ?? 0n,
-                            calldata: c.calldata as Hex,
-                            callType: c.callType,
-                            balanceOfInjectIndex: c.balanceOfInjectIndex,
-                            tokenAddress: c.tokenAddress,
-                            gasLimit: 600000n,
-                          })
-                        }
-                      }
-                    }
-
-                    setDestinationCalls(allCalls)
-                    setEncodedActions(actions)
-                    onRefreshQuotes()
-                  } catch (e) {
-                    console.error("Failed to encode destination calls:", e)
-                    toast.showError("Failed to encode destination calls")
-                  } finally {
-                    setIsEncoding(false)
-                  }
-                }}
-              >
+              <button className="btn btn-success" disabled={isEncoding} onClick={handleEncodeClick}>
                 Encode
               </button>
             </div>
-          </div>
-        )}
-        {destinationCalls.length > 0 && dstChainId === SupportedChainId.MOONBEAM && (
-          <div className="mt-3 p-3 rounded border border-base-300">
-            <div className="flex items-center justify-between">
-              <div className="text-sm opacity-70">Destination composed call tester</div>
-              <button
-                className={`btn btn-sm ${testingDstCall ? "btn-disabled" : "btn-outline"}`}
-                onClick={async () => {
-                  if (!dstChainId) return
-                  try {
-                    setIsEncoding(true)
-                    setTestingDstCall(true)
-                    setTestTxHash(undefined)
-                    if (Number(currentChainId) !== moonbeam.id) {
-                      await switchChainAsync({ chainId: moonbeam.id })
-                    }
-
-                    let lastHash: Hex | undefined
-                    for (const call of destinationCalls) {
-                      const txHash = await sendTestTransaction({
-                        to: call.target,
-                        data: call.calldata,
-                        value: (call.value ?? 0n) as any,
-                      })
-                      lastHash = txHash as any
-                    }
-                    if (lastHash) {
-                      setTestTxHash(lastHash as any)
-                    }
-                  } catch (e: any) {
-                    toast.showError(e?.message || "Failed to send destination call")
-                  } finally {
-                    setTestingDstCall(false)
-                    setIsEncoding(false)
-                  }
-                }}
-              >
-                {testingDstCall ? "Sending..." : "Test destination call"}
-              </button>
-            </div>
-            {testTxHash && (
-              <div className="mt-2 text-xs">
-                <div>Tx: {testTxHash}</div>
-              </div>
-            )}
           </div>
         )}
       </div>
