@@ -6,6 +6,7 @@ import { getCachedMarkets, isMarketsReady } from "../../../moonwell/marketCache"
 import { SupportedChainId } from "@1delta/lib-utils"
 import { ERC20_ABI } from "../../../abi"
 import { MOONWELL_COMPTROLLER } from "../../../moonwell/consts"
+import { DeltaCallType } from "@1delta/trade-sdk/dist/types"
 
 const base: Omit<DestinationActionConfig, "functionSelectors" | "name" | "description" | "defaultFunctionSelector" | "address"> = {
   abi: MTOKEN_ABI,
@@ -105,7 +106,7 @@ export function getActionsForMarket(market: MoonwellMarket, dstToken?: string): 
         ...finalMeta,
       },
       buildCalls: async (ctx) => {
-        const calls: { target: Address; calldata: Hex; value?: bigint }[] = []
+        const calls: { target: Address; calldata: Hex; value?: bigint; callType?: number; tokenAddress?: Address; balanceOfInjectIndex?: number }[] = []
         const meta = finalMeta as any
         const selector = ctx.selector
         const args = ctx.args || []
@@ -125,6 +126,9 @@ export function getActionsForMarket(market: MoonwellMarket, dstToken?: string): 
               target: underlyingAddr,
               calldata: approveCalldata as Hex,
               value: 0n,
+              callType: DeltaCallType.FULL_TOKEN_BALANCE,
+              tokenAddress: underlyingAddr,
+              balanceOfInjectIndex: idx,
             })
           }
         }
@@ -147,6 +151,7 @@ export function getActionsForMarket(market: MoonwellMarket, dstToken?: string): 
             target: MOONWELL_COMPTROLLER as Address,
             calldata: enterData as Hex,
             value: 0n,
+            callType: DeltaCallType.DEFAULT,
           })
         }
 
@@ -166,6 +171,9 @@ export function getActionsForMarket(market: MoonwellMarket, dstToken?: string): 
           target: market.mToken,
           calldata: mainCalldata as Hex,
           value,
+          callType: DeltaCallType.FULL_TOKEN_BALANCE,
+          tokenAddress: market.underlying as Address,
+          balanceOfInjectIndex: 0,
         })
 
         return calls

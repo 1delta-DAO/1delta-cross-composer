@@ -1,8 +1,8 @@
-import { type Hex, type Address, type Abi } from "viem"
+import { type Hex, type Address, type Abi, encodeFunctionData } from "viem"
 import type { DestinationActionConfig } from "../../../types/destinationAction"
-import { SupportedChainId, getDeltaComposerAddress } from "@1delta/lib-utils"
-import { XCDOT_ADDRESS, STELLA_STDOT_ADDRESS, CALL_PERMIT_PRECOMPILE, CALL_FORWARDER_ADDRESS } from "../../../consts"
-import { encodeStellaDotStakingComposerCalldata } from "../../../trade-helpers/composerEncoding"
+import { SupportedChainId } from "@1delta/lib-utils"
+import { XCDOT_ADDRESS, STELLA_STDOT_ADDRESS } from "../../../consts"
+import { DeltaCallType } from "@1delta/trade-sdk/dist/types"
 
 const PERMIT_DISPATCH_SELECTOR: Hex = "0xb5ea0966"
 
@@ -33,18 +33,11 @@ export function getActions(opts?: { dstToken?: string; dstChainId?: string }): D
     return []
   }
 
-  const chainId = opts?.dstChainId || SupportedChainId.MOONBEAM
-  const composerAddress = getDeltaComposerAddress(chainId)
-
-  if (!composerAddress) {
-    return []
-  }
-
   const items: DestinationActionConfig[] = []
 
   const action: DestinationActionConfig = {
     ...base,
-    address: CALL_PERMIT_PRECOMPILE,
+    address: STELLA_STDOT_ADDRESS,
     name: "Stake DOT",
     description: "Stake DOT to StellaSwap using 1delta composer",
     functionSelectors: [PERMIT_DISPATCH_SELECTOR],
@@ -53,36 +46,19 @@ export function getActions(opts?: { dstToken?: string; dstChainId?: string }): D
       useComposer: true,
       underlying: XCDOT_ADDRESS,
       stakedToken: STELLA_STDOT_ADDRESS,
-      composerAddress: composerAddress as Address,
-      callForwarderAddress: CALL_FORWARDER_ADDRESS,
       symbol: "DOT",
       decimals: 10,
       supportedChainIds: [SupportedChainId.MOONBEAM as string],
     },
     buildCalls: async (ctx) => {
-      const meta = (action.meta || {}) as any
-      const composerAddress = meta.composerAddress as Address
-      const callForwarderAddress = meta.callForwarderAddress as Address
-
-      if (!composerAddress || !callForwarderAddress) {
-        throw new Error("Missing composer addresses for Stella staking action")
-      }
-
-      const amountArg = ctx.args?.[0]
-      if (amountArg === undefined || amountArg === null) {
-        throw new Error("Missing amount argument for Stella staking action")
-      }
-
-      const amount = BigInt(String(amountArg))
-
-      const composerCalldata = encodeStellaDotStakingComposerCalldata(amount, ctx.userAddress, callForwarderAddress)
-
       return [
         {
-          target: composerAddress,
-          calldata: composerCalldata as Hex,
+          target: STELLA_STDOT_ADDRESS,
+          calldata: encodeFunctionData({ abi: STAKING_ABI, functionName: "deposit", args: [0n] }),
           value: 0n,
-          callType: 1,
+          callType: DeltaCallType.FULL_TOKEN_BALANCE,
+          tokenAddress: XCDOT_ADDRESS,
+          balanceOfInjectIndex: 0,
         },
       ]
     },

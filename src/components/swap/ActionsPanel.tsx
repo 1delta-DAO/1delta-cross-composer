@@ -136,8 +136,6 @@ export function ActionsPanel({
                   try {
                     if (!userAddress) return
                     setIsEncoding(true)
-                    const { encodeDestinationActions } = await import("../../lib/trade-helpers/destinationActions")
-
                     const allCalls: DestinationCall[] = []
 
                     for (const a of actions) {
@@ -159,24 +157,9 @@ export function ActionsPanel({
                             target: c.target,
                             value: c.value ?? 0n,
                             calldata: c.calldata as Hex,
-                            gasLimit: 600000n,
-                          })
-                        }
-                      } else {
-                        const encoded = encodeDestinationActions([
-                          {
-                            config: cfg,
-                            selector: a.selector,
-                            args: a.args,
-                            value: ctxValue,
-                          },
-                        ])
-
-                        for (const c of encoded) {
-                          allCalls.push({
-                            target: c.target,
-                            value: c.value ?? 0n,
-                            calldata: c.calldata as Hex,
+                            callType: c.callType,
+                            balanceOfInjectIndex: c.balanceOfInjectIndex,
+                            tokenAddress: c.tokenAddress,
                             gasLimit: 600000n,
                           })
                         }
