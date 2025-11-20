@@ -7,6 +7,7 @@ import { SupportedChainId } from "../sdk/types"
 import { LendingSubPanel } from "./LendingSubPanel"
 import { LendingActionModal } from "./LendingActionModal"
 import { useOlderfallListings } from "../hooks/useOlderfallListings"
+import { DepositPanel } from "./actions/lending/deposit/DepositPanel"
 
 interface DestinationActionSelectorProps {
   onAdd?: (config: DestinationActionConfig, functionSelector: Hex, args?: any[], value?: string) => void
@@ -14,9 +15,17 @@ interface DestinationActionSelectorProps {
   dstChainId?: string
   userAddress?: string
   tokenLists?: Record<string, Record<string, { symbol?: string; decimals?: number }>> | undefined
+  setDestinationInfo?: (chainId: string, address: string, amount?: string) => void
 }
 
-export default function DestinationActionSelector({ onAdd, dstToken, dstChainId, userAddress, tokenLists }: DestinationActionSelectorProps) {
+export default function DestinationActionSelector({
+  onAdd,
+  dstToken,
+  dstChainId,
+  userAddress,
+  tokenLists,
+  setDestinationInfo,
+}: DestinationActionSelectorProps) {
   const [selectedActionType, setSelectedActionType] = useState<DestinationActionType | "">("")
   const [selectedActionKey, setSelectedActionKey] = useState<string>("")
   const [marketsReady, setMarketsReady] = useState(isMarketsReady())
@@ -93,6 +102,16 @@ export default function DestinationActionSelector({ onAdd, dstToken, dstChainId,
 
   return (
     <div className="space-y-4">
+      {/* <DepositPanel
+        userAddress={userAddress}
+        chainId={dstChainId}
+        onAdd={(config, selector, args, value) => {
+          if (onAdd) {
+            onAdd(config, selector, args, value)
+          }
+        }}
+        setDestinationInfo={setDestinationInfo}
+      /> */}
       {showLendingPanel && (
         <LendingSubPanel
           dstToken={dstToken}
@@ -149,7 +168,7 @@ export default function DestinationActionSelector({ onAdd, dstToken, dstChainId,
                       onClick={() => setSelectedOlderfallOrderId(l.orderId)}
                     >
                       {l.image && (
-                        <div className="w-10 h-10 rounded overflow-hidden bg-base-300 flex-shrink-0">
+                        <div className="w-10 h-10 rounded overflow-hidden bg-base-300 shrink-0">
                           <img src={l.image} alt={title} className="w-full h-full object-cover" />
                         </div>
                       )}

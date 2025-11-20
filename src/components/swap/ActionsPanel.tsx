@@ -5,7 +5,6 @@ import DestinationActionSelector from "../DestinationActionSelector"
 import type { DestinationActionConfig, DestinationCall } from "../../lib/types/destinationAction"
 import { useToast } from "../common/ToastHost"
 import { ActionsList } from "../ActionsList"
-import { LendingActionModal } from "../LendingActionModal"
 
 type PendingAction = {
   id: string
@@ -28,6 +27,7 @@ type ActionsPanelProps = {
   setActions: React.Dispatch<React.SetStateAction<PendingAction[]>>
   onRefreshQuotes: () => void
   tokenLists?: Record<string, Record<string, { symbol?: string; decimals?: number }>> | undefined
+  setDestinationInfo?: (chainId: string, address: string, amount?: string) => void
 }
 
 export function ActionsPanel({
@@ -41,6 +41,7 @@ export function ActionsPanel({
   setActions,
   onRefreshQuotes,
   tokenLists,
+  setDestinationInfo,
 }: ActionsPanelProps) {
   const [editingAction, setEditingAction] = useState<PendingAction | null>(null)
   const [encodedActions, setEncodedActions] = useState<PendingAction[]>([])
@@ -103,6 +104,7 @@ export function ActionsPanel({
               dstChainId={dstChainId}
               userAddress={userAddress}
               tokenLists={tokenLists}
+              setDestinationInfo={setDestinationInfo}
               onAdd={(config, selector, args, value) => {
                 setActions((arr) => [
                   ...arr,
@@ -174,34 +176,6 @@ export function ActionsPanel({
           </div>
         )}
       </div>
-      {editingAction && (
-        <LendingActionModal
-          open={editingAction !== null}
-          onClose={() => setEditingAction(null)}
-          actionConfig={editingAction.config}
-          selector={editingAction.selector}
-          initialArgs={editingAction.args}
-          initialValue={editingAction.value}
-          userAddress={userAddress}
-          chainId={dstChainId}
-          onConfirm={(config, selector, args, value) => {
-            setActions((arr) =>
-              arr.map((a) =>
-                a.id === editingAction.id
-                  ? {
-                      ...a,
-                      config,
-                      selector,
-                      args: args || [],
-                      value: value,
-                    }
-                  : a,
-              ),
-            )
-            setEditingAction(null)
-          }}
-        />
-      )}
     </div>
   )
 }

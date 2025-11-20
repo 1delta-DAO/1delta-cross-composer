@@ -4,7 +4,7 @@ import type { DestinationActionConfig } from "../lib/types/destinationAction"
 import { getCachedMarkets, isMarketsReady, isMarketsLoading, subscribeToCacheChanges, type MoonwellMarket } from "../lib/moonwell/marketCache"
 import { getActionsForMarket } from "../lib/actions/lending/moonwell/config"
 import { LendingActionModal } from "./LendingActionModal"
-import { MarketTokenCard } from "./MarketTokenCard"
+import { MarketTokenCard } from "./card/MarketTokenCard"
 import { useTokenBalance } from "../hooks/balances/useTokenBalance"
 import { SupportedChainId } from "../sdk/types"
 

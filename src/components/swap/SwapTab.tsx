@@ -10,7 +10,7 @@ import { useTokenBalance } from "../../hooks/balances/useTokenBalance"
 import { useDexscreenerPrices } from "../../hooks/prices/useDexscreenerPrices"
 import { useTokenPrice } from "../../hooks/prices/useTokenPrice"
 import { useDebounce } from "../../hooks/useDebounce"
-import { CurrencyHandler, SupportedChainId } from "../../sdk/types"
+import { CurrencyHandler, RawCurrency, SupportedChainId } from "../../sdk/types"
 import { useQueryClient } from "@tanstack/react-query"
 import { useSlippage } from "../../contexts/SlippageContext"
 import { useSwapQuotes } from "../../sdk/hooks/useSwapQuotes"
@@ -20,8 +20,9 @@ import { TokenOutputSection } from "./TokenOutputSection"
 import { QuoteDisplay } from "./QuoteDisplay"
 import ExecuteButton from "./ExecuteButton"
 import { ActionsPanel } from "./ActionsPanel"
-import { formatDisplayAmount, pickPreferredToken } from "./swapUtils"
+import { formatDisplayAmount, getTokenPrice, pickPreferredToken } from "./swapUtils"
 import type { DestinationActionConfig, DestinationCall } from "../../lib/types/destinationAction"
+import { reverseQuote } from "../../lib/reverseQuote"
 
 type PendingAction = {
   id: string
@@ -385,6 +386,23 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
   const srcSymbol = srcToken && srcChainId ? lists?.[srcChainId]?.[srcToken.toLowerCase()]?.symbol || "Token" : "Token"
   const dstSymbol = quotes[selectedQuoteIndex]?.trade?.outputAmount?.currency?.symbol || "Token"
 
+  const setDestinationInfo = useCallback(
+    (chainId: string, address: string, amount?: string) => {
+      setDstToken(address as any)
+      setDstChainId(chainId)
+      // do not set amount
+      if (!amount) return
+
+      const priceIn = getTokenPrice(chainId, address as any, srcPricesMerged)
+      const priceOut = getTokenPrice(chainId, address as any, dstPricesMerged)
+      const decimalsIn = lists?.[srcChainId ?? ""]?.[srcToken?.toLowerCase() ?? ""]?.decimals
+      const decimalsOut = lists?.[dstChainId ?? ""]?.[dstToken?.toLowerCase() ?? ""]?.decimals
+      const amountIn = reverseQuote(decimalsIn, decimalsOut, amount, priceIn ?? 1, priceOut ?? 1)
+      setAmount(amountIn)
+    },
+    [srcPricesMerged, dstPricesMerged, dstToken]
+  )
+
   return (
     <div>
       <div className="relative">
@@ -495,6 +513,7 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
         setActions={setActions}
         onRefreshQuotes={refreshQuotes}
         tokenLists={lists}
+        setDestinationInfo={setDestinationInfo}
       />
       {quotes.length > 0 && selectedTrade && (
         <div className="mt-4">
