@@ -9,6 +9,7 @@ import { CurrencyHandler, SupportedChainId } from "../../sdk/types"
 import { getTokenFromCache } from "../../lib/data/tokenListsCache"
 import { TokenSelectorDropdownMode } from "./Dropdown"
 import { TokenSelectorListMode } from "./ListMode"
+import type { TokenRowData } from "./types"
 
 type Props = {
   chainId: string
@@ -20,16 +21,6 @@ type Props = {
   onQueryChange?: (v: string) => void
   showSearch?: boolean
   listMode?: boolean // When true, shows only the list without dropdown button
-}
-
-type TokenRowData = {
-  addr: Address
-  token: any
-  usdValue: number
-  price: number
-  balanceAmount: number
-  category: number
-  isRelevant: boolean
 }
 
 // Stablecoin symbols (common stablecoins)

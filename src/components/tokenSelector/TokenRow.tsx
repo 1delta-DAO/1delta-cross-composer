@@ -3,10 +3,11 @@ import type { Address } from "viem"
 import { zeroAddress } from "viem"
 import { Logo } from "../common/Logo"
 import { CurrencyHandler } from "../../sdk/types"
+import type { RawCurrency } from "../../types/currency"
 
 type TokenRowProps = {
   addr: Address
-  token: any
+  token: RawCurrency
   chainId: string
   chains: any
   balances: any
@@ -15,7 +16,7 @@ type TokenRowProps = {
   pricesLoading: boolean
   userAddress?: Address
   onClick: () => void
-  style?: CSSProperties // 👈 added
+  style?: CSSProperties
 }
 
 export function TokenRow({
@@ -41,13 +42,9 @@ export function TokenRow({
   const balanceText = bal?.value ? Number(bal.value).toFixed(4) : undefined
 
   return (
-    <button
-      style={style} // 👈 react-window positioning
-      className="w-full py-2 px-2 hover:bg-base-200 rounded flex items-center gap-3"
-      onClick={onClick}
-    >
+    <button style={style} className="w-full py-2 px-2 hover:bg-base-200 rounded flex items-center gap-3" onClick={onClick}>
       <div className="relative w-6 h-6">
-        <Logo src={token.logoURI} alt={token.symbol} fallbackText={token.symbol} />
+        <Logo src={token.logoURI} alt={token.symbol || ""} fallbackText={token.symbol || ""} />
         {chains?.[chainId]?.data?.icon && (
           <img src={chains[chainId].data.icon} alt="chain" className="w-3 h-3 rounded-full absolute -right-1 -bottom-1 border border-base-100" />
         )}

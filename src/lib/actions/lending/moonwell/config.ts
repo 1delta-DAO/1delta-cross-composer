@@ -65,7 +65,7 @@ function getFunctionNameFromSelector(abi: Abi, selector: Hex): string | undefine
 
 export function getActionsForMarket(market: MoonwellMarket, dstToken?: string): DestinationActionConfig[] {
   const symbol = market.symbol || ""
-  const underlyingLower = (market.underlying || "").toLowerCase()
+  const underlyingLower = (market.underlyingCurrency?.address || "").toLowerCase()
   const dstLower = (dstToken || "").toLowerCase()
 
   const items: DestinationActionConfig[] = []
@@ -90,15 +90,7 @@ export function getActionsForMarket(market: MoonwellMarket, dstToken?: string): 
             ? `Withdraw ${symbol} from Moonwell`
             : `Repay borrowed ${symbol} on Moonwell`
 
-    const underlyingCurrency: RawCurrency | undefined =
-      market.underlying && market.underlying !== ("" as Address)
-        ? {
-            chainId: SupportedChainId.MOONBEAM,
-            address: market.underlying,
-            symbol: market.symbol,
-            decimals: market.decimals ?? 18,
-          }
-        : undefined
+    const underlyingCurrency: RawCurrency | undefined = market.underlyingCurrency || undefined
 
     const finalMeta = {
       ...template.meta,
@@ -108,7 +100,7 @@ export function getActionsForMarket(market: MoonwellMarket, dstToken?: string): 
 
     items.push({
       ...template,
-      address: market.mToken,
+      address: market.mTokenCurrency.address as Address,
       name: actionName,
       description: actionDescription,
       meta: {
@@ -131,7 +123,7 @@ export function getActionsForMarket(market: MoonwellMarket, dstToken?: string): 
             const approveCalldata = encodeFunctionData({
               abi: ERC20_ABI,
               functionName: "approve",
-              args: [market.mToken, BigInt(String(amountArg))],
+              args: [market.mTokenCurrency.address as Address, BigInt(String(amountArg))],
             })
             calls.push({
               target: underlyingAddr,
@@ -156,7 +148,7 @@ export function getActionsForMarket(market: MoonwellMarket, dstToken?: string): 
               },
             ] as Abi,
             functionName: "enterMarkets",
-            args: [[market.mToken]],
+            args: [[market.mTokenCurrency.address as Address]],
           })
           calls.push({
             target: MOONWELL_COMPTROLLER as Address,
@@ -179,11 +171,11 @@ export function getActionsForMarket(market: MoonwellMarket, dstToken?: string): 
         })
 
         calls.push({
-          target: market.mToken,
+          target: market.mTokenCurrency.address as Address,
           calldata: mainCalldata as Hex,
           value,
           callType: DeltaCallType.FULL_TOKEN_BALANCE,
-          tokenAddress: (underlying?.address || market.underlying) as Address,
+          tokenAddress: (underlying?.address || market.underlyingCurrency.address) as Address,
           balanceOfInjectIndex: 0,
         })
 

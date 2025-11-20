@@ -11,6 +11,7 @@ import { useChainsRegistry } from "../../sdk/hooks/useChainsRegistry"
 import { useToast } from "../common/ToastHost"
 import { WalletConnect } from "../connect"
 import { useTxHistory } from "../../contexts/TxHistoryContext"
+import type { RawCurrency } from "../../types/currency"
 
 type StepStatus = "idle" | "active" | "done" | "error"
 
@@ -108,10 +109,9 @@ async function trackBridgeCompletion(
 
 type ExecuteButtonProps = {
   trade: GenericTrade
-  srcChainId?: string
-  dstChainId?: string
+  srcCurrency?: RawCurrency
+  dstCurrency?: RawCurrency
   userAddress?: Address
-  srcToken?: Address
   amountWei?: string
   onDone: (hashes: { src?: string; dst?: string; completed?: boolean }) => void
   chains?: ReturnType<typeof useChainsRegistry>["data"]
@@ -125,10 +125,9 @@ type ExecuteButtonProps = {
 
 export default function ExecuteButton({
   trade,
-  srcChainId,
-  dstChainId,
+  srcCurrency,
+  dstCurrency,
   userAddress,
-  srcToken,
   amountWei,
   onDone,
   chains,
@@ -153,6 +152,10 @@ export default function ExecuteButton({
   const toast = useToast()
   const { createEntry, updateEntry } = useTxHistory()
   const historyIdRef = useRef<string | null>(null)
+
+  const srcChainId = useMemo(() => srcCurrency?.chainId, [srcCurrency])
+  const dstChainId = useMemo(() => dstCurrency?.chainId, [dstCurrency])
+  const srcToken = useMemo(() => (srcCurrency?.address as Address | undefined), [srcCurrency])
 
   // Reset error state when trade changes (user selected different quote/aggregator)
   useEffect(() => {

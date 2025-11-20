@@ -1,8 +1,9 @@
 import { Address } from "viem"
+import type { RawCurrency } from "../../types/currency"
 
 export type TokenRowData = {
   addr: Address
-  token: any
+  token: RawCurrency
   usdValue: number
   price: number
   balanceAmount: number

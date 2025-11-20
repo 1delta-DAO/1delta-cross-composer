@@ -1,7 +1,9 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import type { GenericTrade } from "../../sdk/types"
 import { Logo } from "../common/Logo"
 import { getAggregatorLogo, getBridgeLogo, getTokenPrice } from "./swapUtils"
+import type { RawCurrency } from "../../types/currency"
+import type { Address } from "viem"
 
 type QuoteDisplayProps = {
   quotes: Array<{ label: string; trade: GenericTrade }>
@@ -10,9 +12,8 @@ type QuoteDisplayProps = {
   amount: string
   srcSymbol: string
   dstSymbol: string
-  srcChainId?: string
-  dstChainId?: string
-  dstToken?: string
+  srcCurrency?: RawCurrency
+  dstCurrency?: RawCurrency
   dstPricesMerged?: Record<string, { usd: number }>
   quoting: boolean
   isBridge: boolean
@@ -25,15 +26,17 @@ export function QuoteDisplay({
   amount,
   srcSymbol,
   dstSymbol,
-  srcChainId,
-  dstChainId,
-  dstToken,
+  srcCurrency,
+  dstCurrency,
   dstPricesMerged,
   quoting,
   isBridge,
 }: QuoteDisplayProps) {
   const [quotesExpanded, setQuotesExpanded] = useState(false)
   const getLogo = isBridge ? getBridgeLogo : getAggregatorLogo
+
+  const dstChainId = useMemo(() => dstCurrency?.chainId, [dstCurrency])
+  const dstToken = useMemo(() => (dstCurrency?.address as Address | undefined), [dstCurrency])
 
   if (quotes.length === 0) {
     if (quoting) {
@@ -95,7 +98,7 @@ export function QuoteDisplay({
             const outputUsd =
               dstToken && dstChainId
                 ? (() => {
-                    const price = getTokenPrice(dstChainId, dstToken as any, dstPricesMerged)
+                    const price = getTokenPrice(dstChainId, dstToken, dstPricesMerged)
                     return price ? output * price : undefined
                   })()
                 : undefined

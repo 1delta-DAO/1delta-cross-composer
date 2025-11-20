@@ -17,7 +17,6 @@ import {
 
 /**
  * Returns a snapshot of lending data maps from @1delta/data-sdk.
- * These are static datasets bundled in the package.
  */
 export function useLendingData() {
   return useMemo(() => {

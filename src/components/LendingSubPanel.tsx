@@ -28,13 +28,13 @@ function MarketTokenCardWithBalance({
   const { data: tokenBalance } = useTokenBalance({
     chainId: chainId || SupportedChainId.MOONBEAM,
     userAddress: userAddress as Address | undefined,
-    tokenAddress: market.underlying,
+    tokenAddress: market.underlyingCurrency.address as Address,
   })
 
   const isDstToken = useMemo(() => {
-    if (!dstToken || !market.underlying) return false
-    return market.underlying.toLowerCase() === dstToken.toLowerCase()
-  }, [dstToken, market.underlying])
+    if (!dstToken || !market.underlyingCurrency) return false
+    return market.underlyingCurrency.address.toLowerCase() === dstToken.toLowerCase()
+  }, [dstToken, market.underlyingCurrency])
 
   const shouldShowDeposit = useMemo(() => {
     if (isDstToken) return true
@@ -176,7 +176,7 @@ export function LendingSubPanel({ onAdd, dstToken, userAddress, chainId }: Lendi
 
                         return (
                           <MarketTokenCardWithBalance
-                            key={market.mToken}
+                            key={market.mTokenCurrency.address}
                             market={market}
                             depositAction={depositAction}
                             withdrawAction={withdrawAction}
@@ -205,7 +205,7 @@ export function LendingSubPanel({ onAdd, dstToken, userAddress, chainId }: Lendi
                       const repayAction = actions.find((a) => a.name.startsWith("Repay"))
 
                       return (
-                        <div key={market.mToken} className="card bg-base-100 border border-base-300 hover:border-primary/50 transition-colors group">
+                        <div key={market.mTokenCurrency.address} className="card bg-base-100 border border-base-300 hover:border-primary/50 transition-colors group">
                           <div className="card-body p-3">
                             <div className="font-medium text-sm">{market.symbol || "Unknown"}</div>
                             <div className="flex gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">

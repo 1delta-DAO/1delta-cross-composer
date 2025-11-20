@@ -232,15 +232,23 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
   const debouncedSrcKey = useDebounce(srcKey, 1000)
   const debouncedDstKey = useDebounce(dstKey, 1000)
 
+  const srcCurrency = useMemo<RawCurrency | undefined>(() => {
+    if (!srcToken || !srcChainId) return undefined
+    return getCurrency(srcChainId, srcToken)
+  }, [srcToken, srcChainId])
+
+  const dstCurrency = useMemo<RawCurrency | undefined>(() => {
+    if (!dstToken || !dstChainId) return undefined
+    return getCurrency(dstChainId, dstToken)
+  }, [dstToken, dstChainId])
+
   const { slippage, setPriceImpact } = useSlippage()
   const [txInProgress, setTxInProgress] = useState(false)
   const [destinationCalls, setDestinationCalls] = useState<DestinationCall[]>([])
 
   const { quotes, quoting, selectedQuoteIndex, setSelectedQuoteIndex, amountWei, refreshQuotes, abortQuotes } = useSwapQuotes({
-    srcChainId,
-    srcToken,
-    dstChainId,
-    dstToken,
+    srcCurrency,
+    dstCurrency,
     debouncedAmount,
     debouncedSrcKey,
     debouncedDstKey,
@@ -378,16 +386,6 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
   const srcSymbol = srcToken && srcChainId ? lists?.[srcChainId]?.[srcToken.toLowerCase()]?.symbol || "Token" : "Token"
   const dstSymbol = quotes[selectedQuoteIndex]?.trade?.outputAmount?.currency?.symbol || "Token"
 
-  const srcCurrency = useMemo<RawCurrency | undefined>(() => {
-    if (!srcToken || !srcChainId) return undefined
-    return getCurrency(srcChainId, srcToken)
-  }, [srcToken, srcChainId])
-
-  const dstCurrency = useMemo<RawCurrency | undefined>(() => {
-    if (!dstToken || !dstChainId) return undefined
-    return getCurrency(dstChainId, dstToken)
-  }, [dstToken, dstChainId])
-
   const setDestinationInfo = useCallback(
     (currencyAmount: RawCurrencyAmount | undefined) => {
       if (!currencyAmount) {
@@ -468,9 +466,8 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
           amount={amount}
           srcSymbol={srcSymbol}
           dstSymbol={dstSymbol}
-          srcChainId={srcChainId}
-          dstChainId={dstChainId}
-          dstToken={dstToken}
+          srcCurrency={srcCurrency}
+          dstCurrency={dstCurrency}
           dstPricesMerged={dstPricesMerged}
           quoting={quoting}
           isBridge={srcChainId !== dstChainId}
@@ -524,8 +521,7 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
         excludeAddresses={srcCurrency && srcCurrency.chainId === dstChainId ? [srcCurrency.address as Address] : []}
       />
       <ActionsPanel
-        dstChainId={dstChainId}
-        dstToken={dstToken}
+        dstCurrency={dstCurrency}
         userAddress={userAddress}
         currentChainId={currentChainId}
         isEncoding={isEncoding}
@@ -542,30 +538,29 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
         <div className="mt-4">
           <ExecuteButton
             trade={selectedTrade}
-            srcChainId={srcChainId}
-            dstChainId={dstChainId}
+            srcCurrency={srcCurrency}
+            dstCurrency={dstCurrency}
             userAddress={userAddress}
-            srcToken={srcToken}
             amountWei={amountWei}
             actions={actions}
             destinationCalls={destinationCalls}
             chains={chains}
             onDone={(hashes) => {
               // Invalidate all balance queries for src/dst chains and tokens
-              if (srcChainId && userAddress) {
+              if (srcCurrency?.chainId && userAddress) {
                 queryClient.invalidateQueries({
-                  queryKey: ["balances", srcChainId, userAddress],
+                  queryKey: ["balances", srcCurrency.chainId, userAddress],
                 })
                 queryClient.invalidateQueries({
-                  queryKey: ["tokenBalance", srcChainId, userAddress],
+                  queryKey: ["tokenBalance", srcCurrency.chainId, userAddress],
                 })
               }
-              if (dstChainId && userAddress) {
+              if (dstCurrency?.chainId && userAddress) {
                 queryClient.invalidateQueries({
-                  queryKey: ["balances", dstChainId, userAddress],
+                  queryKey: ["balances", dstCurrency.chainId, userAddress],
                 })
                 queryClient.invalidateQueries({
-                  queryKey: ["tokenBalance", dstChainId, userAddress],
+                  queryKey: ["tokenBalance", dstCurrency.chainId, userAddress],
                 })
               }
             }}

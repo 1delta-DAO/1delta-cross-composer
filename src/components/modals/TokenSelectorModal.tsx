@@ -1,7 +1,6 @@
 import type { Address } from "viem"
 import { ChainSelector } from "../swap/ChainSelector"
 import { TokenSelector } from "../tokenSelector"
-import { zeroAddress } from "viem"
 import type { RawCurrency } from "../../types/currency"
 import { getCurrency } from "../../lib/trade-helpers/utils"
 
@@ -32,7 +31,6 @@ export function TokenSelectorModal({
 }: Props) {
   if (!open) return null
 
-  // Use propChainId if provided, otherwise fall back to currency.chainId
   const chainId = propChainId || currency?.chainId
   const tokenValue = currency?.address as Address | undefined
 
@@ -46,11 +44,9 @@ export function TokenSelectorModal({
   }
 
   const handleChainChange = (cid: string) => {
-    // When chain changes, notify parent to update chainId and reset token
     if (onChainChange) {
       onChainChange(cid)
     }
-    // Also reset currency to undefined so token is cleared
     onCurrencyChange(undefined)
   }
 

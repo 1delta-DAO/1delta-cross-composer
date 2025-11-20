@@ -6,16 +6,14 @@ import { isMarketsLoading, isMarketsReady, subscribeToCacheChanges } from "../li
 import { SupportedChainId } from "../sdk/types"
 import { CurrencyHandler } from "@1delta/lib-utils/dist/services/currency/currencyUtils"
 import { getTokenFromCache } from "../lib/data/tokenListsCache"
-import type { RawCurrencyAmount } from "../types/currency"
+import type { RawCurrency, RawCurrencyAmount } from "../types/currency"
 import { LendingSubPanel } from "./LendingSubPanel"
 import { LendingActionModal } from "./LendingActionModal"
 import { useOlderfallListings } from "../hooks/useOlderfallListings"
-import { DepositPanel } from "./actions/lending/deposit/DepositPanel"
 
 interface DestinationActionSelectorProps {
   onAdd?: (config: DestinationActionConfig, functionSelector: Hex, args?: any[], value?: string) => void
-  dstToken?: string
-  dstChainId?: string
+  dstCurrency?: RawCurrency
   userAddress?: string
   tokenLists?: Record<string, Record<string, { symbol?: string; decimals?: number }>> | undefined
   setDestinationInfo?: (amount: RawCurrencyAmount | undefined) => void
@@ -23,8 +21,7 @@ interface DestinationActionSelectorProps {
 
 export default function DestinationActionSelector({
   onAdd,
-  dstToken,
-  dstChainId,
+  dstCurrency,
   userAddress,
   tokenLists,
   setDestinationInfo,
@@ -35,6 +32,9 @@ export default function DestinationActionSelector({
   const [marketsLoading, setMarketsLoading] = useState(isMarketsLoading())
   const [modalAction, setModalAction] = useState<{ config: DestinationActionConfig; selector: Hex } | null>(null)
   const [selectedOlderfallOrderId, setSelectedOlderfallOrderId] = useState<string>("")
+
+  const dstToken = useMemo(() => dstCurrency?.address as string | undefined, [dstCurrency])
+  const dstChainId = useMemo(() => dstCurrency?.chainId, [dstCurrency])
 
   // Subscribe to market cache changes
   useEffect(() => {

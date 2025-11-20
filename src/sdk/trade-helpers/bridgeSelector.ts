@@ -5,7 +5,6 @@ import type { BaseBridgeInput, BaseComposedInput } from "@1delta/trade-sdk/dist/
 import type { Address } from "viem"
 import { getPricesCallback } from "../../lib/trade-helpers/prices"
 import { getCurrency as getCurrencyRaw } from "../../lib/trade-helpers/utils"
-import type { DeltaCall } from "@1delta/trade-sdk"
 import { fetchAxelarTradeWithSwaps } from "@1delta/trade-sdk/dist/composedTrades/axelar/axelarWithSwaps"
 import { fetchAcrossTradeWithSwaps } from "@1delta/trade-sdk/dist/composedTrades/across/acrossWithSwaps"
 

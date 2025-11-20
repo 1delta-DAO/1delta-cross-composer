@@ -131,7 +131,7 @@ export function DepositPanel({ onAdd, userAddress, chainId, setDestinationInfo }
                       if (!depositAction) return null
 
                       return (
-                        <DepositCardWithBalance key={market.mToken} market={market} depositAction={depositAction} onActionClick={handleActionClick} />
+                        <DepositCardWithBalance key={market.mTokenCurrency.address} market={market} depositAction={depositAction} onActionClick={handleActionClick} />
                       )
                     })
                     .filter(Boolean)

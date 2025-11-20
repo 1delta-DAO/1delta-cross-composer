@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import type { Address } from "viem"
 import type { GenericTrade } from "@1delta/lib-utils"
 import { TradeType } from "@1delta/lib-utils"
@@ -10,14 +10,13 @@ import type { DestinationCall } from "../../lib/types/destinationAction"
 import type { DeltaCall } from "@1delta/trade-sdk"
 import { DeltaCallType } from "@1delta/trade-sdk/dist/types"
 import { fetchAllBridgeTrades } from "../trade-helpers/bridgeSelector"
+import type { RawCurrency } from "../../types/currency"
 
 type Quote = { label: string; trade: GenericTrade }
 
 export function useSwapQuotes({
-  srcChainId,
-  srcToken,
-  dstChainId,
-  dstToken,
+  srcCurrency,
+  dstCurrency,
   debouncedAmount,
   debouncedSrcKey,
   debouncedDstKey,
@@ -26,10 +25,8 @@ export function useSwapQuotes({
   txInProgress,
   destinationCalls,
 }: {
-  srcChainId?: string
-  srcToken?: Address
-  dstChainId?: string
-  dstToken?: Address
+  srcCurrency?: RawCurrency
+  dstCurrency?: RawCurrency
   debouncedAmount: string
   debouncedSrcKey: string
   debouncedDstKey: string
@@ -43,6 +40,11 @@ export function useSwapQuotes({
   const [selectedQuoteIndex, setSelectedQuoteIndex] = useState(0)
   const [amountWei, setAmountWei] = useState<string | undefined>(undefined)
   const toast = useToast()
+
+  const srcChainId = useMemo(() => srcCurrency?.chainId, [srcCurrency])
+  const srcToken = useMemo(() => (srcCurrency?.address as Address | undefined), [srcCurrency])
+  const dstChainId = useMemo(() => dstCurrency?.chainId, [dstCurrency])
+  const dstToken = useMemo(() => (dstCurrency?.address as Address | undefined), [dstCurrency])
 
   const requestInProgressRef = useRef(false)
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -198,8 +200,8 @@ export function useSwapQuotes({
       try {
         lastQuotedKeyRef.current = currentKey
         lastQuotedAtRef.current = Date.now()
-        const fromCurrency = getCurrency(sc!, st!)
-        const toCurrency = getCurrency(dc!, dt!)
+        const fromCurrency = srcCurrency
+        const toCurrency = dstCurrency
 
         if (!fromCurrency || !toCurrency) {
           throw new Error("Failed to convert tokens to SDK format")
@@ -348,10 +350,8 @@ export function useSwapQuotes({
     slippage,
     refreshTick,
     txInProgress,
-    srcChainId,
-    srcToken,
-    dstChainId,
-    dstToken,
+    srcCurrency,
+    dstCurrency,
     destinationCallsKey,
     destinationCalls,
     receiverAddress,

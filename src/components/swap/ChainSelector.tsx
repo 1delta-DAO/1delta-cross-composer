@@ -9,7 +9,7 @@ type Props = {
   onChange: (chainId: string) => void
 }
 
-const RELEVANT_CHAIN_IDS = [SupportedChainId.ETHEREUM_MAINNET, SupportedChainId.BASE, SupportedChainId.ARBITRUM_ONE, SupportedChainId.MOONBEAM]
+const RELEVANT_CHAIN_IDS = [SupportedChainId.OP_MAINNET, SupportedChainId.BASE, SupportedChainId.MOONBEAM]
 
 export function ChainSelector({ value, onChange }: Props) {
   const { data, isLoading } = useChainsRegistry()

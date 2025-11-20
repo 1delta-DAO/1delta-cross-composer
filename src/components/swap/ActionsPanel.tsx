@@ -1,9 +1,9 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import type { Address, Hex } from "viem"
 import { parseUnits } from "viem"
 import DestinationActionSelector from "../DestinationActionSelector"
 import type { DestinationActionConfig, DestinationCall } from "../../lib/types/destinationAction"
-import type { RawCurrencyAmount } from "../../types/currency"
+import type { RawCurrency, RawCurrencyAmount } from "../../types/currency"
 import { useToast } from "../common/ToastHost"
 import { ActionsList } from "../ActionsList"
 
@@ -16,8 +16,7 @@ type PendingAction = {
 }
 
 type ActionsPanelProps = {
-  dstChainId?: string
-  dstToken?: Address
+  dstCurrency?: RawCurrency
   userAddress?: Address
   currentChainId: number
   isEncoding: boolean
@@ -32,8 +31,7 @@ type ActionsPanelProps = {
 }
 
 export function ActionsPanel({
-  dstChainId,
-  dstToken,
+  dstCurrency,
   userAddress,
   isEncoding,
   setIsEncoding,
@@ -47,6 +45,9 @@ export function ActionsPanel({
   const [editingAction, setEditingAction] = useState<PendingAction | null>(null)
   const [encodedActions, setEncodedActions] = useState<PendingAction[]>([])
   const toast = useToast()
+
+  const dstChainId = useMemo(() => dstCurrency?.chainId, [dstCurrency])
+  const dstToken = useMemo(() => dstCurrency?.address as Address | undefined, [dstCurrency])
 
   const handleEncodeClick = async () => {
     try {
@@ -101,8 +102,7 @@ export function ActionsPanel({
         {encodedActions.length === 0 ? (
           <>
             <DestinationActionSelector
-              dstToken={dstToken}
-              dstChainId={dstChainId}
+              dstCurrency={dstCurrency}
               userAddress={userAddress}
               tokenLists={tokenLists}
               setDestinationInfo={setDestinationInfo}

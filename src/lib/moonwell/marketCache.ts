@@ -3,10 +3,12 @@ import { VenusLensAbi } from "../abi/compV2"
 import { erc20Abi } from "viem"
 import { getRpcSelectorEvmClient, SupportedChainId } from "@1delta/lib-utils"
 import { MOONWELL_LENS, MOONWELL_COMPTROLLER, MOONWELL_UNDERLYING_TO_MTOKEN } from "./consts"
+import type { RawCurrency } from "../../types/currency"
+import { CurrencyHandler } from "@1delta/lib-utils/dist/services/currency/currencyUtils"
 
 export type MoonwellMarket = {
-  mToken: Address
-  underlying: Address
+  mTokenCurrency: RawCurrency
+  underlyingCurrency: RawCurrency
   symbol?: string
   decimals?: number
   isListed: boolean
@@ -55,12 +57,12 @@ export function getMarketsError(): string | undefined {
 
 export function getMarketByMToken(mToken: Address): MoonwellMarket | undefined {
   if (!cachedMarkets) return undefined
-  return cachedMarkets.find((m) => m.mToken.toLowerCase() === mToken.toLowerCase())
+  return cachedMarkets.find((m) => m.mTokenCurrency.address.toLowerCase() === mToken.toLowerCase())
 }
 
 export function getMarketByUnderlying(underlying: Address): MoonwellMarket | undefined {
   if (!cachedMarkets) return undefined
-  return cachedMarkets.find((m) => m.underlying.toLowerCase() === underlying.toLowerCase())
+  return cachedMarkets.find((m) => m.underlyingCurrency.address.toLowerCase() === underlying.toLowerCase())
 }
 
 export async function initializeMoonwellMarkets(chainId: string = SupportedChainId.MOONBEAM): Promise<void> {
@@ -128,9 +130,40 @@ export async function initializeMoonwellMarkets(chainId: string = SupportedChain
         }
       } catch {}
 
-      results.push({
+      let mTokenSymbol: string | undefined
+      let mTokenDecimals: number | undefined
+      try {
+        mTokenSymbol = (await client.readContract({
+          address: mToken,
+          abi: erc20Abi,
+          functionName: "symbol",
+        })) as string
+        mTokenDecimals = (await client.readContract({
+          address: mToken,
+          abi: erc20Abi,
+          functionName: "decimals",
+        })) as number
+      } catch {}
+
+      const mTokenCurrency = CurrencyHandler.Currency(
+        chainId,
         mToken,
-        underlying: resolvedUnderlying || underlying,
+        mTokenDecimals ?? 18,
+        mTokenSymbol || "mToken",
+        mTokenSymbol || "Moonwell Market Token",
+      )
+
+      const underlyingCurrency = CurrencyHandler.Currency(
+        chainId,
+        resolvedUnderlying || underlying,
+        decimals ?? 18,
+        symbol || "Token",
+        symbol || "Token",
+      )
+
+      results.push({
+        mTokenCurrency,
+        underlyingCurrency,
         symbol,
         decimals,
         isListed: Boolean(info?.isListed),
