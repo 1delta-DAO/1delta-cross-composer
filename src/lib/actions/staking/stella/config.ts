@@ -1,8 +1,9 @@
-import { type Hex, type Address, type Abi, encodeFunctionData } from "viem"
+import { type Hex, type Address, type Abi, encodeFunctionData, maxUint256 } from "viem"
 import type { DestinationActionConfig } from "../../../types/destinationAction"
 import { SupportedChainId } from "@1delta/lib-utils"
 import { XCDOT_ADDRESS, STELLA_STDOT_ADDRESS } from "../../../consts"
 import { DeltaCallType } from "@1delta/trade-sdk/dist/types"
+import { ERC20_ABI } from "../../../abi"
 
 const PERMIT_DISPATCH_SELECTOR: Hex = "0xb5ea0966"
 
@@ -50,8 +51,14 @@ export function getActions(opts?: { dstToken?: string; dstChainId?: string }): D
       decimals: 10,
       supportedChainIds: [SupportedChainId.MOONBEAM as string],
     },
-    buildCalls: async (ctx) => {
+    buildCalls: async () => {
       return [
+        {
+          target: XCDOT_ADDRESS,
+          calldata: encodeFunctionData({ abi: ERC20_ABI, functionName: "approve", args: [STELLA_STDOT_ADDRESS, maxUint256] }),
+          value: 0n,
+          callType: DeltaCallType.DEFAULT,
+        },
         {
           target: STELLA_STDOT_ADDRESS,
           calldata: encodeFunctionData({ abi: STAKING_ABI, functionName: "deposit", args: [0n] }),
