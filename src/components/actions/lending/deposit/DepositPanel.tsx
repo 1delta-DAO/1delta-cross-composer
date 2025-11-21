@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from "react"
-import type { Hex } from "viem"
 import type { DestinationActionConfig } from "../../../../lib/types/destinationAction"
 import {
   getCachedMarkets,
@@ -33,13 +32,12 @@ function DepositCardWithBalance({
 }
 
 type DepositPanelProps = {
-  onAdd?: (config: DestinationActionConfig, functionSelector: Hex, args: any[], value?: string) => void
   userAddress?: string
   chainId?: string
   setDestinationInfo?: DestinationActionHandler
 }
 
-export function DepositPanel({ onAdd, userAddress, chainId, setDestinationInfo }: DepositPanelProps) {
+export function DepositPanel({ userAddress, chainId, setDestinationInfo }: DepositPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [marketsReady, setMarketsReady] = useState(isMarketsReady())
   const [marketsLoading, setMarketsLoading] = useState(isMarketsLoading())
