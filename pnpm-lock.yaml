@@ -15,6 +15,9 @@ importers:
       '@1delta/bridge-configs':
         specifier: ^0.1.4
         version: 0.1.5(ajv@8.17.1)(bufferutil@4.0.9)(cross-fetch@4.1.0)(ipfs-only-hash@4.0.0)(multiformats@9.9.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(vitest@3.0.9(@types/debug@4.1.12)(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6))(zod@4.1.12)
+      '@1delta/calldata-sdk':
+        specifier: ^0.0.123
+        version: 0.0.123(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.12)
       '@1delta/calldatalib':
         specifier: 0.0.46
         version: 0.0.46(viem@2.39.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.12))

@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@1delta/bridge-configs": "^0.1.5",
+    "@1delta/calldata-sdk": "^0.0.123",
     "@1delta/calldatalib": "0.0.46",
     "@1delta/chain-registry": "^0.0.2",
     "@1delta/data-sdk": "^0.0.10",
