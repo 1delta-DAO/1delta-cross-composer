@@ -8,6 +8,7 @@ import { useOlderfallListings } from "./hooks/useOlderfallListings"
 import { SupportedChainId } from "../../../../sdk/types"
 import { CurrencyHandler } from "@1delta/lib-utils/dist/services/currency/currencyUtils"
 import { getTokenFromCache } from "../../../../lib/data/tokenListsCache"
+import { DestinationActionHandler } from "../../shared/types"
 
 type TokenListsMeta = Record<string, Record<string, { symbol?: string; decimals?: number }>>
 
@@ -17,6 +18,7 @@ interface OlderfallPanelProps {
   userAddress?: string
   tokenLists?: TokenListsMeta
   onAdd?: (config: DestinationActionConfig, selector: Hex, args: any[], value?: string) => void
+  setDestinationInfo?: DestinationActionHandler
 }
 
 /* ---------- helpers & subcomponents (same as before) ---------- */
@@ -176,7 +178,7 @@ export function OlderfallPanel({ dstToken, dstChainId, userAddress, tokenLists, 
   const { listings: olderfallListings, loading: olderfallLoading } = useOlderfallListings(hasOlderfall, dstChainId)
 
   // If no actions or no onAdd callback, don't render anything
-  if (!hasOlderfall || !onAdd) {
+  if (!hasOlderfall) {
     return null
   }
 
@@ -218,7 +220,8 @@ export function OlderfallPanel({ dstToken, dstChainId, userAddress, tokenLists, 
       } as any,
     }
 
-    onAdd(cfgWithMeta, selector, args, "0")
+    onAdd?.(cfgWithMeta, selector, args, "0")
+    // setDestinationInfo(...)
     setSelectedOlderfallOrderId("")
   }
 

@@ -6,6 +6,7 @@ import type { DestinationActionConfig, DestinationCall } from "../../lib/types/d
 import type { RawCurrency, RawCurrencyAmount } from "../../types/currency"
 import { useToast } from "../common/ToastHost"
 import { ActionsList } from "../ActionsList"
+import { DestinationActionHandler } from "../actions/shared/types"
 
 type PendingAction = {
   id: string
@@ -27,7 +28,7 @@ type ActionsPanelProps = {
   setActions: React.Dispatch<React.SetStateAction<PendingAction[]>>
   onRefreshQuotes: () => void
   tokenLists?: Record<string, Record<string, { symbol?: string; decimals?: number }>> | undefined
-  setDestinationInfo?: (amount: RawCurrencyAmount | undefined) => void
+  setDestinationInfo?: DestinationActionHandler
 }
 
 export function ActionsPanel({
@@ -47,7 +48,6 @@ export function ActionsPanel({
   const toast = useToast()
 
   const dstChainId = useMemo(() => dstCurrency?.chainId, [dstCurrency])
-  const dstToken = useMemo(() => dstCurrency?.address as Address | undefined, [dstCurrency])
 
   const handleEncodeClick = async () => {
     try {
@@ -106,18 +106,6 @@ export function ActionsPanel({
               userAddress={userAddress}
               tokenLists={tokenLists}
               setDestinationInfo={setDestinationInfo}
-              onAdd={(config, selector, args, value) => {
-                setActions((arr) => [
-                  ...arr,
-                  {
-                    id: Math.random().toString(36).slice(2),
-                    config,
-                    selector,
-                    args: args || [],
-                    value: value,
-                  },
-                ])
-              }}
             />
             <ActionsList
               actions={actions}

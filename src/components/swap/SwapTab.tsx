@@ -46,7 +46,6 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
   const { data: chains } = useChainsRegistry()
   const { data: lists } = useTokenLists()
   const currentChainId = useChainId()
-  const { switchChain } = useSwitchChain()
 
   // Single source of truth for chain+token
   const [srcCurrency, setSrcCurrency] = useState<RawCurrency | undefined>(undefined)
@@ -61,22 +60,6 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
   const dstTokensMap = dstChainId ? lists?.[dstChainId] || {} : {}
   const srcAddrs = useMemo(() => (srcChainId ? (Object.keys(srcTokensMap) as Address[]).slice(0, 300) : []), [srcTokensMap, srcChainId])
   const dstAddrs = useMemo(() => (dstChainId ? (Object.keys(dstTokensMap) as Address[]).slice(0, 300) : []), [dstTokensMap, dstChainId])
-
-  // Prevent chain flip during encoding/signing
-  const [isEncoding, setIsEncoding] = useState(false)
-
-  // Switch wallet chain when source chain changes
-  useEffect(() => {
-    if (!srcChainId || isEncoding) return
-    const srcChainIdNum = Number(srcChainId)
-    if (currentChainId !== srcChainIdNum) {
-      try {
-        switchChain({ chainId: srcChainIdNum })
-      } catch (err: unknown) {
-        console.warn("Failed to switch chain:", err)
-      }
-    }
-  }, [srcChainId, currentChainId, switchChain, isEncoding])
 
   // Auto-preselect initial src/dst currencies if empty
   useEffect(() => {
@@ -397,7 +380,7 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
   const dstSymbol = quotes[selectedQuoteIndex]?.trade?.outputAmount?.currency?.symbol || dstCurrency?.symbol || "Token"
 
   const setDestinationInfo = useCallback(
-    (currencyAmount: RawCurrencyAmount | undefined) => {
+    (currencyAmount: RawCurrencyAmount | undefined, receiverAddress: string | undefined, destinationCalls: DestinationCall[]) => {
       if (!currencyAmount) return
 
       const dstCur = currencyAmount.currency as RawCurrency
@@ -415,6 +398,7 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
       const decimalsOut = dstCur.decimals
       const amountIn = reverseQuote(decimalsIn!, decimalsOut, amountHuman.toString(), priceIn ?? 1, priceOut ?? 1)
       setAmount(amountIn)
+      setDestinationCalls(destinationCalls)
     },
     [srcCurrency, srcPricesMerged, dstPricesMerged]
   )
@@ -447,10 +431,8 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
             type="button"
             className="btn rounded-2xl bg-base-100 border-2 border-base-100 shadow-lg hover:shadow-xl transition-shadow"
             onClick={() => {
-              const sCur = srcCurrency
-              const dCur = dstCurrency
-              setSrcCurrency(dCur)
-              setDstCurrency(sCur)
+              setSrcCurrency(dstCurrency)
+              setDstCurrency(srcCurrency)
             }}
           >
             <span style={{ fontSize: "30px" }}>↕</span>
@@ -574,12 +556,7 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
         dstCurrency={dstCurrency}
         userAddress={userAddress}
         currentChainId={currentChainId}
-        isEncoding={isEncoding}
-        setIsEncoding={setIsEncoding}
         destinationCalls={destinationCalls}
-        setDestinationCalls={setDestinationCalls}
-        actions={actions}
-        setActions={setActions}
         onRefreshQuotes={refreshQuotes}
         tokenLists={lists}
         setDestinationInfo={setDestinationInfo}

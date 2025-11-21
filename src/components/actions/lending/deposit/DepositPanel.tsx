@@ -12,6 +12,7 @@ import {
 import { getActionsForMarket } from "../../../../lib/actions/lending/moonwell/config"
 import { DepositActionModal } from "./DepositModal"
 import { DepositCard } from "./DepositCard"
+import { DestinationActionHandler } from "../../shared/types"
 function DepositCardWithBalance({
   market,
   depositAction,
@@ -36,7 +37,7 @@ type DepositPanelProps = {
   onAdd?: (config: DestinationActionConfig, functionSelector: Hex, args: any[], value?: string) => void
   userAddress?: string
   chainId?: string
-  setDestinationInfo?: (amount: RawCurrencyAmount | undefined) => void
+  setDestinationInfo?: DestinationActionHandler
 }
 
 export function DepositPanel({ onAdd, userAddress, chainId, setDestinationInfo }: DepositPanelProps) {
@@ -131,7 +132,12 @@ export function DepositPanel({ onAdd, userAddress, chainId, setDestinationInfo }
                       if (!depositAction) return null
 
                       return (
-                        <DepositCardWithBalance key={market.mTokenCurrency.address} market={market} depositAction={depositAction} onActionClick={handleActionClick} />
+                        <DepositCardWithBalance
+                          key={market.mTokenCurrency.address}
+                          market={market}
+                          depositAction={depositAction}
+                          onActionClick={handleActionClick}
+                        />
                       )
                     })
                     .filter(Boolean)

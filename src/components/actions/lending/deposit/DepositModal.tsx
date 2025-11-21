@@ -4,6 +4,7 @@ import { toFunctionSelector, parseUnits } from "viem"
 import type { DestinationActionConfig } from "../../../../lib/types/destinationAction"
 import type { RawCurrencyAmount } from "../../../../types/currency"
 import { CurrencyHandler } from "@1delta/lib-utils/dist/services/currency/currencyUtils"
+import { DestinationActionHandler } from "../../shared/types"
 
 type DepositActionModalProps = {
   open: boolean
@@ -15,7 +16,7 @@ type DepositActionModalProps = {
   userAddress?: Address
   chainId?: string
   onConfirm: (config: DestinationActionConfig, selector: Hex, args: any[], value?: string) => void
-  setDestinationInfo?: (amount: RawCurrencyAmount | undefined) => void
+  setDestinationInfo?: DestinationActionHandler
 }
 
 function findFunctionBySelector(abi: Abi, selector: Hex): any {
@@ -88,12 +89,12 @@ export function DepositActionModal({
       try {
         const amountBigInt = parseUnits(amount, underlying.decimals)
         const currencyAmount = CurrencyHandler.fromRawAmount(underlying, amountBigInt)
-        setDestinationInfo(currencyAmount)
+        setDestinationInfo(currencyAmount, userAddress, [])
       } catch {
-        setDestinationInfo(undefined)
+        setDestinationInfo(undefined, userAddress!, [])
       }
     } else if (setDestinationInfo) {
-      setDestinationInfo(undefined)
+      setDestinationInfo(undefined, undefined, [])
     }
 
     onConfirm(actionConfig, selector, args, value)

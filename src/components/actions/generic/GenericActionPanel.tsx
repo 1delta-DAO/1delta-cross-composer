@@ -3,12 +3,14 @@ import type { Hex } from "viem"
 import { DestinationActionConfig, DestinationActionType } from "../../../lib/types/destinationAction"
 import { getAllActions, getActionsByGroup } from "../../../lib/actions/registry"
 import { GenericActionModal } from "./GenericActionModal"
+import { DestinationActionHandler } from "../shared/types"
 
 interface NonLendingActionsPanelProps {
   dstToken?: string
   dstChainId?: string
   userAddress?: string
   onAdd?: (config: DestinationActionConfig, functionSelector: Hex, args?: any[], value?: string) => void
+  setDestinationInfo?: DestinationActionHandler
 }
 
 type ModalActionState = { config: DestinationActionConfig; selector: Hex } | null
