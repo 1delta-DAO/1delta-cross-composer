@@ -83,7 +83,7 @@ export function OlderfallPanel({ userAddress, tokenLists, setDestinationInfo }: 
 
   const { listings: olderfallListings, loading: olderfallLoading } = useOlderfallListings(true, dstChainId)
 
-  const handleAddClick = async () => {
+  const handleAddClick = async (selectedOlderfallOrderId: string) => {
     if (!selectedOlderfallOrderId || !userAddress) return
 
     // Pick the first Olderfall config (they all share the same group)
@@ -100,6 +100,7 @@ export function OlderfallPanel({ userAddress, tokenLists, setDestinationInfo }: 
       buyer: userAddress as any,
       listing,
     })
+    console.log("listing.pricePerToken", listing.pricePerToken, setDestinationInfo)
     setDestinationInfo?.(
       // define output amount
       CurrencyHandler.fromRawAmount(
@@ -133,19 +134,16 @@ export function OlderfallPanel({ userAddress, tokenLists, setDestinationInfo }: 
       {olderfallLoading ? (
         <OlderfallLoadingState />
       ) : olderfallListings.length > 0 ? (
-        <div className="space-y-2">
-          <OlderfallListingsList
-            listings={olderfallListings}
-            dstChainId={dstChainId}
-            tokenLists={tokenLists}
-            selectedOrderId={selectedOlderfallOrderId}
-            onSelectOrderId={setSelectedOlderfallOrderId}
-          />
-
-          <button className="btn btn-primary btn-sm" disabled={!selectedOlderfallOrderId || !userAddress} onClick={handleAddClick}>
-            Add
-          </button>
-        </div>
+        <OlderfallListingsList
+          listings={olderfallListings}
+          dstChainId={dstChainId}
+          tokenLists={tokenLists}
+          selectedOrderId={selectedOlderfallOrderId}
+          onSelectOrderId={async (id) => {
+            await setSelectedOlderfallOrderId(id)
+            await handleAddClick(id)
+          }}
+        />
       ) : (
         <OlderfallEmptyState />
       )}

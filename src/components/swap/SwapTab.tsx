@@ -45,7 +45,6 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
   const { data: chains } = useChainsRegistry()
   const { data: lists } = useTokenLists()
   const currentChainId = useChainId()
-
   // Single source of truth for chain+token
   const [srcCurrency, setSrcCurrency] = useState<RawCurrency | undefined>(undefined)
   const [dstCurrency, setDstCurrency] = useState<RawCurrency | undefined>(undefined)
@@ -337,9 +336,8 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
       const priceIn = srcCurrency ? getTokenPrice(srcCurrency.chainId, srcCurrency.address as Address, srcPricesMerged) : 1
       const priceOut = getTokenPrice(dstCur.chainId, dstCur.address as Address, dstPricesMerged)
 
-      const decimalsIn = srcCurrency?.decimals
       const decimalsOut = dstCur.decimals
-      const amountIn = reverseQuote(decimalsIn!, decimalsOut, amountHuman.toString(), priceIn ?? 1, priceOut ?? 1)
+      const amountIn = reverseQuote(decimalsOut, currencyAmount.amount.toString(), priceIn ?? 1, priceOut ?? 1)
       setAmount(amountIn)
       setDestinationCalls(destinationCalls)
     },

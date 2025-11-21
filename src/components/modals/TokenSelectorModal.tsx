@@ -4,6 +4,7 @@ import { ChainSelector } from "../swap/ChainSelector"
 import { TokenSelector } from "../tokenSelector"
 import type { RawCurrency } from "../../types/currency"
 import { getCurrency } from "../../lib/trade-helpers/utils"
+import { Chain } from "@1delta/chain-registry"
 
 type Props = {
   open: boolean
@@ -29,7 +30,7 @@ export function TokenSelectorModal({
   excludeAddresses,
 }: Props) {
   // internal chainId, defaulting from currency when opening / changing
-  const [chainId, setChainId] = useState<string | undefined>(currency?.chainId)
+  const [chainId, setChainId] = useState<string | undefined>(currency?.chainId ?? Chain.POLYGON_MAINNET)
 
   const tokenValue = currency?.address as Address | undefined
 
