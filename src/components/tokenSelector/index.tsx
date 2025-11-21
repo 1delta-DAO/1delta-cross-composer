@@ -250,7 +250,7 @@ export function TokenSelector({
 
       return 5
     },
-    [nativeCurrencySymbol],
+    [nativeCurrencySymbol]
   )
 
   const rows: TokenRowData[] = useMemo(() => {
