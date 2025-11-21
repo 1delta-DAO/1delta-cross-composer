@@ -1,15 +1,13 @@
 // ./actions/nft/olderfall/OlderfallPanel.tsx
 
 import { useEffect, useMemo, useState } from "react"
-import type { Hex } from "viem"
-import type { DestinationActionConfig } from "../../../../lib/types/destinationAction"
 import { getAllActions } from "../../../../lib/actions/registry"
 import { useOlderfallListings } from "./hooks/useOlderfallListings"
 import { CurrencyHandler, SupportedChainId } from "../../../../sdk/types"
 import { DestinationActionHandler } from "../../shared/types"
 import { Chain } from "@1delta/chain-registry"
 import { OlderfallListingCard } from "./OlderfallCard"
-import { buildCurrencyMetaForListing, formatListingPriceLabel } from "./utils"
+import { formatListingPriceLabel } from "./utils"
 import { OlderfallEmptyState, OlderfallHeader, OlderfallLoadingState } from "./Generic"
 import { buildCalls } from "./callBuilder"
 
@@ -76,7 +74,6 @@ export function OlderfallPanel({ userAddress, tokenLists, setDestinationInfo }: 
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(0)
 
   const selectedOption = OLDERFALL_OPTIONS[selectedOptionIndex]
-  const dstToken = selectedOption.token
   const dstChainId = String(selectedOption.chainId)
 
   // Reset selected listing when switching chain
@@ -84,57 +81,16 @@ export function OlderfallPanel({ userAddress, tokenLists, setDestinationInfo }: 
     setSelectedOlderfallOrderId("")
   }, [selectedOptionIndex])
 
-  // Get Olderfall actions for the currently selected option
-  const allActions = useMemo(() => getAllActions({ dstToken, dstChainId }), [dstToken, dstChainId])
-
-  const olderfallActions = useMemo(() => allActions.filter((a) => a.group === "olderfall_nft"), [allActions])
-
-  const hasOlderfall = olderfallActions.length > 0
-
-  const { listings: olderfallListings, loading: olderfallLoading } = useOlderfallListings(hasOlderfall, dstChainId)
-
-  // If no actions for this option, don't render anything at all
-  if (!hasOlderfall) {
-    return null
-  }
+  const { listings: olderfallListings, loading: olderfallLoading } = useOlderfallListings(true, dstChainId)
 
   const handleAddClick = async () => {
     if (!selectedOlderfallOrderId || !userAddress) return
 
     // Pick the first Olderfall config (they all share the same group)
-    const cfg = olderfallActions.find((a) => a.group === "olderfall_nft") ?? olderfallActions[0]
     const listing = olderfallListings.find((l) => l.orderId === selectedOlderfallOrderId)
 
-    if (!cfg || !listing) return
+    if (!listing) return
 
-    const selector = (cfg.defaultFunctionSelector as Hex) || (cfg.functionSelectors[0] as Hex) || ("0x" as Hex)
-
-    const args: any[] = [
-      BigInt(selectedOlderfallOrderId),
-      1n,
-      userAddress,
-      [],
-      [],
-      BigInt(listing.tokenId),
-      listing.currency,
-      listing.pricePerToken,
-      listing.tokenContract,
-    ]
-
-    const { minDstAmount } = buildCurrencyMetaForListing(listing, dstChainId, tokenLists)
-
-    const cfgWithMeta: DestinationActionConfig = {
-      ...cfg,
-      meta: {
-        ...(cfg.meta || {}),
-        sequenceCurrency: listing.currency,
-        sequencePricePerToken: listing.pricePerToken,
-        sequenceTokenId: listing.tokenId,
-        sequencePriceDecimals: listing.priceDecimals,
-        minDstAmount,
-        minDstAmountBufferBps: 30,
-      } as any,
-    }
     // read selected option
     const { chainId, token } = selectedOption
 
