@@ -1,7 +1,5 @@
 import { useState, useEffect, useMemo } from "react"
-import type { Hex, Address } from "viem"
 import type { DestinationActionConfig } from "../../../../lib/types/destinationAction"
-import type { RawCurrencyAmount } from "../../../../types/currency"
 import {
   getCachedMarkets,
   isMarketsReady,
@@ -12,6 +10,8 @@ import {
 import { getActionsForMarket } from "../../../../lib/actions/lending/moonwell/config"
 import { DepositActionModal } from "./DepositModal"
 import { DepositCard } from "./DepositCard"
+import { DestinationActionHandler } from "../../shared/types"
+
 function DepositCardWithBalance({
   market,
   depositAction,
@@ -19,8 +19,7 @@ function DepositCardWithBalance({
 }: {
   market: MoonwellMarket
   depositAction: DestinationActionConfig | undefined
-
-  onActionClick: (config: DestinationActionConfig, selector: Hex) => void
+  onActionClick: () => void
 }) {
   const shouldShowDeposit = true
 
@@ -29,21 +28,19 @@ function DepositCardWithBalance({
     return null
   }
 
-  return <DepositCard market={market} depositAction={depositAction} onActionClick={onActionClick} />
+  return <DepositCard market={market} onActionClick={onActionClick} />
 }
 
 type DepositPanelProps = {
-  onAdd?: (config: DestinationActionConfig, functionSelector: Hex, args: any[], value?: string) => void
   userAddress?: string
   chainId?: string
-  setDestinationInfo?: (amount: RawCurrencyAmount | undefined) => void
+  setDestinationInfo?: DestinationActionHandler
 }
 
-export function DepositPanel({ onAdd, userAddress, chainId, setDestinationInfo }: DepositPanelProps) {
+export function DepositPanel({ userAddress, chainId, setDestinationInfo }: DepositPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [marketsReady, setMarketsReady] = useState(isMarketsReady())
   const [marketsLoading, setMarketsLoading] = useState(isMarketsLoading())
-  const [modalAction, setModalAction] = useState<{ config: DestinationActionConfig; selector: Hex } | null>(null)
 
   // Subscribe to market cache changes
   useEffect(() => {
@@ -70,18 +67,7 @@ export function DepositPanel({ onAdd, userAddress, chainId, setDestinationInfo }
     return allActions.find((a) => a.name.startsWith("Deposit"))
   }
 
-  const handleActionClick = (config: DestinationActionConfig, selector: Hex) => {
-    if (onAdd) {
-      setModalAction({ config, selector })
-    }
-  }
-
-  const handleModalConfirm = (config: DestinationActionConfig, selector: Hex, args: any[], value?: string) => {
-    if (onAdd) {
-      onAdd(config, selector, args, value)
-    }
-    setModalAction(null)
-  }
+  const [selectedMarket, setSelectedMarket] = useState<undefined | MoonwellMarket>(undefined)
 
   // Loading / empty states
   if (marketsLoading && !marketsReady) {
@@ -131,7 +117,12 @@ export function DepositPanel({ onAdd, userAddress, chainId, setDestinationInfo }
                       if (!depositAction) return null
 
                       return (
-                        <DepositCardWithBalance key={market.mTokenCurrency.address} market={market} depositAction={depositAction} onActionClick={handleActionClick} />
+                        <DepositCardWithBalance
+                          key={market.mTokenCurrency.address}
+                          market={market}
+                          depositAction={depositAction}
+                          onActionClick={() => setSelectedMarket(market)}
+                        />
                       )
                     })
                     .filter(Boolean)
@@ -142,16 +133,16 @@ export function DepositPanel({ onAdd, userAddress, chainId, setDestinationInfo }
         </div>
       </div>
 
-      <DepositActionModal
-        open={modalAction !== null}
-        onClose={() => setModalAction(null)}
-        actionConfig={modalAction?.config || null}
-        selector={modalAction?.selector || null}
-        userAddress={userAddress as any}
-        chainId={chainId}
-        onConfirm={handleModalConfirm}
-        setDestinationInfo={setDestinationInfo}
-      />
+      {selectedMarket && (
+        <DepositActionModal
+          open={!!selectedMarket}
+          market={selectedMarket}
+          onClose={() => setSelectedMarket(undefined)}
+          userAddress={userAddress as any}
+          chainId={chainId}
+          setDestinationInfo={setDestinationInfo}
+        />
+      )}
     </>
   )
 }

@@ -5,89 +5,111 @@ import { setPricesFromDexscreener } from "../../lib/trade-helpers/prices"
 
 export type PricesRecord = Record<string, Record<string, { usd: number }>>
 
-const DEXSCREENER_TOKEN_URL = (addresses: string[]) => `https://api.dexscreener.com/latest/dex/tokens/${addresses.join(",")}`
+const DEXSCREENER_TOKEN_URL = (chainId: string, tokenAddress: string) => `https://api.dexscreener.com/token-pairs/v1/${chainId}/${tokenAddress}`
 
-const CHAIN_ID_MAP: Record<string, string[]> = {
-  "1": ["ethereum", "1"],
-  "10": ["optimism", "10"],
-  "56": ["bsc", "56"],
-  "137": ["polygon", "137"],
-  "42161": ["arbitrum", "42161"],
-  "43114": ["avalanche", "43114"],
-  "8453": ["base", "8453"],
-  "5000": ["mantle", "5000"],
-  "1284": ["moonbeam", "1284"],
-  "1285": ["moonriver", "1285"],
-  "9745": ["opbnb", "9745"],
+const CHAIN_ID_MAP: Record<string, string> = {
+  "1": "ethereum",
+  "10": "optimism",
+  "56": "bsc",
+  "137": "polygon",
+  "42161": "arbitrum",
+  "43114": "avalanche",
+  "8453": "base",
+  "5000": "mantle",
+  "1284": "moonbeam",
+  "1285": "moonriver",
+  "9745": "opbnb",
 }
 
-function getDexscreenerChainIds(chainId: string): string[] {
-  return CHAIN_ID_MAP[chainId] || [chainId.toLowerCase(), chainId]
+export function getDexscreenerChainId(chainId: string): string {
+  return CHAIN_ID_MAP[chainId] || chainId.toLowerCase()
 }
 
-type DexscreenerResponse = {
-  schemaVersion?: string
-  pairs?: Array<{
-    chainId?: string
-    priceUsd?: string
-    baseToken?: { address?: string }
-    liquidity?: { usd?: number }
-    volume?: { h24?: number }
-  }>
+type DexscreenerResponse = Array<{
+  chainId?: string
+  priceUsd?: string
+  baseToken?: {
+    address?: string
+    name?: string
+    symbol?: string
+  }
+  quoteToken?: {
+    address?: string
+    name?: string
+    symbol?: string
+  }
+  liquidity?: {
+    usd?: number
+    base?: number
+    quote?: number
+  }
+  volume?: {
+    h24?: number
+    h6?: number
+    h1?: number
+    m5?: number
+  }
+}>
+
+async function fetchTokenPrice(chainId: string, tokenAddress: string): Promise<number | undefined> {
+  const dexscreenerChainId = getDexscreenerChainId(chainId)
+  const url = DEXSCREENER_TOKEN_URL(dexscreenerChainId, tokenAddress.toLowerCase())
+
+  try {
+    const res = await fetch(url)
+    if (!res.ok) return undefined
+
+    const json = (await res.json()) as DexscreenerResponse
+
+    if (!json || json.length === 0) return undefined
+
+    let bestPrice: number | undefined
+    let bestLiquidity = 0
+    let bestVolume = 0
+
+    for (const pair of json) {
+      if (!pair.priceUsd || !pair.baseToken?.address) continue
+
+      const addr = pair.baseToken.address.toLowerCase()
+      if (addr !== tokenAddress.toLowerCase()) continue
+
+      const price = Number(pair.priceUsd)
+      if (!isFinite(price) || price <= 0) continue
+
+      const liquidity = pair.liquidity?.usd ? Number(pair.liquidity.usd) : 0
+      const volume = pair.volume?.h24 ? Number(pair.volume.h24) : 0
+
+      if (!bestPrice || liquidity > bestLiquidity || (liquidity === bestLiquidity && volume > bestVolume)) {
+        bestPrice = price
+        bestLiquidity = liquidity
+        bestVolume = volume
+      }
+    }
+
+    return bestPrice
+  } catch {
+    return undefined
+  }
 }
 
-async function fetchPrices(chainId: string, addresses: Address[]): Promise<PricesRecord> {
+export async function fetchPrices(chainId: string, addresses: Address[]): Promise<PricesRecord> {
   const out: Record<string, { usd: number }> = {}
   if (addresses.length === 0) return { [chainId]: out }
 
   const uniq = Array.from(new Set(addresses.map((a) => a.toLowerCase())))
-  const validChainIds = getDexscreenerChainIds(chainId)
 
-  try {
-    const res = await fetch(DEXSCREENER_TOKEN_URL(uniq))
-    if (!res.ok) return { [chainId]: out }
+  const pricePromises = uniq.map(async (addr) => {
+    const price = await fetchTokenPrice(chainId, addr)
+    return { addr, price }
+  })
 
-    const json = (await res.json()) as DexscreenerResponse
+  const results = await Promise.all(pricePromises)
 
-    const priceMap: Record<string, { price: number; liquidity?: number; volume?: number }> = {}
-
-    if (json.pairs) {
-      for (const pair of json.pairs) {
-        if (pair.priceUsd && pair.baseToken?.address) {
-          const pairChainId = pair.chainId?.toLowerCase() || pair.chainId
-          const addr = pair.baseToken.address.toLowerCase()
-
-          if (pairChainId && !validChainIds.some((validId) => validId.toLowerCase() === pairChainId.toLowerCase())) {
-            continue
-          }
-
-          const price = Number(pair.priceUsd)
-          if (!isFinite(price) || price <= 0) continue
-
-          const liquidity = pair.liquidity?.usd ? Number(pair.liquidity.usd) : 0
-          const volume = pair.volume?.h24 ? Number(pair.volume.h24) : 0
-
-          const existing = priceMap[addr]
-          if (!existing) {
-            priceMap[addr] = { price, liquidity, volume }
-          } else {
-            const existingLiquidity = existing.liquidity || 0
-            const existingVolume = existing.volume || 0
-            if (liquidity > existingLiquidity || (liquidity === existingLiquidity && volume > existingVolume)) {
-              priceMap[addr] = { price, liquidity, volume }
-            }
-          }
-        }
-      }
+  for (const { addr, price } of results) {
+    if (price !== undefined && price > 0) {
+      out[addr] = { usd: price }
     }
-
-    for (const addr of uniq) {
-      const entry = priceMap[addr]
-      if (entry) {
-        out[addr] = { usd: entry.price }
-      }
-    }
-  } catch {}
+  }
 
   return { [chainId]: out }
 }

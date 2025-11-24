@@ -11,7 +11,7 @@ import { useDexscreenerPrices } from "../../hooks/prices/useDexscreenerPrices"
 import { useTokenPrice } from "../../hooks/prices/useTokenPrice"
 import { useDebounce } from "../../hooks/useDebounce"
 import { CurrencyHandler, SupportedChainId } from "../../sdk/types"
-import type { RawCurrencyAmount } from "../../types/currency"
+import type { RawCurrency, RawCurrencyAmount } from "../../types/currency"
 import { useQueryClient } from "@tanstack/react-query"
 import { useSlippage } from "../../contexts/SlippageContext"
 import { useSwapQuotes } from "../../sdk/hooks/useSwapQuotes"
@@ -24,8 +24,6 @@ import { ActionsPanel } from "./ActionsPanel"
 import { formatDisplayAmount, getTokenPrice, pickPreferredToken } from "./swapUtils"
 import type { DestinationActionConfig, DestinationCall } from "../../lib/types/destinationAction"
 import { reverseQuote } from "../../lib/reverseQuote"
-import { getCurrency } from "../../lib/trade-helpers/utils"
-import type { RawCurrency } from "../../types/currency"
 
 type PendingAction = {
   id: string
@@ -40,39 +38,61 @@ type Props = {
   onResetStateChange?: (showReset: boolean, resetCallback?: () => void) => void
 }
 
-const DEFAULT_BUFFER_BPS = 50
+const DEFAULT_SRC_CHAIN_ID = SupportedChainId.BASE
+const DEFAULT_DST_CHAIN_ID = SupportedChainId.MOONBEAM
 
 export function SwapTab({ userAddress, onResetStateChange }: Props) {
   const { data: chains } = useChainsRegistry()
   const { data: lists } = useTokenLists()
   const currentChainId = useChainId()
-  const { switchChain, switchChainAsync } = useSwitchChain()
-  const [srcChainId, setSrcChainId] = useState<string | undefined>("8453") // Base chain
-  const [dstChainId, setDstChainId] = useState<string | undefined>(SupportedChainId.MOONBEAM)
-  const [srcToken, setSrcToken] = useState<Address | undefined>(undefined)
-  const [dstToken, setDstToken] = useState<Address | undefined>(undefined)
+  // Single source of truth for chain+token
+  const [srcCurrency, setSrcCurrency] = useState<RawCurrency | undefined>(undefined)
+  const [dstCurrency, setDstCurrency] = useState<RawCurrency | undefined>(undefined)
   const [amount, setAmount] = useState("")
+
+  // Derived chainIds (no extra state)
+  const srcChainId = srcCurrency?.chainId ?? DEFAULT_SRC_CHAIN_ID
+  const dstChainId = dstCurrency?.chainId ?? DEFAULT_DST_CHAIN_ID
 
   const srcTokensMap = srcChainId ? lists?.[srcChainId] || {} : {}
   const dstTokensMap = dstChainId ? lists?.[dstChainId] || {} : {}
   const srcAddrs = useMemo(() => (srcChainId ? (Object.keys(srcTokensMap) as Address[]).slice(0, 300) : []), [srcTokensMap, srcChainId])
   const dstAddrs = useMemo(() => (dstChainId ? (Object.keys(dstTokensMap) as Address[]).slice(0, 300) : []), [dstTokensMap, dstChainId])
 
-  // Prevent chain flip during encoding/signing
-  const [isEncoding, setIsEncoding] = useState(false)
-
-  // Switch wallet chain when source chain changes
+  // Auto-preselect initial src/dst currencies if empty
   useEffect(() => {
-    if (!srcChainId || isEncoding) return
-    const srcChainIdNum = Number(srcChainId)
-    if (currentChainId !== srcChainIdNum) {
-      try {
-        switchChain({ chainId: srcChainIdNum })
-      } catch (err: unknown) {
-        console.warn("Failed to switch chain:", err)
-      }
-    }
-  }, [srcChainId, currentChainId, switchChain, isEncoding])
+    if (srcCurrency || !lists || !chains) return
+    const native = chains?.[DEFAULT_SRC_CHAIN_ID]?.data?.nativeCurrency?.symbol
+    const force = DEFAULT_SRC_CHAIN_ID === SupportedChainId.BASE ? "USDC" : undefined
+    const tokensMap = lists[DEFAULT_SRC_CHAIN_ID] || {}
+    const pick = pickPreferredToken(tokensMap, force || native)
+    if (!pick) return
+    const meta = tokensMap[pick.toLowerCase()]
+    if (!meta) return
+    setSrcCurrency({
+      chainId: DEFAULT_SRC_CHAIN_ID,
+      address: pick,
+      decimals: meta.decimals ?? 18,
+      symbol: meta.symbol,
+    })
+  }, [srcCurrency, lists, chains])
+
+  useEffect(() => {
+    if (dstCurrency || !lists || !chains) return
+    const native = chains?.[DEFAULT_DST_CHAIN_ID]?.data?.nativeCurrency?.symbol
+    const force = DEFAULT_DST_CHAIN_ID === SupportedChainId.MOONBEAM ? "GLMR" : undefined
+    const tokensMap = lists[DEFAULT_DST_CHAIN_ID] || {}
+    const pick = pickPreferredToken(tokensMap, force || native)
+    if (!pick) return
+    const meta = tokensMap[pick.toLowerCase()]
+    if (!meta) return
+    setDstCurrency({
+      chainId: DEFAULT_DST_CHAIN_ID,
+      address: pick,
+      decimals: meta.decimals ?? 18,
+      symbol: meta.symbol,
+    })
+  }, [dstCurrency, lists, chains])
 
   // Include zero address for native token balance
   const srcAddressesWithNative = useMemo(() => {
@@ -84,14 +104,14 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
     return addrs
   }, [srcAddrs, srcChainId, userAddress])
 
-  const { data: srcBalances, isLoading: srcBalancesLoading } = useEvmBalances({
-    chainId: srcChainId || "",
+  const { data: srcBalances } = useEvmBalances({
+    chainId: srcChainId,
     userAddress,
     tokenAddresses: srcAddressesWithNative,
   })
 
   const srcPriceAddresses = useMemo(() => {
-    if (!srcBalances?.[srcChainId || ""] || !userAddress || !srcChainId) return []
+    if (!srcBalances?.[srcChainId] || !userAddress || !srcChainId) return []
 
     const addressesWithBalance: Address[] = []
     const wrapped = CurrencyHandler.wrappedAddressFromAddress(srcChainId, zeroAddress)
@@ -114,34 +134,38 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
     return addressesWithBalance
   }, [srcBalances, srcChainId, srcAddressesWithNative, userAddress])
 
-  const { data: srcPrices, isLoading: srcPricesLoading } = useDexscreenerPrices({
-    chainId: srcChainId || "",
+  const { data: srcPrices } = useDexscreenerPrices({
+    chainId: srcChainId,
     addresses: srcPriceAddresses,
     enabled: srcPriceAddresses.length > 0,
   })
 
   const srcTokenPriceAddr = useMemo(() => {
-    if (!srcToken || !srcChainId) return undefined
-    if (srcToken.toLowerCase() === zeroAddress.toLowerCase()) {
-      return CurrencyHandler.wrappedAddressFromAddress(srcChainId, zeroAddress) as Address | undefined
+    if (!srcCurrency) return undefined
+    if (srcCurrency.address.toLowerCase() === zeroAddress.toLowerCase()) {
+      return CurrencyHandler.wrappedAddressFromAddress(srcCurrency.chainId, zeroAddress) as Address | undefined
     }
-    return srcToken
-  }, [srcToken, srcChainId])
+    return srcCurrency.address as Address
+  }, [srcCurrency])
 
-  const srcTokenPriceInCache = srcTokenPriceAddr && srcPrices?.[srcChainId || ""]?.[srcTokenPriceAddr.toLowerCase()]
-  const { price: srcTokenPriceOnDemand, isLoading: srcTokenPriceOnDemandLoading } = useTokenPrice({
-    chainId: srcChainId || "",
+  const srcTokenPriceInCache = srcTokenPriceAddr && srcPrices?.[srcCurrency?.chainId || srcChainId]?.[srcTokenPriceAddr.toLowerCase()]
+
+  const { price: srcTokenPriceOnDemand } = useTokenPrice({
+    chainId: srcCurrency?.chainId || srcChainId,
     tokenAddress: srcTokenPriceAddr,
-    enabled: Boolean(srcToken && srcChainId && !srcTokenPriceInCache),
+    enabled: Boolean(srcCurrency && !srcTokenPriceInCache),
   })
 
   const srcPricesMerged = useMemo(() => {
-    const merged = { ...srcPrices?.[srcChainId || ""] }
+    const key = srcCurrency?.chainId || srcChainId
+    const merged: Record<string, { usd: number }> = {
+      ...(srcPrices?.[key] || {}),
+    }
     if (srcTokenPriceAddr && srcTokenPriceOnDemand) {
       merged[srcTokenPriceAddr.toLowerCase()] = { usd: srcTokenPriceOnDemand }
     }
     return merged
-  }, [srcPrices, srcChainId, srcTokenPriceAddr, srcTokenPriceOnDemand])
+  }, [srcPrices, srcCurrency, srcChainId, srcTokenPriceAddr, srcTokenPriceOnDemand])
 
   const dstAddressesWithNative = useMemo(() => {
     if (!dstChainId || !userAddress) return []
@@ -152,14 +176,14 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
     return addrs
   }, [dstAddrs, dstChainId, userAddress])
 
-  const { data: dstBalances, isLoading: dstBalancesLoading } = useEvmBalances({
-    chainId: dstChainId || "",
+  const { data: dstBalances } = useEvmBalances({
+    chainId: dstChainId,
     userAddress,
     tokenAddresses: dstAddressesWithNative,
   })
 
   const dstPriceAddresses = useMemo(() => {
-    if (!dstBalances?.[dstChainId || ""] || !userAddress || !dstChainId) return []
+    if (!dstBalances?.[dstChainId] || !userAddress || !dstChainId) return []
 
     const addressesWithBalance: Address[] = []
     const wrapped = CurrencyHandler.wrappedAddressFromAddress(dstChainId, zeroAddress)
@@ -182,65 +206,57 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
     return addressesWithBalance
   }, [dstBalances, dstChainId, dstAddressesWithNative, userAddress])
 
-  const { data: dstPrices, isLoading: dstPricesLoading } = useDexscreenerPrices({
-    chainId: dstChainId || "",
+  const { data: dstPrices } = useDexscreenerPrices({
+    chainId: dstChainId,
     addresses: dstPriceAddresses,
     enabled: dstPriceAddresses.length > 0,
   })
 
   const dstTokenPriceAddr = useMemo(() => {
-    if (!dstToken || !dstChainId) return undefined
-    if (dstToken.toLowerCase() === zeroAddress.toLowerCase()) {
-      return CurrencyHandler.wrappedAddressFromAddress(dstChainId, zeroAddress) as Address | undefined
+    if (!dstCurrency) return undefined
+    if (dstCurrency.address.toLowerCase() === zeroAddress.toLowerCase()) {
+      return CurrencyHandler.wrappedAddressFromAddress(dstCurrency.chainId, zeroAddress) as Address | undefined
     }
-    return dstToken
-  }, [dstToken, dstChainId])
+    return dstCurrency.address as Address
+  }, [dstCurrency])
 
-  const dstTokenPriceInCache = dstTokenPriceAddr && dstPrices?.[dstChainId || ""]?.[dstTokenPriceAddr.toLowerCase()]
-  const { price: dstTokenPriceOnDemand, isLoading: dstTokenPriceOnDemandLoading } = useTokenPrice({
-    chainId: dstChainId || "",
+  const dstTokenPriceInCache = dstTokenPriceAddr && dstPrices?.[dstCurrency?.chainId || dstChainId]?.[dstTokenPriceAddr.toLowerCase()]
+
+  const { price: dstTokenPriceOnDemand } = useTokenPrice({
+    chainId: dstCurrency?.chainId || dstChainId,
     tokenAddress: dstTokenPriceAddr,
-    enabled: Boolean(dstToken && dstChainId && !dstTokenPriceInCache),
+    enabled: Boolean(dstCurrency && !dstTokenPriceInCache),
   })
 
   const dstPricesMerged = useMemo(() => {
-    const merged = { ...dstPrices?.[dstChainId || ""] }
+    const key = dstCurrency?.chainId || dstChainId
+    const merged: Record<string, { usd: number }> = {
+      ...(dstPrices?.[key] || {}),
+    }
     if (dstTokenPriceAddr && dstTokenPriceOnDemand) {
       merged[dstTokenPriceAddr.toLowerCase()] = { usd: dstTokenPriceOnDemand }
     }
     return merged
-  }, [dstPrices, dstChainId, dstTokenPriceAddr, dstTokenPriceOnDemand])
+  }, [dstPrices, dstCurrency, dstChainId, dstTokenPriceAddr, dstTokenPriceOnDemand])
 
-  // Fetch individual token balances for selected tokens (ensures balance is available even if not in list)
-  const { data: srcTokenBalance, isLoading: srcTokenBalanceLoading } = useTokenBalance({
-    chainId: srcChainId || "",
+  // Individual balances for selected src/dst currencies
+  const { data: srcTokenBalance } = useTokenBalance({
+    chainId: srcCurrency?.chainId || srcChainId,
     userAddress,
-    tokenAddress: srcToken,
+    tokenAddress: srcCurrency?.address as Address | undefined,
   })
 
-  const { data: dstTokenBalance, isLoading: dstTokenBalanceLoading } = useTokenBalance({
-    chainId: dstChainId || "",
+  const { data: dstTokenBalance } = useTokenBalance({
+    chainId: dstCurrency?.chainId || dstChainId,
     userAddress,
-    tokenAddress: dstToken,
+    tokenAddress: dstCurrency?.address as Address | undefined,
   })
 
   const debouncedAmount = useDebounce(amount, 1000)
-  // Create stable keys for debounce to avoid array reference churn
-  // These keys include chainId to handle native tokens correctly (same token name, different chain = different address)
-  const srcKey = useMemo(() => `${srcChainId || ""}|${(srcToken || "").toLowerCase()}`, [srcChainId, srcToken])
-  const dstKey = useMemo(() => `${dstChainId || ""}|${(dstToken || "").toLowerCase()}`, [dstChainId, dstToken])
+  const srcKey = useMemo(() => `${srcCurrency?.chainId || srcChainId}|${(srcCurrency?.address || "").toLowerCase()}`, [srcCurrency, srcChainId])
+  const dstKey = useMemo(() => `${dstCurrency?.chainId || dstChainId}|${(dstCurrency?.address || "").toLowerCase()}`, [dstCurrency, dstChainId])
   const debouncedSrcKey = useDebounce(srcKey, 1000)
   const debouncedDstKey = useDebounce(dstKey, 1000)
-
-  const srcCurrency = useMemo<RawCurrency | undefined>(() => {
-    if (!srcToken || !srcChainId) return undefined
-    return getCurrency(srcChainId, srcToken)
-  }, [srcToken, srcChainId])
-
-  const dstCurrency = useMemo<RawCurrency | undefined>(() => {
-    if (!dstToken || !dstChainId) return undefined
-    return getCurrency(dstChainId, dstToken)
-  }, [dstToken, dstChainId])
 
   const { slippage, setPriceImpact } = useSlippage()
   const [txInProgress, setTxInProgress] = useState(false)
@@ -264,7 +280,6 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
     const trade = selectedTrade
     if (!trade?.outputAmount) return undefined
     try {
-      // Use library conversion to exact string
       const exact = CurrencyHandler.toExact(trade.outputAmount)
       return formatDisplayAmount(exact)
     } catch {
@@ -276,138 +291,57 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
     selectedTrade,
     amount,
     quoteOut,
-    srcToken,
-    dstToken,
+    srcToken: srcCurrency?.address as any,
+    dstToken: dstCurrency?.address as any,
     srcChainId,
     dstChainId,
     srcPricesMerged,
     dstPricesMerged,
   })
 
-  // Update price impact in context when it changes
   useEffect(() => {
     setPriceImpact(priceImpact)
   }, [priceImpact, setPriceImpact])
 
-  // Preselect token on chain change: native or wrapped native if available
-  useEffect(() => {
-    if (!srcChainId) return
-    const native = chains?.[srcChainId]?.data?.nativeCurrency?.symbol
-    const force = srcChainId === "8453" ? "USDC" : undefined
-    if (srcToken && srcTokensMap[srcToken.toLowerCase()]) return
-    const pick = pickPreferredToken(srcTokensMap, force || native)
-    if (pick) setSrcToken(pick as Address)
-  }, [srcChainId, srcTokensMap, chains, srcToken])
-  useEffect(() => {
-    if (!dstChainId) return
-    const native = chains?.[dstChainId]?.data?.nativeCurrency?.symbol
-    const force = dstChainId === SupportedChainId.MOONBEAM ? "GLMR" : dstChainId === srcChainId ? "USDC" : undefined
-    if (dstToken && dstTokensMap[dstToken.toLowerCase()]) return
-    const pick = pickPreferredToken(dstTokensMap, force || native)
-    if (pick) setDstToken(pick as Address)
-  }, [dstChainId, dstTokensMap, chains, srcChainId, dstToken])
-
   const queryClient = useQueryClient()
-  const [actions, setActions] = useState<PendingAction[]>([])
   const [sellModalOpen, setSellModalOpen] = useState(false)
   const [buyModalOpen, setBuyModalOpen] = useState(false)
   const [modalSellQuery, setModalSellQuery] = useState("")
   const [modalBuyQuery, setModalBuyQuery] = useState("")
-  const lastAppliedActionIdRef = useRef<string | null>(null)
-
-  useEffect(() => {
-    const pricedAction = actions.find((a) => {
-      const meta = (a.config as any).meta || {}
-      return meta.minDstAmount && meta.minDstAmount.currency && meta.minDstAmount.amount
-    })
-    if (!pricedAction) {
-      return
-    }
-    if (lastAppliedActionIdRef.current === pricedAction.id) {
-      return
-    }
-    const meta = (pricedAction.config as any).meta || {}
-    const minDstAmount = meta.minDstAmount as RawCurrencyAmount | undefined
-    const bufferBps = typeof meta.minDstAmountBufferBps === "number" ? meta.minDstAmountBufferBps : DEFAULT_BUFFER_BPS
-    if (!minDstAmount || !minDstAmount.currency || !minDstAmount.amount || typeof minDstAmount.currency.decimals !== "number") {
-      return
-    }
-    const minDstChainId = minDstAmount.currency.chainId
-    const minDstToken = minDstAmount.currency.address as Address
-    if (dstChainId !== minDstChainId) {
-      setDstChainId(minDstChainId)
-    }
-    if (!dstToken || dstToken.toLowerCase() !== minDstToken.toLowerCase()) {
-      setDstToken(minDstToken)
-    }
-    const srcPriceEntry =
-      srcToken && srcChainId && srcPricesMerged
-        ? srcPricesMerged[srcTokenPriceAddr?.toLowerCase() || ""] || srcPricesMerged[srcToken.toLowerCase()]
-        : undefined
-    const dstPriceEntry =
-      minDstToken && dstChainId && dstPricesMerged
-        ? dstPricesMerged[minDstToken.toLowerCase()] || (dstTokenPriceAddr ? dstPricesMerged[dstTokenPriceAddr.toLowerCase()] : undefined)
-        : undefined
-    const srcUsd = srcPriceEntry && typeof srcPriceEntry.usd === "number" ? srcPriceEntry.usd : undefined
-    const dstUsd = dstPriceEntry && typeof dstPriceEntry.usd === "number" ? dstPriceEntry.usd : undefined
-    if (!srcUsd || !dstUsd) {
-      return
-    }
-    const minDstAmountHuman = CurrencyHandler.toExactNumber(minDstAmount)
-    if (!isFinite(minDstAmountHuman) || minDstAmountHuman <= 0) {
-      return
-    }
-    const requiredUsd = minDstAmountHuman * dstUsd
-    if (!isFinite(requiredUsd) || requiredUsd <= 0) {
-      return
-    }
-    const bufferFactor = 1 + bufferBps / 10000
-    const srcAmountHuman = (requiredUsd / srcUsd) * bufferFactor
-    if (!isFinite(srcAmountHuman) || srcAmountHuman <= 0) {
-      return
-    }
-    const formatted = srcAmountHuman.toString()
-    setAmount(formatted)
-    lastAppliedActionIdRef.current = pricedAction.id
-  }, [actions, dstChainId, dstToken, srcToken, srcChainId, srcPricesMerged, dstPricesMerged, srcTokenPriceAddr, dstTokenPriceAddr])
 
   const handleReset = useCallback(() => {
     setAmount("")
-    setSrcToken(zeroAddress)
-    setDstToken(zeroAddress)
-    setSrcChainId(SupportedChainId.BASE)
-    setDstChainId(SupportedChainId.MOONBEAM)
+    setSrcCurrency(undefined)
+    setDstCurrency(undefined)
     setDestinationCalls([])
-    setActions([])
     setTxInProgress(false)
     abortQuotes()
   }, [abortQuotes])
 
-  const srcSymbol = srcToken && srcChainId ? lists?.[srcChainId]?.[srcToken.toLowerCase()]?.symbol || "Token" : "Token"
-  const dstSymbol = quotes[selectedQuoteIndex]?.trade?.outputAmount?.currency?.symbol || "Token"
+  const srcSymbol = srcCurrency?.symbol || "Token"
+  const dstSymbol = quotes[selectedQuoteIndex]?.trade?.outputAmount?.currency?.symbol || dstCurrency?.symbol || "Token"
 
   const setDestinationInfo = useCallback(
-    (currencyAmount: RawCurrencyAmount | undefined) => {
-      if (!currencyAmount) {
-        return
-      }
+    (currencyAmount: RawCurrencyAmount | undefined, receiverAddress: string | undefined, destinationCalls: DestinationCall[]) => {
+      if (!currencyAmount) return
 
-      setDstToken(currencyAmount.currency.address as any)
-      setDstChainId(currencyAmount.currency.chainId)
+      const dstCur = currencyAmount.currency as RawCurrency
+      setDstCurrency(dstCur)
 
       const amountHuman = CurrencyHandler.toExactNumber(currencyAmount)
       if (!amountHuman || amountHuman <= 0) {
         return
       }
 
-      const priceIn = getTokenPrice(currencyAmount.currency.chainId, currencyAmount.currency.address as any, srcPricesMerged)
-      const priceOut = getTokenPrice(currencyAmount.currency.chainId, currencyAmount.currency.address as any, dstPricesMerged)
-      const decimalsIn = lists?.[srcChainId ?? ""]?.[srcToken?.toLowerCase() ?? ""]?.decimals
-      const decimalsOut = currencyAmount.currency.decimals
-      const amountIn = reverseQuote(decimalsIn, decimalsOut, amountHuman.toString(), priceIn ?? 1, priceOut ?? 1)
+      const priceIn = srcCurrency ? getTokenPrice(srcCurrency.chainId, srcCurrency.address as Address, srcPricesMerged) : 1
+      const priceOut = getTokenPrice(dstCur.chainId, dstCur.address as Address, dstPricesMerged)
+
+      const decimalsOut = dstCur.decimals
+      const amountIn = reverseQuote(decimalsOut, currencyAmount.amount.toString(), priceIn ?? 1, priceOut ?? 1)
       setAmount(amountIn)
+      setDestinationCalls(destinationCalls)
     },
-    [srcPricesMerged, dstPricesMerged, srcChainId, srcToken, lists],
+    [srcCurrency, srcPricesMerged, dstPricesMerged]
   )
 
   return (
@@ -427,8 +361,8 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
             const bal = srcTokenBalance
               ? CurrencyHandler.toExactNumber(srcTokenBalance)
               : srcCurrency
-                ? srcBalances?.[srcCurrency.chainId]?.[srcCurrency.address.toLowerCase()]?.value
-                : undefined
+              ? srcBalances?.[srcCurrency.chainId]?.[srcCurrency.address.toLowerCase()]?.value
+              : undefined
             const n = bal ? Number(bal) : 0
             setAmount(n > 0 ? ((n * p) / 100).toString() : "")
           }}
@@ -438,12 +372,8 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
             type="button"
             className="btn rounded-2xl bg-base-100 border-2 border-base-100 shadow-lg hover:shadow-xl transition-shadow"
             onClick={() => {
-              const sc = srcChainId
-              const st = srcToken
-              setSrcChainId(dstChainId)
-              setSrcToken(dstToken)
-              setDstChainId(sc)
-              setDstToken(st)
+              setSrcCurrency(dstCurrency)
+              setDstCurrency(srcCurrency)
             }}
           >
             <span style={{ fontSize: "30px" }}>↕</span>
@@ -470,25 +400,41 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
           dstCurrency={dstCurrency}
           dstPricesMerged={dstPricesMerged}
           quoting={quoting}
-          isBridge={srcChainId !== dstChainId}
+          isBridge={(srcCurrency?.chainId ?? DEFAULT_SRC_CHAIN_ID) !== (dstCurrency?.chainId ?? DEFAULT_DST_CHAIN_ID)}
         />
       </div>
+
       {/* Selection Modals */}
       <TokenSelectorModal
         open={sellModalOpen}
         onClose={() => setSellModalOpen(false)}
         currency={srcCurrency}
-        chainId={srcChainId}
         onChainChange={(chainId) => {
-          setSrcChainId(chainId)
-          setSrcToken(undefined)
+          const tokensMap = lists?.[chainId] || {}
+          const native = chains?.[chainId]?.data?.nativeCurrency?.symbol
+          const force = chainId === SupportedChainId.BASE ? "USDC" : undefined
+          const pick = pickPreferredToken(tokensMap, force || native)
+          if (!pick) {
+            setSrcCurrency(undefined)
+            return
+          }
+          const meta = tokensMap[pick.toLowerCase()]
+          if (!meta) {
+            setSrcCurrency(undefined)
+            return
+          }
+          setSrcCurrency({
+            chainId,
+            address: pick,
+            decimals: meta.decimals ?? 18,
+            symbol: meta.symbol,
+          })
         }}
         onCurrencyChange={(currency) => {
           if (currency) {
-            setSrcChainId(currency.chainId)
-            setSrcToken(currency.address as Address)
+            setSrcCurrency(currency as RawCurrency)
           } else {
-            setSrcToken(undefined)
+            setSrcCurrency(undefined)
           }
         }}
         query={modalSellQuery}
@@ -499,41 +445,62 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
         open={buyModalOpen}
         onClose={() => setBuyModalOpen(false)}
         currency={dstCurrency}
-        chainId={dstChainId}
         onChainChange={(chainId) => {
-          setDstChainId(chainId)
-          setDstToken(undefined)
+          const tokensMap = lists?.[chainId] || {}
+          const native = chains?.[chainId]?.data?.nativeCurrency?.symbol
+          const force = chainId === SupportedChainId.MOONBEAM ? "GLMR" : srcCurrency && srcCurrency.chainId === chainId ? "USDC" : undefined
+
+          const pick = pickPreferredToken(tokensMap, force || native)
+          if (!pick) {
+            setDstCurrency(undefined)
+            return
+          }
+          const meta = tokensMap[pick.toLowerCase()]
+          if (!meta) {
+            setDstCurrency(undefined)
+            return
+          }
+          const next: RawCurrency = {
+            chainId,
+            address: pick,
+            decimals: meta.decimals ?? 18,
+            symbol: meta.symbol,
+          }
+
+          // prevent same token as src on same chain
+          if (srcCurrency && srcCurrency.chainId === next.chainId && srcCurrency.address.toLowerCase() === next.address.toLowerCase()) {
+            return
+          }
+
+          setDstCurrency(next)
         }}
         onCurrencyChange={(currency) => {
           if (currency) {
-            if (srcCurrency && srcCurrency.chainId === currency.chainId && srcCurrency.address.toLowerCase() === currency.address.toLowerCase()) {
+            const cur = currency as RawCurrency
+            if (srcCurrency && srcCurrency.chainId === cur.chainId && srcCurrency.address.toLowerCase() === cur.address.toLowerCase()) {
               return
             }
-            setDstChainId(currency.chainId)
-            setDstToken(currency.address as Address)
+            setDstCurrency(cur)
           } else {
-            setDstToken(undefined)
+            setDstCurrency(undefined)
           }
         }}
         query={modalBuyQuery}
         onQueryChange={setModalBuyQuery}
         userAddress={userAddress}
-        excludeAddresses={srcCurrency && srcCurrency.chainId === dstChainId ? [srcCurrency.address as Address] : []}
+        excludeAddresses={
+          srcCurrency && (srcCurrency.chainId === (dstCurrency?.chainId ?? DEFAULT_DST_CHAIN_ID) ? [srcCurrency.address as Address] : [])
+        }
       />
+
       <ActionsPanel
         dstCurrency={dstCurrency}
         userAddress={userAddress}
         currentChainId={currentChainId}
-        isEncoding={isEncoding}
-        setIsEncoding={setIsEncoding}
-        destinationCalls={destinationCalls}
-        setDestinationCalls={setDestinationCalls}
-        actions={actions}
-        setActions={setActions}
-        onRefreshQuotes={refreshQuotes}
         tokenLists={lists}
         setDestinationInfo={setDestinationInfo}
       />
+
       {quotes.length > 0 && selectedTrade && (
         <div className="mt-4">
           <ExecuteButton
@@ -542,11 +509,9 @@ export function SwapTab({ userAddress, onResetStateChange }: Props) {
             dstCurrency={dstCurrency}
             userAddress={userAddress}
             amountWei={amountWei}
-            actions={actions}
             destinationCalls={destinationCalls}
             chains={chains}
-            onDone={(hashes) => {
-              // Invalidate all balance queries for src/dst chains and tokens
+            onDone={() => {
               if (srcCurrency?.chainId && userAddress) {
                 queryClient.invalidateQueries({
                   queryKey: ["balances", srcCurrency.chainId, userAddress],

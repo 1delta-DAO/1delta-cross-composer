@@ -31,7 +31,7 @@ async function trackBridgeCompletion(
   srcChainId: string,
   dstChainId: string,
   srcHash: string,
-  onDone: (hashes: { src?: string; dst?: string; completed?: boolean }) => void,
+  onDone: (hashes: { src?: string; dst?: string; completed?: boolean }) => void
 ) {
   if (!trade.crossChainParams) {
     onDone({ src: srcHash })
@@ -56,7 +56,7 @@ async function trackBridgeCompletion(
             toChainId: dstChainId,
             fromHash: srcHash,
           } as any,
-          trade.crossChainParams,
+          trade.crossChainParams
         )
 
         const statusAny = status as any
@@ -119,7 +119,6 @@ type ExecuteButtonProps = {
   onResetStateChange?: (showReset: boolean, resetCallback?: () => void) => void
   onTransactionStart?: () => void
   onTransactionEnd?: () => void
-  actions?: Array<{ id: string; config: DestinationActionConfig; selector: Hex; args: any[]; value?: string }>
   destinationCalls?: DestinationCall[]
 }
 
@@ -135,7 +134,6 @@ export default function ExecuteButton({
   onResetStateChange,
   onTransactionStart,
   onTransactionEnd,
-  actions,
   destinationCalls,
 }: ExecuteButtonProps) {
   const { isConnected } = useAccount()
@@ -155,7 +153,7 @@ export default function ExecuteButton({
 
   const srcChainId = useMemo(() => srcCurrency?.chainId, [srcCurrency])
   const dstChainId = useMemo(() => dstCurrency?.chainId, [dstCurrency])
-  const srcToken = useMemo(() => (srcCurrency?.address as Address | undefined), [srcCurrency])
+  const srcToken = useMemo(() => srcCurrency?.address as Address | undefined, [srcCurrency])
 
   // Reset error state when trade changes (user selected different quote/aggregator)
   useEffect(() => {
@@ -263,7 +261,7 @@ export default function ExecuteButton({
         srcToken &&
         amountWei &&
         spender &&
-        !(srcChainId === SupportedChainId.MOONBEAM && dstChainId === SupportedChainId.MOONBEAM && actions && actions.length > 0)
+        !(srcChainId === SupportedChainId.MOONBEAM && dstChainId === SupportedChainId.MOONBEAM)
       ) {
         setStep("approving")
         approvalHash = await writeContractAsync({
@@ -429,9 +427,7 @@ export default function ExecuteButton({
     userAddress,
     srcChainId,
     dstChainId,
-    actions,
     destinationCalls,
-    actions,
     destinationCalls,
     writeContractAsync,
     getTransactionData,

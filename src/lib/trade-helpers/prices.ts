@@ -62,5 +62,19 @@ function getPrice(chainId: string | undefined, address: string | undefined): num
 }
 
 export const getPricesCallback: useGeneralPricesCallbackType = (priceQueries) => {
-  return priceQueries.map((q) => getPrice(q.chainId, q.asset))
+  return priceQueries.map((q) => {
+    if (!q.chainId || !q.asset) {
+      return 0
+    }
+
+    const assetLower = q.asset.toLowerCase()
+    const resolvedAsset =
+      assetLower === zeroAddress.toLowerCase()
+        ? CurrencyHandler.wrappedAddressFromAddress(q.chainId, zeroAddress)?.toLowerCase() || assetLower
+        : assetLower
+
+    const price = getPrice(q.chainId, resolvedAsset)
+
+    return price
+  })
 }
