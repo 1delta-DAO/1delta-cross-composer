@@ -33,8 +33,7 @@ export default function App() {
         <div className="flex flex-row p-2 grow">
           <div className="flex-1">
             <div className="flex items-center space-x-2">
-              {/* Use theme primary instead of fixed gradient */}
-              <h1 className="text-2xl font-bold text-primary">MOONBEAMER</h1>
+              <h1 className="text-2xl font-bold text-primary">1ΔC²</h1>
             </div>
           </div>
           <div className="flex-none flex gap-3 items-center">

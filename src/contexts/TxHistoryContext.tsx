@@ -24,7 +24,7 @@ type TxHistoryContextValue = {
   isPolling: boolean
 }
 
-const STORAGE_KEY = "moonbeamer:txHistory"
+const STORAGE_KEY = "1delta-cross-composer:txHistory"
 
 const TxHistoryContext = createContext<TxHistoryContextValue>({
   entries: [],
