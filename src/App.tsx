@@ -2,7 +2,7 @@ import { useAccount } from "wagmi"
 import { useState } from "react"
 import type { Hex } from "viem"
 import BatchTransactionForm from "./components/BatchTransactionForm"
-import { SwapTab } from "./components/swap/SwapTab"
+import { ActionsTab } from "./components/swap/ActionsTab"
 import { TradeSdkWalletSync } from "./lib/trade-helpers/walletClient"
 import { SwapSlippageSelector } from "./components/swap/SwapSlippageSelector"
 import { ThemeSwitcher } from "./components/themeSwitcher"
@@ -86,7 +86,7 @@ export default function App() {
             <div className="card bg-base-100 shadow-xl rounded-2xl">
               <div className="card-body p-4 sm:p-6">
                 {activeTab === "swap" ? (
-                  <SwapTab
+                  <ActionsTab
                     userAddress={address ?? undefined}
                     onResetStateChange={(showReset, resetCallback) => {
                       setShowSwapReset(showReset)
