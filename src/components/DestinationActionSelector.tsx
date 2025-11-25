@@ -92,7 +92,12 @@ export default function DestinationActionSelector({
     }
 
     availableActions.forEach((action) => {
-      if (action.isReady) {
+      const isLoading = actionDataLoading[action.id] === true
+      const hasData = actionData[action.id] !== null && actionData[action.id] !== undefined
+
+      if (action.dataLoader) {
+        ready[action.id] = !isLoading && hasData
+      } else if (action.isReady) {
         ready[action.id] = action.isReady(readinessContext)
       } else {
         ready[action.id] = !action.requiresMarkets || marketsReady
@@ -100,7 +105,17 @@ export default function DestinationActionSelector({
     })
 
     return ready
-  }, [availableActions, marketsReady, marketsLoading, srcCurrency])
+  }, [availableActions, marketsReady, marketsLoading, srcCurrency, actionDataLoading, actionData])
+
+  const isActionLoading = useMemo(() => {
+    const loading: Record<string, boolean> = {}
+    availableActions.forEach((action) => {
+      const isDataLoading = actionDataLoading[action.id] === true
+      const isMarketsLoading = action.requiresMarkets && marketsLoading && !isActionReady[action.id]
+      loading[action.id] = isDataLoading || (isMarketsLoading ?? false)
+    })
+    return loading
+  }, [availableActions, actionDataLoading, marketsLoading, isActionReady])
 
   // Subscribe to market cache changes
   useEffect(() => {
@@ -171,6 +186,16 @@ export default function DestinationActionSelector({
   }
 
   const handleActionSelect = (actionId: ActionType) => {
+    const actionDef = availableActions.find((a) => a.id === actionId)
+    if (!actionDef) return
+
+    const isLoading = actionDataLoading[actionId] === true
+    const hasData = actionData[actionId] !== null && actionData[actionId] !== undefined
+
+    if (actionDef.dataLoader && (isLoading || !hasData)) {
+      return
+    }
+
     setSelectedAction(actionId)
     setIsExpanded(false)
     setIsPanelExpanded(true)
@@ -235,7 +260,7 @@ export default function DestinationActionSelector({
             onReset={handleReset}
             srcCurrency={srcCurrency}
             isActionReady={isActionReady}
-            marketsLoading={marketsLoading}
+            isActionLoading={isActionLoading}
           />
         </div>
       </div>

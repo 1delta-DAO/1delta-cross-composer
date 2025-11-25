@@ -14,7 +14,7 @@ interface ActionIconGridProps {
   onReset: () => void
   srcCurrency?: RawCurrency
   isActionReady?: Record<string, boolean>
-  marketsLoading?: boolean
+  isActionLoading?: Record<string, boolean>
 }
 
 export function ActionIconGrid({
@@ -28,7 +28,7 @@ export function ActionIconGrid({
   onReset,
   srcCurrency,
   isActionReady,
-  marketsLoading,
+  isActionLoading,
 }: ActionIconGridProps) {
   const filteredActions = useMemo(() => {
     if (selectedCategory === "all") {
@@ -90,7 +90,7 @@ export function ActionIconGrid({
             const Icon = action.icon
             const isSelected = selectedAction === action.id
             const isReady = isActionReady?.[action.id] ?? true
-            const isLoading = action.requiresMarkets && marketsLoading && !isReady
+            const isLoading = isActionLoading?.[action.id] === true
             return (
               <button
                 key={action.id}
@@ -115,7 +115,7 @@ export function ActionIconGrid({
             const Icon = action.icon
             const isSelected = selectedAction === action.id
             const isReady = isActionReady?.[action.id] ?? true
-            const isLoading = action.requiresMarkets && marketsLoading && !isReady
+            const isLoading = isActionLoading?.[action.id] === true
             return (
               <button
                 key={action.id}
