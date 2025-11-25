@@ -10,8 +10,9 @@ import type { DestinationCall } from "../../lib/types/destinationAction"
 import type { DeltaCall } from "@1delta/trade-sdk"
 import { DeltaCallType } from "@1delta/trade-sdk/dist/types"
 import { fetchAllBridgeTrades } from "../trade-helpers/bridgeSelector"
-import type { RawCurrency } from "../../types/currency"
+import type { RawCurrency, RawCurrencyAmount } from "../../types/currency"
 import { useConnection } from "wagmi"
+import { validateQuoteOutput, calculateAdjustedBuffer, calculateReverseQuoteBuffer } from "../../lib/reverseQuote"
 
 type Quote = { label: string; trade: GenericTrade }
 
@@ -24,6 +25,7 @@ export function useSwapQuotes({
   slippage,
   txInProgress,
   destinationCalls,
+  minRequiredAmount,
 }: {
   srcCurrency?: RawCurrency
   dstCurrency?: RawCurrency
@@ -33,6 +35,7 @@ export function useSwapQuotes({
   slippage: number
   txInProgress: boolean
   destinationCalls?: DestinationCall[]
+  minRequiredAmount?: RawCurrencyAmount
 }) {
   const { address: userAddress } = useConnection()
   const receiverAddress = userAddress || MOCK_RECEIVER_ADDRESS
@@ -41,6 +44,8 @@ export function useSwapQuotes({
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [selectedQuoteIndex, setSelectedQuoteIndex] = useState(0)
   const [amountWei, setAmountWei] = useState<string | undefined>(undefined)
+  const [highSlippageLossWarning, setHighSlippageLossWarning] = useState(false)
+  const [currentBuffer, setCurrentBuffer] = useState<number>(calculateReverseQuoteBuffer(slippage))
   const toast = useToast()
 
   const srcChainId = useMemo(() => srcCurrency?.chainId, [srcCurrency])
@@ -64,13 +69,13 @@ export function useSwapQuotes({
 
   useEffect(() => {
     if (prevSrcKeyRef.current !== debouncedSrcKey || prevDstKeyRef.current !== debouncedDstKey) {
-      if (quotes.length > 0) {
+      if (quotes.length > 0 && !txInProgress) {
         setQuotes([])
       }
       prevSrcKeyRef.current = debouncedSrcKey
       prevDstKeyRef.current = debouncedDstKey
     }
-  }, [debouncedSrcKey, debouncedDstKey, quotes.length])
+  }, [debouncedSrcKey, debouncedDstKey, quotes.length, txInProgress])
 
   const destinationCallsKey = JSON.stringify(
     (destinationCalls || []).map((c) => ({
@@ -87,13 +92,15 @@ export function useSwapQuotes({
 
   useEffect(() => {
     if (prevDestinationCallsKeyRef.current !== destinationCallsKey) {
-      if (quotes.length > 0) {
+      if (quotes.length > 0 && !txInProgress) {
         setQuotes([])
       }
-      lastQuotedKeyRef.current = null
+      if (!txInProgress) {
+        lastQuotedKeyRef.current = null
+      }
       prevDestinationCallsKeyRef.current = destinationCallsKey
     }
-  }, [destinationCallsKey, quotes.length])
+  }, [destinationCallsKey, quotes.length, txInProgress])
 
   const prevTxInProgressRef = useRef(txInProgress)
 
@@ -294,8 +301,42 @@ export function useSwapQuotes({
 
         if (allQuotes.length > 0) {
           console.debug("Quotes received:", allQuotes.length)
-          setQuotes(allQuotes)
-          setSelectedQuoteIndex(0)
+
+          if (minRequiredAmount && allQuotes.length > 0) {
+            const bestQuote = allQuotes[0]
+            const outputAmount = bestQuote.trade.outputAmountRealized
+            const validation = validateQuoteOutput(outputAmount, minRequiredAmount)
+
+            if (!validation.isValid) {
+              console.debug("Quote validation failed:", validation)
+
+              if (validation.hasHighSlippageLoss) {
+                setHighSlippageLossWarning(true)
+                setCurrentBuffer(0.05)
+                setQuotes(allQuotes)
+                setSelectedQuoteIndex(0)
+              } else {
+                const adjustedBuffer = calculateAdjustedBuffer(currentBuffer, validation.requiredBuffer, slippage)
+                setCurrentBuffer(adjustedBuffer)
+                setHighSlippageLossWarning(false)
+
+                if (adjustedBuffer > currentBuffer) {
+                  console.debug("Buffer adjusted, but quotes already fetched. Validation warning may apply.")
+                }
+
+                setQuotes(allQuotes)
+                setSelectedQuoteIndex(0)
+              }
+            } else {
+              setHighSlippageLossWarning(false)
+              setQuotes(allQuotes)
+              setSelectedQuoteIndex(0)
+            }
+          } else {
+            setHighSlippageLossWarning(false)
+            setQuotes(allQuotes)
+            setSelectedQuoteIndex(0)
+          }
         } else {
           throw new Error("No quote available from any aggregator/bridge")
         }
@@ -355,6 +396,7 @@ export function useSwapQuotes({
     destinationCallsKey,
     destinationCalls,
     receiverAddress,
+    minRequiredAmount,
   ])
 
   const refreshQuotes = () => {
@@ -375,6 +417,26 @@ export function useSwapQuotes({
     lastQuotedKeyRef.current = null
   }
 
+  useEffect(() => {
+    if (minRequiredAmount && quotes.length > 0 && selectedQuoteIndex < quotes.length) {
+      const selectedQuote = quotes[selectedQuoteIndex]
+      const outputAmount = selectedQuote.trade.outputAmountRealized
+      const validation = validateQuoteOutput(outputAmount, minRequiredAmount)
+
+      if (validation.hasHighSlippageLoss) {
+        setHighSlippageLossWarning(true)
+      } else {
+        setHighSlippageLossWarning(false)
+      }
+    } else {
+      setHighSlippageLossWarning(false)
+    }
+  }, [quotes, selectedQuoteIndex, minRequiredAmount])
+
+  useEffect(() => {
+    setCurrentBuffer(calculateReverseQuoteBuffer(slippage))
+  }, [slippage])
+
   return {
     quotes,
     quoting,
@@ -383,5 +445,7 @@ export function useSwapQuotes({
     amountWei,
     refreshQuotes,
     abortQuotes,
+    highSlippageLossWarning,
+    currentBuffer,
   }
 }
