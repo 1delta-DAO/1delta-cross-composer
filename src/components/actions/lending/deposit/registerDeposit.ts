@@ -5,8 +5,8 @@ import type { ActionDefinition } from '../../shared/actionDefinitions'
 
 export function registerDepositAction(): void {
   const depositAction: ActionDefinition = {
-    id: 'deposit',
-    label: 'Deposit',
+    id: 'deposit_lending',
+    label: 'Deposit (Lending)',
     category: 'lending',
     icon: DepositIcon,
     panel: DepositPanel,
