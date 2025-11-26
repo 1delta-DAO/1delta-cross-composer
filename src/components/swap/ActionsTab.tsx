@@ -13,7 +13,7 @@ import type { RawCurrency, RawCurrencyAmount } from '../../types/currency'
 import { getCurrency } from '../../lib/trade-helpers/utils'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSlippage } from '../../contexts/SlippageContext'
-import { useSwapQuotes } from '../../sdk/hooks/useSwapQuotes'
+import { useTradeQuotes } from '../../sdk/hooks/useTradeQuotes'
 import { usePriceImpact } from '../../hooks/usePriceImpact'
 import ExecuteButton from './ExecuteButton'
 import { ActionsPanel } from './ActionsPanel'
@@ -184,7 +184,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
     abortQuotes,
     highSlippageLossWarning,
     currentBuffer,
-  } = useSwapQuotes({
+  } = useTradeQuotes({
     srcCurrency: inputCurrency,
     dstCurrency: actionCurrency,
     debouncedAmount,
@@ -355,27 +355,28 @@ export function ActionsTab({ onResetStateChange }: Props) {
             chains={chains}
             quoting={quoting && !tradeToUse}
             onDone={(hashes) => {
-              if (inputCurrency?.chainId && address) {
-                queryClient.invalidateQueries({
-                  queryKey: ['balances', inputCurrency.chainId, address],
-                })
-                queryClient.invalidateQueries({
-                  queryKey: ['tokenBalance', inputCurrency.chainId, address],
-                })
-              }
-              if (actionCurrency?.chainId && address) {
-                queryClient.invalidateQueries({
-                  queryKey: ['balances', actionCurrency.chainId, address],
-                })
-                queryClient.invalidateQueries({
-                  queryKey: ['tokenBalance', actionCurrency.chainId, address],
-                })
-              }
-              setDestinationInfo(undefined, undefined, [])
-
               if (hashes.src) {
+                abortQuotes()
+                if (inputCurrency?.chainId && address) {
+                  queryClient.invalidateQueries({
+                    queryKey: ['balances', inputCurrency.chainId, address],
+                  })
+                  queryClient.invalidateQueries({
+                    queryKey: ['tokenBalance', inputCurrency.chainId, address],
+                  })
+                }
+                if (actionCurrency?.chainId && address) {
+                  queryClient.invalidateQueries({
+                    queryKey: ['balances', actionCurrency.chainId, address],
+                  })
+                  queryClient.invalidateQueries({
+                    queryKey: ['tokenBalance', actionCurrency.chainId, address],
+                  })
+                }
+                setDestinationInfo(undefined, undefined, [])
                 setActionResetKey((prev) => prev + 1)
                 setPreservedTrade(undefined)
+                setAmount('')
               }
             }}
             onTransactionStart={() => {

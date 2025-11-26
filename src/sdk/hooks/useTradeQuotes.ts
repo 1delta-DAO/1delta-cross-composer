@@ -16,7 +16,7 @@ import { validateQuoteOutput, calculateAdjustedBuffer, calculateReverseQuoteBuff
 
 type Quote = { label: string; trade: GenericTrade }
 
-export function useSwapQuotes({
+export function useTradeQuotes({
   srcCurrency,
   dstCurrency,
   debouncedAmount,
@@ -63,6 +63,8 @@ export function useSwapQuotes({
   const refreshTickRef = useRef<number>(0)
   const [refreshTick, setRefreshTick] = useState(0)
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const requotingStartTimeRef = useRef<number | null>(null)
+  const requotingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const prevSrcKeyRef = useRef<string>(debouncedSrcKey)
   const prevDstKeyRef = useRef<string>(debouncedDstKey)
@@ -115,6 +117,15 @@ export function useSwapQuotes({
         abortControllerRef.current.abort()
         abortControllerRef.current = null
       }
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current)
+        refreshTimeoutRef.current = null
+      }
+      if (requotingTimeoutRef.current) {
+        clearTimeout(requotingTimeoutRef.current)
+        requotingTimeoutRef.current = null
+      }
+      requotingStartTimeRef.current = null
       prevTxInProgressRef.current = txInProgress
       return
     }
@@ -124,6 +135,15 @@ export function useSwapQuotes({
       lastQuotedKeyRef.current = null
       requestInProgressRef.current = false
       setQuoting(false)
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current)
+        refreshTimeoutRef.current = null
+      }
+      if (requotingTimeoutRef.current) {
+        clearTimeout(requotingTimeoutRef.current)
+        requotingTimeoutRef.current = null
+      }
+      requotingStartTimeRef.current = null
     }
     prevTxInProgressRef.current = txInProgress
 
@@ -150,6 +170,11 @@ export function useSwapQuotes({
         clearTimeout(refreshTimeoutRef.current)
         refreshTimeoutRef.current = null
       }
+      if (requotingTimeoutRef.current) {
+        clearTimeout(requotingTimeoutRef.current)
+        requotingTimeoutRef.current = null
+      }
+      requotingStartTimeRef.current = null
     }
     prevIsSameChainRef.current = isSameChain
 
@@ -166,6 +191,11 @@ export function useSwapQuotes({
         clearTimeout(refreshTimeoutRef.current)
         refreshTimeoutRef.current = null
       }
+      if (requotingTimeoutRef.current) {
+        clearTimeout(requotingTimeoutRef.current)
+        requotingTimeoutRef.current = null
+      }
+      requotingStartTimeRef.current = null
       return
     }
 
@@ -182,11 +212,42 @@ export function useSwapQuotes({
 
     if (lastQuotedKeyRef.current !== null && lastQuotedKeyRef.current !== currentKey) {
       lastQuotedKeyRef.current = null
+      requotingStartTimeRef.current = null
+      if (requotingTimeoutRef.current) {
+        clearTimeout(requotingTimeoutRef.current)
+        requotingTimeoutRef.current = null
+      }
     }
 
     if (sameAsLast && !transitionedBetweenBridgeAndSwap && elapsed < 30000 && isRefreshTrigger) {
       console.debug('Skipping re-quote: inputs unchanged and refresh interval not reached')
       return
+    }
+
+    const nowForTimeout = Date.now()
+    if (requotingStartTimeRef.current === null) {
+      requotingStartTimeRef.current = nowForTimeout
+    } else {
+      const elapsedRequoting = nowForTimeout - requotingStartTimeRef.current
+      if (elapsedRequoting >= 120000) {
+        console.debug('Requoting timeout reached (2 minutes), stopping to prevent API rate limiting')
+        setQuoting(false)
+        requestInProgressRef.current = false
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort()
+          abortControllerRef.current = null
+        }
+        if (refreshTimeoutRef.current) {
+          clearTimeout(refreshTimeoutRef.current)
+          refreshTimeoutRef.current = null
+        }
+        if (requotingTimeoutRef.current) {
+          clearTimeout(requotingTimeoutRef.current)
+          requotingTimeoutRef.current = null
+        }
+        requotingStartTimeRef.current = null
+        return
+      }
     }
 
     if (abortControllerRef.current) {
@@ -303,6 +364,11 @@ export function useSwapQuotes({
 
         if (allQuotes.length > 0) {
           console.debug('Quotes received:', allQuotes.length)
+          requotingStartTimeRef.current = null
+          if (requotingTimeoutRef.current) {
+            clearTimeout(requotingTimeoutRef.current)
+            requotingTimeoutRef.current = null
+          }
 
           if (enableRequoting && minRequiredAmount && allQuotes.length > 0) {
             const bestQuote = allQuotes[0]
@@ -359,11 +425,11 @@ export function useSwapQuotes({
         if (abortControllerRef.current === controller) {
           abortControllerRef.current = null
         }
-        if (!cancel && !controller.signal.aborted) {
+        if (!cancel && !controller.signal.aborted && !txInProgress) {
           const scheduledKey = lastQuotedKeyRef.current
           refreshTickRef.current = refreshTick + 1
           refreshTimeoutRef.current = setTimeout(() => {
-            if (scheduledKey === lastQuotedKeyRef.current) {
+            if (scheduledKey === lastQuotedKeyRef.current && !txInProgress) {
               setRefreshTick((x: number) => x + 1)
             }
           }, 30000)
@@ -383,6 +449,10 @@ export function useSwapQuotes({
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current)
         refreshTimeoutRef.current = null
+      }
+      if (requotingTimeoutRef.current) {
+        clearTimeout(requotingTimeoutRef.current)
+        requotingTimeoutRef.current = null
       }
     }
   }, [
@@ -415,9 +485,14 @@ export function useSwapQuotes({
       clearTimeout(refreshTimeoutRef.current)
       refreshTimeoutRef.current = null
     }
+    if (requotingTimeoutRef.current) {
+      clearTimeout(requotingTimeoutRef.current)
+      requotingTimeoutRef.current = null
+    }
     requestInProgressRef.current = false
     setQuoting(false)
     lastQuotedKeyRef.current = null
+    requotingStartTimeRef.current = null
   }
 
   useEffect(() => {

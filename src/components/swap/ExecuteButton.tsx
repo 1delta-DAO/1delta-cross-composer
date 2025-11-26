@@ -364,6 +364,7 @@ export default function ExecuteButton({
                     status: hashes.dst || hashes.completed ? 'completed' : 'failed',
                   })
                 }
+                onTransactionEnd?.()
                 onDone(hashes)
               })
             } else if (
@@ -393,18 +394,22 @@ export default function ExecuteButton({
                 }
                 console.debug('All destination calls executed successfully')
                 console.debug('=====================================')
+                onTransactionEnd?.()
                 onDone({ src: hash })
               } catch (e) {
                 console.error('Destination actions execution failed:', e)
                 toast.showError('Failed to execute destination actions')
+                onTransactionEnd?.()
                 onDone({ src: hash })
               }
             } else {
+              onTransactionEnd?.()
               onDone({ src: hash })
             }
           })
           .catch((err) => {
             console.error('Error waiting for transaction receipt:', err)
+            onTransactionEnd?.()
           })
       } else {
         onDone({ src: hash })
@@ -438,8 +443,12 @@ export default function ExecuteButton({
                 status: hashes.dst || hashes.completed ? 'completed' : 'failed',
               })
             }
+            onTransactionEnd?.()
             onDone(hashes)
           })
+        } else {
+          onTransactionEnd?.()
+          onDone({ src: hash })
         }
       }
     } catch (err) {
