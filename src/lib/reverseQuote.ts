@@ -16,6 +16,10 @@ export function reverseQuote(
   slippage?: number,
   customBuffer?: number,
 ) {
+  if (priceIn <= 0 || priceOut <= 0) {
+    throw new Error('Invalid prices: priceIn and priceOut must be greater than 0')
+  }
+
   const buffer = customBuffer !== undefined ? customBuffer : calculateReverseQuoteBuffer(slippage)
   const amOutNr = Number(formatUnits(BigInt(amountOut ?? 0), decimalsOut))
   const amIn = ((amOutNr * priceOut) / priceIn) * (1 + buffer)

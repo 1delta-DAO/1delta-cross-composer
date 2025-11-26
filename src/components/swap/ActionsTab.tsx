@@ -115,7 +115,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
 
   const inputTokenPriceInCache = inputTokenPriceAddr && inputPrices?.[inputCurrency?.chainId || inputChainId]?.[inputTokenPriceAddr.toLowerCase()]
 
-  const { price: inputTokenPrice } = useTokenPrice({
+  const { price: inputTokenPrice, isLoading: isLoadingInputPrice } = useTokenPrice({
     chainId: inputCurrency?.chainId || inputChainId,
     tokenAddress: inputTokenPriceAddr,
     enabled: Boolean(inputCurrency && !inputTokenPriceInCache),
@@ -137,7 +137,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
     return actionCurrency.address as Address
   }, [actionCurrency])
 
-  const { price: actionTokenPrice } = useTokenPrice({
+  const { price: actionTokenPrice, isLoading: isLoadingActionPrice } = useTokenPrice({
     chainId: actionCurrency?.chainId || actionChainId || '',
     tokenAddress: actionTokenPriceAddr,
     enabled: Boolean(actionCurrency),
@@ -159,6 +159,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
   const [txInProgress, setTxInProgress] = useState(false)
   const [destinationCalls, setDestinationCalls] = useState<DestinationCall[]>([])
   const [actionResetKey, setActionResetKey] = useState(0)
+  const lastCalculatedPricesRef = useRef<{ priceIn: number; priceOut: number } | null>(null)
 
   const isSwapOrBridge = useMemo(() => {
     return Boolean(inputCurrency && actionCurrency)
@@ -245,8 +246,15 @@ export function ActionsTab({ onResetStateChange }: Props) {
         return
       }
 
-      const priceIn = inputPrice ?? 1
-      const priceOut = actionTokenPrice ?? 1
+      const priceIn = inputPrice ?? 0
+      const priceOut = actionTokenPrice ?? 0
+
+      if (priceIn <= 0 || priceOut <= 0) {
+        setDestinationInfoState({ currencyAmount, actionLabel })
+        setDestinationCalls(destinationCalls)
+        setCalculatedInputAmount('')
+        return
+      }
 
       const decimalsOut = actionCur.decimals
       const amountIn = reverseQuote(decimalsOut, currencyAmount.amount.toString(), priceIn, priceOut, slippage)
@@ -259,6 +267,38 @@ export function ActionsTab({ onResetStateChange }: Props) {
     },
     [inputCurrency, inputPrice, actionTokenPrice, slippage],
   )
+
+  useEffect(() => {
+    if (!destinationInfo?.currencyAmount) {
+      lastCalculatedPricesRef.current = null
+      return
+    }
+
+    if (isLoadingInputPrice || isLoadingActionPrice) return
+
+    const priceIn = inputPrice ?? 0
+    const priceOut = actionTokenPrice ?? 0
+
+    if (priceIn > 0 && priceOut > 0) {
+      const lastPrices = lastCalculatedPricesRef.current
+      const pricesChanged = !lastPrices || lastPrices.priceIn !== priceIn || lastPrices.priceOut !== priceOut
+
+      if (pricesChanged || !calculatedInputAmount) {
+        const actionCur = destinationInfo.currencyAmount.currency as RawCurrency
+        const decimalsOut = actionCur.decimals
+        try {
+          const amountIn = reverseQuote(decimalsOut, destinationInfo.currencyAmount.amount.toString(), priceIn, priceOut, slippage)
+          setCalculatedInputAmount(amountIn)
+          setAmount(amountIn)
+          lastCalculatedPricesRef.current = { priceIn, priceOut }
+        } catch (error) {
+          console.error('Error recalculating reverse quote:', error)
+        }
+      }
+    } else {
+      lastCalculatedPricesRef.current = null
+    }
+  }, [destinationInfo, inputPrice, actionTokenPrice, isLoadingInputPrice, isLoadingActionPrice, calculatedInputAmount, slippage])
 
   return (
     <div>
