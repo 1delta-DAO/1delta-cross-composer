@@ -2,7 +2,7 @@ import { type Address, zeroAddress } from 'viem'
 import { VenusLensAbi } from '../abi/compV2'
 import { erc20Abi } from 'viem'
 import { getRpcSelectorEvmClient, SupportedChainId } from '@1delta/lib-utils'
-import { MOONWELL_LENS, MOONWELL_COMPTROLLER, MOONWELL_UNDERLYING_TO_MTOKEN } from './consts'
+import { MOONWELL_LENS, MOONWELL_UNDERLYING_TO_MTOKEN } from './consts'
 import type { RawCurrency } from '../../types/currency'
 import { CurrencyHandler } from '@1delta/lib-utils/dist/services/currency/currencyUtils'
 

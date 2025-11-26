@@ -10,6 +10,7 @@ import { DepositActionModal } from './DepositModal'
 import { DepositCard } from './DepositCard'
 import { DestinationActionHandler } from '../../shared/types'
 import { useConnection } from 'wagmi'
+import { useTokenLists } from '../../../../hooks/useTokenLists'
 
 type DepositPanelProps = {
   chainId?: string
@@ -52,6 +53,8 @@ export function DepositPanel({ chainId, setDestinationInfo, resetKey }: DepositP
       setDestinationInfo?.(undefined, undefined, [])
     }
   }, [resetKey])
+
+  const { data: list } = useTokenLists()
 
   // Loading / empty states
   if (marketsLoading && !marketsReady) {
@@ -96,7 +99,12 @@ export function DepositPanel({ chainId, setDestinationInfo, resetKey }: DepositP
                   <div className="text-sm opacity-50 text-center py-4">No markets available</div>
                 ) : (
                   depositMarkets.map((market) => (
-                    <DepositCard key={market.mTokenCurrency.address} market={market} onActionClick={() => setSelectedMarket(market)} />
+                    <DepositCard
+                      key={market.mTokenCurrency.address}
+                      market={market}
+                      onActionClick={() => setSelectedMarket(market)}
+                      currencyFromList={list[market.mTokenCurrency.chainId]?.[market.underlyingCurrency.address.toLowerCase()]}
+                    />
                   ))
                 )}
               </div>
@@ -109,6 +117,7 @@ export function DepositPanel({ chainId, setDestinationInfo, resetKey }: DepositP
         <DepositActionModal
           open={!!selectedMarket}
           market={selectedMarket}
+          selectedCurrency={list[selectedMarket.mTokenCurrency.chainId]?.[selectedMarket.underlyingCurrency.address.toLowerCase()]}
           onClose={() => setSelectedMarket(undefined)}
           userAddress={address as any}
           chainId={chainId}
