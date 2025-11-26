@@ -108,7 +108,7 @@ async function trackBridgeCompletion(
 }
 
 type ExecuteButtonProps = {
-  trade: GenericTrade
+  trade?: GenericTrade
   srcCurrency?: RawCurrency
   dstCurrency?: RawCurrency
   amountWei?: string
@@ -119,6 +119,7 @@ type ExecuteButtonProps = {
   onTransactionStart?: () => void
   onTransactionEnd?: () => void
   destinationCalls?: DestinationCall[]
+  quoting?: boolean
 }
 
 export default function ExecuteButton({
@@ -133,6 +134,7 @@ export default function ExecuteButton({
   onTransactionStart,
   onTransactionEnd,
   destinationCalls,
+  quoting,
 }: ExecuteButtonProps) {
   const { address } = useConnection()
   const { isConnected } = useConnection()
@@ -165,8 +167,8 @@ export default function ExecuteButton({
     return Boolean(srcChainId && dstChainId && srcChainId !== dstChainId)
   }, [srcChainId, dstChainId])
 
-  const spender = (trade as any).approvalTarget || (trade as any).target
-  const skipApprove = (trade as any).skipApprove || false
+  const spender = trade ? ((trade as any).approvalTarget || (trade as any).target) : undefined
+  const skipApprove = trade ? ((trade as any).skipApprove || false) : false
 
   const { data: currentAllowance } = useReadContract({
     address: srcToken && srcToken.toLowerCase() !== zeroAddress.toLowerCase() ? srcToken : undefined,
@@ -244,7 +246,7 @@ export default function ExecuteButton({
   }, [trade])
 
   const execute = useCallback(async () => {
-    if (!address || !srcChainId) {
+    if (!address || !srcChainId || !trade) {
       toast.showError('Missing required parameters')
       return
     }
@@ -494,6 +496,15 @@ export default function ExecuteButton({
             <div className="w-full flex justify-center">
               <WalletConnect />
             </div>
+          ) : quoting ? (
+            <button className="btn btn-primary w-full" disabled>
+              <span className="loading loading-spinner loading-sm"></span>
+              {isBridge ? 'Loading bridge quote...' : 'Loading swap quote...'}
+            </button>
+          ) : !trade ? (
+            <button className="btn btn-primary w-full" disabled>
+              {isBridge ? 'Bridge' : 'Swap'}
+            </button>
           ) : (
             <button className="btn btn-primary w-full" onClick={execute} disabled={isPending}>
               {isBridge ? 'Bridge' : 'Swap'}

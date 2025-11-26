@@ -38,7 +38,9 @@ export function ActionsTab({ onResetStateChange }: Props) {
   const [actionCurrency, setActionCurrency] = useState<RawCurrency | undefined>(undefined)
   const [amount, setAmount] = useState('')
   const [calculatedInputAmount, setCalculatedInputAmount] = useState<string>('')
-  const [destinationInfo, setDestinationInfoState] = useState<{ currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string } | undefined>(undefined)
+  const [destinationInfo, setDestinationInfoState] = useState<
+    { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string } | undefined
+  >(undefined)
 
   const inputChainId = inputCurrency?.chainId ?? DEFAULT_INPUT_CHAIN_ID
   const actionChainId = actionCurrency?.chainId
@@ -328,9 +330,9 @@ export function ActionsTab({ onResetStateChange }: Props) {
         isRequoting={quoting && enableRequoting}
       />
 
-      {tradeToUse && (
+      {(tradeToUse || (destinationInfo && inputCurrency && actionCurrency)) && (
         <div className="mt-4 space-y-3">
-          {highSlippageLossWarning && (
+          {highSlippageLossWarning && tradeToUse && (
             <div className="rounded-lg bg-warning/10 border border-warning p-3">
               <div className="flex items-start gap-2">
                 <span className="text-warning text-lg">⚠️</span>
@@ -351,6 +353,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
             amountWei={amountWei}
             destinationCalls={destinationCalls}
             chains={chains}
+            quoting={quoting && !tradeToUse}
             onDone={(hashes) => {
               if (inputCurrency?.chainId && address) {
                 queryClient.invalidateQueries({
