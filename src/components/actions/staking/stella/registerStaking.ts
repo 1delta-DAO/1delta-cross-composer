@@ -16,6 +16,9 @@ export function registerStakingAction(): void {
     buildPanelProps: (context) => ({
       tokenLists: context.tokenLists,
       setDestinationInfo: context.setDestinationInfo,
+      srcCurrency: context.srcCurrency,
+      dstCurrency: context.dstCurrency,
+      slippage: context.slippage,
     }),
   }
 

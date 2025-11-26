@@ -167,8 +167,8 @@ export default function ExecuteButton({
     return Boolean(srcChainId && dstChainId && srcChainId !== dstChainId)
   }, [srcChainId, dstChainId])
 
-  const spender = trade ? ((trade as any).approvalTarget || (trade as any).target) : undefined
-  const skipApprove = trade ? ((trade as any).skipApprove || false) : false
+  const spender = trade ? (trade as any).approvalTarget || (trade as any).target : undefined
+  const skipApprove = trade ? (trade as any).skipApprove || false : false
 
   const { data: currentAllowance } = useReadContract({
     address: srcToken && srcToken.toLowerCase() !== zeroAddress.toLowerCase() ? srcToken : undefined,
@@ -284,7 +284,8 @@ export default function ExecuteButton({
         throw new Error('Failed to get transaction data from trade')
       }
 
-      const tradeDestinationCalls = (trade as any).additionalCalls || (trade as any).destinationCalls || (trade as any).crossChainParams?.additionalCalls
+      const tradeDestinationCalls =
+        (trade as any).additionalCalls || (trade as any).destinationCalls || (trade as any).crossChainParams?.additionalCalls
       console.debug('=== Destination Calls Debug ===')
       console.debug('Destination calls from prop:', destinationCalls)
       console.debug('Destination calls from trade object:', tradeDestinationCalls)
