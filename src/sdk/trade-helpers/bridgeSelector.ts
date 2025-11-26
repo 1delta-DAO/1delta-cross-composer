@@ -1,17 +1,19 @@
 import { fetchBridgeTradeWithoutComposed } from '@1delta/trade-sdk'
 import { Bridge, getBridges } from '@1delta/bridge-configs'
 import type { GenericTrade, RawCurrency } from '@1delta/lib-utils'
-import type { BaseBridgeInput, BaseComposedInput, BaseComposedWithGasLimitInput } from '@1delta/trade-sdk/dist/types'
+import type { AcrossBaseInput, AxelarBaseInput, BaseBridgeInput, DeltaCall } from '@1delta/trade-sdk/dist/types'
 import type { Address } from 'viem'
-import { zeroAddress } from 'viem'
 import { getPricesCallback } from '../../lib/trade-helpers/prices'
 import { getCurrency as getCurrencyRaw } from '../../lib/trade-helpers/utils'
 import { fetchAxelarTradeWithSwaps } from '@1delta/trade-sdk/dist/composedTrades/axelar/axelarWithSwaps'
 import { fetchAcrossTradeWithSwaps } from '@1delta/trade-sdk/dist/composedTrades/across/acrossWithSwaps'
 import { fetchPrices } from '../../hooks/prices/usePriceQuery'
 import { setPricesFromDexscreener } from '../../lib/trade-helpers/prices'
+import { TradeType } from '@1delta/calldata-sdk'
 
-type ExtendedBridgeInput = BaseBridgeInput & { additionalCalls?: BaseComposedInput['additionalCalls'] }
+type ExtendedBridgeInput = BaseBridgeInput & {
+  additionalCalls?: DeltaCall[]
+}
 
 function getCurrency(chainId: string | undefined, tokenAddress: string | undefined): RawCurrency {
   if (!chainId || !tokenAddress) {
@@ -55,8 +57,9 @@ export async function fetchAllBridgeTrades(
           if (bridge === Bridge.AXELAR) {
             await fetchPricesForCurrencies([input.fromCurrency, input.toCurrency].filter(Boolean) as RawCurrency[])
 
-            const composedInput: BaseComposedWithGasLimitInput = {
+            const composedInput: AxelarBaseInput = {
               ...input,
+              payFeeWithNative: true,
               additionalCalls: {
                 calls: input.additionalCalls || [],
                 gasLimit: input.destinationGasLimit,
@@ -64,7 +67,7 @@ export async function fetchAllBridgeTrades(
             }
             trade = await fetchAxelarTradeWithSwaps(composedInput, getCurrency, getPricesCallback, controller)
           } else if (bridge === Bridge.ACROSS) {
-            const composedInput: BaseComposedInput = {
+            const composedInput: AcrossBaseInput = {
               ...input,
               additionalCalls: input.additionalCalls || [],
             }

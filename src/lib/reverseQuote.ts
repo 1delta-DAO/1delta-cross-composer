@@ -4,7 +4,7 @@ import { CurrencyHandler } from '../sdk/types'
 
 export function calculateReverseQuoteBuffer(slippage?: number): number {
   const slippageDecimal = slippage ? slippage / 100 : 0
-  const slippageBasedBuffer = slippageDecimal * 2 // todo: change after new trade-sdk released
+  const slippageBasedBuffer = slippageDecimal * 1.1
   return Math.max(0.003, slippageBasedBuffer)
 }
 

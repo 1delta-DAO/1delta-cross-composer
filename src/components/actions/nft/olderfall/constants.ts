@@ -85,4 +85,4 @@ export const SEQUENCE_PROJECT_ACCESS_KEY = import.meta.env.VITE_SEQUENCE_PROJECT
 
 export const SEQUENCE_PROJECT_ID = import.meta.env.VITE_SEQUENCE_PROJECT_ID as string | undefined
 
-export const SEQUENCE_MARKETPLACE_API_URL = import.meta.env.VITE_SEQUENCE_MARKETPLACE_API_URL as string | undefined
+export const SEQUENCE_MARKETPLACE_API_URL = 'https://marketplace-api.sequence.app'
