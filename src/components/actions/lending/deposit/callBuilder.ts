@@ -5,7 +5,7 @@ import type { DestinationCall } from '../../../../lib/types/destinationAction'
 import type { RawCurrency } from '../../../../types/currency'
 import type { DestinationCallBuilder } from '../../shared/types'
 import { encodeComposerCompose } from '../../../../lib/calldata/encodeComposerCompose'
-import { MOONWELL_COMPTROLLER } from '../../../../hooks/useMoonwellMarkets'
+import { MOONWELL_UNDERLYING_TO_MTOKEN } from '../../../../hooks/useMoonwellMarkets'
 
 export type DepositCallBuilderParams = {
   amountHuman: string
@@ -33,7 +33,7 @@ export const buildCalls: DestinationCallBuilder<DepositCallBuilderParams> = asyn
     lender: 'MOONWELL' as any,
     transferType: TransferToLenderType.ContractBalance,
     useOverride: {
-      pool: MOONWELL_COMPTROLLER,
+      pool: MOONWELL_UNDERLYING_TO_MTOKEN[underlying.address],
     },
   })
 

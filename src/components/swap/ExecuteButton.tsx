@@ -282,6 +282,17 @@ export default function ExecuteButton({
         throw new Error('Failed to get transaction data from trade')
       }
 
+      const tradeDestinationCalls = (trade as any).additionalCalls || (trade as any).destinationCalls || (trade as any).crossChainParams?.additionalCalls
+      console.debug('=== Destination Calls Debug ===')
+      console.debug('Destination calls from prop:', destinationCalls)
+      console.debug('Destination calls from trade object:', tradeDestinationCalls)
+      console.debug('Trade object keys:', Object.keys(trade || {}))
+      console.debug('Trade crossChainParams:', (trade as any).crossChainParams)
+      console.debug('Is bridge:', isBridge)
+      console.debug('Source chain:', srcChainId)
+      console.debug('Destination chain:', dstChainId)
+      console.debug('================================')
+
       let hash: Address
       setStep('broadcast')
       hash = await sendTransactionAsync({
@@ -328,6 +339,11 @@ export default function ExecuteButton({
             }
 
             if (isBridge && trade?.crossChainParams) {
+              const bridgeDestinationCalls = (trade as any).crossChainParams?.additionalCalls || (trade as any).additionalCalls
+              console.debug('=== Bridge Transaction with Destination Calls ===')
+              console.debug('Bridge destination calls from trade:', bridgeDestinationCalls)
+              console.debug('Cross chain params:', trade.crossChainParams)
+              console.debug('================================================')
               setIsBridgeTracking(true)
               setBridgeTrackingStopped(false)
               trackBridgeCompletion(trade, srcChainId!, dstChainId!, hash, (hashes) => {
@@ -356,13 +372,24 @@ export default function ExecuteButton({
               address
             ) {
               try {
+                console.debug('=== Executing Destination Calls ===')
+                console.debug('Number of destination calls:', destinationCalls.length)
+                console.debug('Destination calls to execute:', destinationCalls)
                 for (const call of destinationCalls) {
+                  console.debug('Executing destination call:', {
+                    target: call.target,
+                    calldata: call.calldata,
+                    value: call.value?.toString(),
+                    gasLimit: call.gasLimit?.toString(),
+                  })
                   await sendTransactionAsync({
                     to: call.target,
                     data: call.calldata,
                     value: (call.value ?? 0n) as any,
                   })
                 }
+                console.debug('All destination calls executed successfully')
+                console.debug('=====================================')
                 onDone({ src: hash })
               } catch (e) {
                 console.error('Destination actions execution failed:', e)
@@ -386,6 +413,11 @@ export default function ExecuteButton({
         }
 
         if (isBridge && trade?.crossChainParams) {
+          const bridgeDestinationCalls = (trade as any).crossChainParams?.additionalCalls || (trade as any).additionalCalls
+          console.debug('=== Bridge Transaction with Destination Calls (no publicClient) ===')
+          console.debug('Bridge destination calls from trade:', bridgeDestinationCalls)
+          console.debug('Cross chain params:', trade.crossChainParams)
+          console.debug('================================================================')
           setIsBridgeTracking(true)
           setBridgeTrackingStopped(false)
           trackBridgeCompletion(trade, srcChainId!, dstChainId!, hash, (hashes) => {
