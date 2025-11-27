@@ -2,6 +2,7 @@ import { initialize as initTradeSdk, setWalletClient as setTradeSdkWalletClient 
 import type { WalletClient } from 'viem'
 import { initializeMoonwellMarkets } from '../moonwell/marketCache'
 import { registerActions } from '../../components/actions/shared/registerActions'
+import { fetchMainPrices } from '../../hooks/prices/usePriceQuery'
 
 let isInitialized = false
 
@@ -31,6 +32,14 @@ export async function initAll() {
     console.error('Failed to initialize Trade SDK:', error)
     throw error
   }
+
+  await fetchMainPrices()
+    .then(() => {
+      console.debug('Main prices fetched successfully')
+    })
+    .catch((error) => {
+      console.error('Failed to fetch main prices:', error)
+    })
 }
 
 export function setTradeSdkWallet(walletClient: WalletClient | undefined) {

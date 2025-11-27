@@ -2,6 +2,7 @@ import type { useGeneralPricesCallbackType } from '@1delta/lib-utils/dist/types/
 import { zeroAddress } from 'viem'
 import { CurrencyHandler } from '@1delta/lib-utils/dist/services/currency/currencyUtils'
 import { getTokenFromCache } from '../data/tokenListsCache'
+import { getMainPricesCache } from '../../hooks/prices/usePriceQuery'
 
 const pricesCache: Record<string, Record<string, number>> = {}
 
@@ -41,24 +42,34 @@ function resolvePriceAddress(chainId: string | undefined, address: string | unde
   return lower
 }
 
-function stablecoinFallbackPrice(chainId?: string, address?: string): number | undefined {
-  if (!chainId || !address) return undefined
-  const token = getTokenFromCache(chainId, address)
-  const symbol = (token as any)?.symbol?.toUpperCase?.() || ''
-  const assetGroup = (token as any)?.assetGroup || ''
-  if (assetGroup === 'USDC') return 1
-  if (symbol === 'USDC' || symbol === 'USDT' || symbol === 'DAI' || symbol === 'USDBC' || symbol === 'XCUSDC') return 1
-  return undefined
-}
-
 function getPrice(chainId: string | undefined, address: string | undefined): number {
   if (!chainId || !address) return 0
   const resolved = resolvePriceAddress(chainId, address)
   if (!resolved) return 0
+
+  const token = getTokenFromCache(chainId, resolved)
+  const mainPrices = getMainPricesCache()
+
+  if (token) {
+    const assetGroup = (token as any)?.assetGroup as string | undefined
+    const symbol = (token as any)?.symbol as string | undefined
+
+    if (assetGroup && mainPrices) {
+      const assetGroupPrice = mainPrices[assetGroup]
+      if (assetGroupPrice !== undefined) {
+        return assetGroupPrice
+      }
+    }
+  }
+
   const cached = pricesCache[chainId]?.[resolved]
   if (cached && Number.isFinite(cached) && cached > 0) return cached
-  const fallback = stablecoinFallbackPrice(chainId, resolved)
-  return fallback ?? 0
+
+  return 0
+}
+
+export function getPriceWithFallback(chainId: string | undefined, address: string | undefined): number {
+  return getPrice(chainId, address)
 }
 
 export const getPricesCallback: useGeneralPricesCallbackType = (priceQueries) => {
