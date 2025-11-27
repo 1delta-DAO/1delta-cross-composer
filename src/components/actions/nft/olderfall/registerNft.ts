@@ -10,8 +10,8 @@ import { getCachedListings, setCachedListings } from './cache'
 
 export function registerNftAction(): void {
   const nftAction: ActionDefinition = {
-    id: 'nft',
-    label: 'NFT',
+    id: 'olderfall_nfts',
+    label: 'Olderfall NFTs',
     category: 'gaming',
     icon: NftIcon,
     panel: OlderfallPanel,
