@@ -11,6 +11,12 @@ export type OlderfallListing = {
   isERC1155: boolean
   name?: string
   image?: string
+  metadata?: {
+    description?: string
+    attributes?: Array<{ trait_type?: string; value?: string | number; [key: string]: any }>
+    external_url?: string
+    [key: string]: any
+  }
 }
 
 export async function fetchOlderfallListings(chainId?: string, signal?: AbortSignal): Promise<OlderfallListing[]> {
@@ -99,6 +105,7 @@ export async function fetchOlderfallListings(chainId?: string, signal?: AbortSig
           isERC1155: false,
           name,
           image,
+          metadata: meta,
         })
       }
 
