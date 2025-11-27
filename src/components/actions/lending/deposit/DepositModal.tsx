@@ -19,12 +19,24 @@ type DepositActionModalProps = {
   userAddress?: Address
   chainId?: string
   setDestinationInfo?: DestinationActionHandler
+  amount?: string
+  onAmountChange?: (amount: string) => void
 }
 
-export function DepositActionModal({ open, onClose, market, selectedCurrency, setDestinationInfo }: DepositActionModalProps) {
-  const [amount, setAmount] = useState<string>('')
+export function DepositActionModal({ open, onClose, market, selectedCurrency, setDestinationInfo, amount: externalAmount, onAmountChange }: DepositActionModalProps) {
+  const [internalAmount, setInternalAmount] = useState<string>('')
   const { address } = useConnection()
   const userAddress = address ?? DUMMY_ADDRESS
+
+  const amount = onAmountChange ? (externalAmount || '') : internalAmount
+
+  const handleAmountChange = (value: string) => {
+    if (onAmountChange) {
+      onAmountChange(value)
+    } else {
+      setInternalAmount(value)
+    }
+  }
 
   // Prefer selectedCurrency for UI + math; fall back to market.underlyingCurrency
   const underlying = selectedCurrency ?? market.underlyingCurrency
@@ -109,7 +121,7 @@ export function DepositActionModal({ open, onClose, market, selectedCurrency, se
                 inputMode="decimal"
                 placeholder="0.0"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => handleAmountChange(e.target.value)}
               />
             </div>
           </div>

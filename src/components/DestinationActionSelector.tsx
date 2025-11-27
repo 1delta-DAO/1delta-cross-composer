@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import { isMarketsLoading, isMarketsReady, subscribeToCacheChanges } from '../lib/moonwell/marketCache'
-import type { RawCurrency } from '../types/currency'
+import type { RawCurrency, RawCurrencyAmount } from '../types/currency'
 import { ActionIconGrid } from './actions/shared/ActionIconGrid'
 import { SelectedActionHeader } from './actions/shared/SelectedActionHeader'
 import {
@@ -25,6 +25,8 @@ interface DestinationActionSelectorProps {
   slippage?: number
   resetKey?: number
   onSrcCurrencyChange?: (currency: RawCurrency) => void
+  destinationInfo?: { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string }
+  isRequoting?: boolean
 }
 
 export default function DestinationActionSelector({
@@ -38,6 +40,8 @@ export default function DestinationActionSelector({
   slippage,
   resetKey,
   onSrcCurrencyChange,
+  destinationInfo,
+  isRequoting,
 }: DestinationActionSelectorProps) {
   const [marketsReady, setMarketsReady] = useState(isMarketsReady())
   const [marketsLoading, setMarketsLoading] = useState(isMarketsLoading())
@@ -241,6 +245,8 @@ export default function DestinationActionSelector({
       selectedQuoteIndex,
       setSelectedQuoteIndex,
       requiresExactDestinationAmount: actionDef.requiresExactDestinationAmount ?? false,
+      destinationInfo,
+      isRequoting,
     }
 
     const props = actionDef.buildPanelProps

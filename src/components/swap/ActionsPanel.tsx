@@ -53,6 +53,8 @@ export function ActionsPanel({
           setSelectedQuoteIndex={setSelectedQuoteIndex}
           slippage={slippage}
           onSrcCurrencyChange={onSrcCurrencyChange}
+          destinationInfo={destinationInfo}
+          isRequoting={isRequoting}
         />
 
         <TransactionSummary

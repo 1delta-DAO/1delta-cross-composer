@@ -20,6 +20,7 @@ import { formatDisplayAmount, pickPreferredToken } from './swapUtils'
 import type { DestinationCall } from '../../lib/types/destinationAction'
 import { reverseQuote } from '../../lib/reverseQuote'
 import { getRegisteredActions } from '../actions/shared/actionRegistry'
+import { getPriceWithFallback } from '../../lib/trade-helpers/prices'
 
 type Props = {
   onResetStateChange?: (showReset: boolean, resetCallback?: () => void) => void
@@ -248,8 +249,24 @@ export function ActionsTab({ onResetStateChange }: Props) {
         return
       }
 
-      const priceIn = inputPrice ?? 0
-      const priceOut = actionTokenPrice ?? 0
+      let priceIn = inputPrice ?? 0
+      let priceOut = actionTokenPrice ?? 0
+
+      if (priceIn <= 0 && inputCurrency) {
+        const inputPriceAddr =
+          inputCurrency.address.toLowerCase() === zeroAddress.toLowerCase()
+            ? (CurrencyHandler.wrappedAddressFromAddress(inputCurrency.chainId, zeroAddress) as Address | undefined) || (zeroAddress as Address)
+            : (inputCurrency.address as Address)
+        priceIn = getPriceWithFallback(inputCurrency.chainId, inputPriceAddr)
+      }
+
+      if (priceOut <= 0 && actionCur) {
+        const actionPriceAddr =
+          actionCur.address.toLowerCase() === zeroAddress.toLowerCase()
+            ? (CurrencyHandler.wrappedAddressFromAddress(actionCur.chainId, zeroAddress) as Address | undefined) || (zeroAddress as Address)
+            : (actionCur.address as Address)
+        priceOut = getPriceWithFallback(actionCur.chainId, actionPriceAddr)
+      }
 
       if (priceIn <= 0 || priceOut <= 0) {
         setDestinationInfoState({ currencyAmount, actionLabel, actionId })
@@ -278,8 +295,25 @@ export function ActionsTab({ onResetStateChange }: Props) {
 
     if (isLoadingPrices) return
 
-    const priceIn = inputPrice ?? 0
-    const priceOut = actionTokenPrice ?? 0
+    let priceIn = inputPrice ?? 0
+    let priceOut = actionTokenPrice ?? 0
+
+    if (priceIn <= 0 && inputCurrency) {
+      const inputPriceAddr =
+        inputCurrency.address.toLowerCase() === zeroAddress.toLowerCase()
+          ? (CurrencyHandler.wrappedAddressFromAddress(inputCurrency.chainId, zeroAddress) as Address | undefined) || (zeroAddress as Address)
+          : (inputCurrency.address as Address)
+      priceIn = getPriceWithFallback(inputCurrency.chainId, inputPriceAddr)
+    }
+
+    if (priceOut <= 0 && destinationInfo.currencyAmount) {
+      const actionCur = destinationInfo.currencyAmount.currency as RawCurrency
+      const actionPriceAddr =
+        actionCur.address.toLowerCase() === zeroAddress.toLowerCase()
+          ? (CurrencyHandler.wrappedAddressFromAddress(actionCur.chainId, zeroAddress) as Address | undefined) || (zeroAddress as Address)
+          : (actionCur.address as Address)
+      priceOut = getPriceWithFallback(actionCur.chainId, actionPriceAddr)
+    }
 
     if (priceIn > 0 && priceOut > 0) {
       const lastPrices = lastCalculatedPricesRef.current

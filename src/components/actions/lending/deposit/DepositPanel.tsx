@@ -11,14 +11,17 @@ import { DepositCard } from './DepositCard'
 import { DestinationActionHandler } from '../../shared/types'
 import { useConnection } from 'wagmi'
 import { useTokenLists } from '../../../../hooks/useTokenLists'
+import type { RawCurrencyAmount } from '../../../../types/currency'
 
 type DepositPanelProps = {
   chainId?: string
   setDestinationInfo?: DestinationActionHandler
   resetKey?: number
+  destinationInfo?: { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string }
+  isRequoting?: boolean
 }
 
-export function DepositPanel({ chainId, setDestinationInfo, resetKey }: DepositPanelProps) {
+export function DepositPanel({ chainId, setDestinationInfo, resetKey, destinationInfo, isRequoting }: DepositPanelProps) {
   const { address } = useConnection()
   const [isExpanded, setIsExpanded] = useState(false)
   const [marketsReady, setMarketsReady] = useState(isMarketsReady())
@@ -45,16 +48,41 @@ export function DepositPanel({ chainId, setDestinationInfo, resetKey }: DepositP
   }, [markets])
 
   const [selectedMarket, setSelectedMarket] = useState<undefined | MoonwellMarket>(undefined)
+  const [marketAmounts, setMarketAmounts] = useState<Map<string, string>>(new Map())
+  const [lastSelectedMarketAddress, setLastSelectedMarketAddress] = useState<string | undefined>(undefined)
 
   useEffect(() => {
     if (resetKey !== undefined && resetKey > 0) {
       setSelectedMarket(undefined)
       setIsExpanded(false)
+      setMarketAmounts(new Map())
+      setLastSelectedMarketAddress(undefined)
       setDestinationInfo?.(undefined, undefined, [])
     }
   }, [resetKey])
 
   const { data: list } = useTokenLists()
+
+  const handleAmountChange = (marketAddress: string, amount: string) => {
+    setMarketAmounts((prev) => {
+      const next = new Map(prev)
+      if (amount && amount.trim() !== '') {
+        next.set(marketAddress, amount)
+        setLastSelectedMarketAddress(marketAddress)
+      } else {
+        next.delete(marketAddress)
+        if (lastSelectedMarketAddress === marketAddress) {
+          setLastSelectedMarketAddress(undefined)
+        }
+      }
+      return next
+    })
+  }
+
+  const handleMarketClick = (market: MoonwellMarket) => {
+    setSelectedMarket(market)
+    setLastSelectedMarketAddress(market.mTokenCurrency.address)
+  }
 
   // Loading / empty states
   if (marketsLoading && !marketsReady) {
@@ -89,14 +117,21 @@ export function DepositPanel({ chainId, setDestinationInfo, resetKey }: DepositP
           {depositMarkets.length === 0 ? (
             <div className="col-span-full text-sm opacity-50 text-center py-4">No markets available</div>
           ) : (
-            depositMarkets.map((market) => (
-              <DepositCard
-                key={market.mTokenCurrency.address}
-                market={market}
-                onActionClick={() => setSelectedMarket(market)}
-                currencyFromList={list[market.mTokenCurrency.chainId]?.[market.underlyingCurrency.address.toLowerCase()]}
-              />
-            ))
+            depositMarkets.map((market) => {
+              const marketKey = market.mTokenCurrency.address
+              const enteredAmount = marketAmounts.get(marketKey)
+              const isSelected = lastSelectedMarketAddress === marketKey && enteredAmount !== undefined && enteredAmount.trim() !== '' && Number(enteredAmount) > 0
+              return (
+                <DepositCard
+                  key={marketKey}
+                  market={market}
+                  onActionClick={() => handleMarketClick(market)}
+                  currencyFromList={list[market.mTokenCurrency.chainId]?.[market.underlyingCurrency.address.toLowerCase()]}
+                  underlyingCurrency={market.underlyingCurrency}
+                  enteredAmount={isSelected ? enteredAmount : undefined}
+                />
+              )
+            })
           )}
         </div>
       </div>
@@ -110,6 +145,8 @@ export function DepositPanel({ chainId, setDestinationInfo, resetKey }: DepositP
           userAddress={address as any}
           chainId={chainId}
           setDestinationInfo={setDestinationInfo}
+          amount={marketAmounts.get(selectedMarket.mTokenCurrency.address) || ''}
+          onAmountChange={(amount) => handleAmountChange(selectedMarket.mTokenCurrency.address, amount)}
         />
       )}
     </>

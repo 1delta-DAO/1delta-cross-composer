@@ -1,10 +1,11 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import type { RawCurrency, RawCurrencyAmount } from '../../../types/currency'
 import { formatDisplayAmount } from '../../swap/swapUtils'
 import { CurrencyHandler } from '../../../sdk/types'
 import type { Address } from 'viem'
 import { useTokenPrice } from '../../../hooks/prices/useTokenPrice'
 import { zeroAddress } from 'viem'
+import { getPriceWithFallback } from '../../../lib/trade-helpers/prices'
 
 interface TransactionSummaryProps {
   srcCurrency?: RawCurrency
@@ -50,7 +51,7 @@ export function TransactionSummary({
     return srcCurrency.address as Address
   }, [srcCurrency])
 
-  const { price: srcPrice } = useTokenPrice({
+  const { price: srcPrice, isLoading: srcPriceLoading } = useTokenPrice({
     chainId: srcCurrency?.chainId || '',
     tokenAddress: srcTokenPriceAddr,
     enabled: Boolean(srcCurrency),
@@ -64,21 +65,50 @@ export function TransactionSummary({
     return dstCurrency.address as Address
   }, [dstCurrency])
 
-  const { price: dstPrice } = useTokenPrice({
+  const { price: dstPrice, isLoading: dstPriceLoading } = useTokenPrice({
     chainId: dstCurrency?.chainId || '',
     tokenAddress: dstTokenPriceAddr,
     enabled: Boolean(dstCurrency),
   })
 
+  const srcPriceWithFallback = useMemo(() => {
+    if (srcPrice && srcPrice > 0) return srcPrice
+    if (srcCurrency && srcTokenPriceAddr) {
+      return getPriceWithFallback(srcCurrency.chainId, srcTokenPriceAddr)
+    }
+    return undefined
+  }, [srcPrice, srcCurrency, srcTokenPriceAddr])
+
+  const dstPriceWithFallback = useMemo(() => {
+    if (dstPrice && dstPrice > 0) return dstPrice
+    if (dstCurrency && dstTokenPriceAddr) {
+      return getPriceWithFallback(dstCurrency.chainId, dstTokenPriceAddr)
+    }
+    return undefined
+  }, [dstPrice, dstCurrency, dstTokenPriceAddr])
+
+  const [showCalculatingTimeout, setShowCalculatingTimeout] = useState(false)
+
+  useEffect(() => {
+    if (!inputAmount || !srcPriceWithFallback) {
+      const timer = setTimeout(() => {
+        setShowCalculatingTimeout(true)
+      }, 5000)
+      return () => clearTimeout(timer)
+    } else {
+      setShowCalculatingTimeout(false)
+    }
+  }, [inputAmount, srcPriceWithFallback])
+
   const inputUsd = useMemo(() => {
-    if (!inputAmount || !srcPrice) return undefined
-    return Number(inputAmount) * srcPrice
-  }, [inputAmount, srcPrice])
+    if (!inputAmount || !srcPriceWithFallback) return undefined
+    return Number(inputAmount) * srcPriceWithFallback
+  }, [inputAmount, srcPriceWithFallback])
 
   const outputUsd = useMemo(() => {
-    if (!outputAmount || !dstPrice) return undefined
-    return Number(outputAmount) * dstPrice
-  }, [outputAmount, dstPrice])
+    if (!outputAmount || !dstPriceWithFallback) return undefined
+    return Number(outputAmount) * dstPriceWithFallback
+  }, [outputAmount, dstPriceWithFallback])
 
   const srcChainName = useMemo(() => {
     if (!srcCurrency?.chainId || !chains) return srcCurrency?.chainId
@@ -93,7 +123,8 @@ export function TransactionSummary({
   if (!shouldShow) return null
 
   const hasInputAmount = inputAmount && Number(inputAmount) > 0
-  const formattedInput = hasInputAmount ? formatDisplayAmount(inputAmount) : 'Calculating...'
+  const isCalculating = !hasInputAmount && (srcPriceLoading || dstPriceLoading || !srcPriceWithFallback)
+  const formattedInput = hasInputAmount ? formatDisplayAmount(inputAmount) : showCalculatingTimeout ? 'Price unavailable' : 'Calculating...'
   const formattedOutput = formatDisplayAmount(outputAmount || '0')
 
   return (

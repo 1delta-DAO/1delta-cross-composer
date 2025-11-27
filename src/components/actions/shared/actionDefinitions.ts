@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react'
 import type { DestinationActionType } from '../../../lib/types/destinationAction'
-import type { RawCurrency } from '../../../types/currency'
+import type { RawCurrency, RawCurrencyAmount } from '../../../types/currency'
 import type { GenericTrade } from '@1delta/lib-utils'
 import { getRegisteredActions } from './actionRegistry'
 import type { DestinationActionHandler } from './types'
@@ -30,6 +30,8 @@ export interface ActionPanelContext {
   selectedQuoteIndex?: number
   setSelectedQuoteIndex?: (index: number) => void
   requiresExactDestinationAmount?: boolean
+  destinationInfo?: { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string }
+  isRequoting?: boolean
 }
 
 export interface ActionReadinessContext {

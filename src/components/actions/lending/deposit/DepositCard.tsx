@@ -5,19 +5,25 @@ type MarketTokenCardProps = {
   market: MoonwellMarket
   onActionClick: () => void
   currencyFromList: RawCurrency
+  underlyingCurrency: RawCurrency
+  enteredAmount?: string
 }
 
-function DepositCard({ market, onActionClick, currencyFromList }: MarketTokenCardProps) {
+function DepositCard({ market, onActionClick, currencyFromList, underlyingCurrency, enteredAmount }: MarketTokenCardProps) {
   const token = currencyFromList
 
   const symbol = market.symbol || token?.symbol || 'Unknown'
 
   const iconSrc = currencyFromList.logoURI
 
+  const isSelected = enteredAmount !== undefined && enteredAmount.trim() !== '' && Number(enteredAmount) > 0
+
+  const borderClass = isSelected ? 'border-2 border-primary' : 'border border-base-300 hover:border-primary/50'
+
   return (
     <button
       type="button"
-      className="flex flex-col items-center gap-2 p-3 cursor-pointer rounded-lg border border-base-300 hover:border-primary/50 bg-base-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      className={`flex flex-col items-center gap-2 p-3 cursor-pointer rounded-lg ${borderClass} bg-base-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
       disabled={market.mintPaused}
       onClick={() => {
         if (!market.mintPaused) onActionClick()
