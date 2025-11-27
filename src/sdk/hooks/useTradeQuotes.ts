@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import type { Address } from 'viem'
 import type { GenericTrade } from '@1delta/lib-utils'
 import { TradeType } from '@1delta/lib-utils'
@@ -70,11 +70,14 @@ export function useTradeQuotes({
   const prevDstKeyRef = useRef<string>(debouncedDstKey)
   const prevIsSameChainRef = useRef<boolean | null>(null)
   const prevDestinationCallsKeyRef = useRef<string>('')
+  const isUserSelectionRef = useRef<boolean>(false)
 
   useEffect(() => {
     if (prevSrcKeyRef.current !== debouncedSrcKey || prevDstKeyRef.current !== debouncedDstKey) {
       if (quotes.length > 0 && !txInProgress) {
         setQuotes([])
+        setSelectedQuoteIndex(0)
+        isUserSelectionRef.current = false
       }
       prevSrcKeyRef.current = debouncedSrcKey
       prevDstKeyRef.current = debouncedDstKey
@@ -98,6 +101,8 @@ export function useTradeQuotes({
     if (prevDestinationCallsKeyRef.current !== destinationCallsKey) {
       if (quotes.length > 0 && !txInProgress) {
         setQuotes([])
+        setSelectedQuoteIndex(0)
+        isUserSelectionRef.current = false
       }
       if (!txInProgress) {
         lastQuotedKeyRef.current = null
@@ -162,6 +167,8 @@ export function useTradeQuotes({
       requestInProgressRef.current = false
       setQuoting(false)
       setQuotes([])
+      setSelectedQuoteIndex(0)
+      isUserSelectionRef.current = false
       if (abortControllerRef.current) {
         abortControllerRef.current.abort()
         abortControllerRef.current = null
@@ -180,6 +187,8 @@ export function useTradeQuotes({
 
     if (!amountOk || !inputsOk) {
       setQuotes([])
+      setSelectedQuoteIndex(0)
+      isUserSelectionRef.current = false
       setQuoting(false)
       requestInProgressRef.current = false
       lastQuotedKeyRef.current = null
@@ -212,6 +221,7 @@ export function useTradeQuotes({
 
     if (lastQuotedKeyRef.current !== null && lastQuotedKeyRef.current !== currentKey) {
       lastQuotedKeyRef.current = null
+      isUserSelectionRef.current = false
       requotingStartTimeRef.current = null
       if (requotingTimeoutRef.current) {
         clearTimeout(requotingTimeoutRef.current)
@@ -268,6 +278,7 @@ export function useTradeQuotes({
 
     const fetchQuote = async () => {
       try {
+        const isRefresh = lastQuotedKeyRef.current === currentKey
         lastQuotedKeyRef.current = currentKey
         lastQuotedAtRef.current = Date.now()
         const fromCurrency = srcCurrency
@@ -370,6 +381,18 @@ export function useTradeQuotes({
             requotingTimeoutRef.current = null
           }
 
+          const updateQuotesAndSelection = () => {
+            setQuotes(allQuotes)
+            setSelectedQuoteIndex((prevIndex) => {
+              const isValidIndex = prevIndex >= 0 && prevIndex < allQuotes.length
+              const shouldPreserve = isRefresh && isValidIndex && isUserSelectionRef.current
+              return shouldPreserve ? prevIndex : 0
+            })
+            if (!isRefresh || !isUserSelectionRef.current) {
+              isUserSelectionRef.current = false
+            }
+          }
+
           if (enableRequoting && minRequiredAmount && allQuotes.length > 0) {
             const bestQuote = allQuotes[0]
             const outputAmount = bestQuote.trade.outputAmountRealized
@@ -381,8 +404,7 @@ export function useTradeQuotes({
               if (validation.hasHighSlippageLoss) {
                 setHighSlippageLossWarning(true)
                 setCurrentBuffer(0.05)
-                setQuotes(allQuotes)
-                setSelectedQuoteIndex(0)
+                updateQuotesAndSelection()
               } else {
                 const adjustedBuffer = calculateAdjustedBuffer(currentBuffer, validation.requiredBuffer, slippage)
                 setCurrentBuffer(adjustedBuffer)
@@ -392,18 +414,15 @@ export function useTradeQuotes({
                   console.debug('Buffer adjusted, but quotes already fetched. Validation warning may apply.')
                 }
 
-                setQuotes(allQuotes)
-                setSelectedQuoteIndex(0)
+                updateQuotesAndSelection()
               }
             } else {
               setHighSlippageLossWarning(false)
-              setQuotes(allQuotes)
-              setSelectedQuoteIndex(0)
+              updateQuotesAndSelection()
             }
           } else {
             setHighSlippageLossWarning(false)
-            setQuotes(allQuotes)
-            setSelectedQuoteIndex(0)
+            updateQuotesAndSelection()
           }
         } else {
           throw new Error('No quote available from any aggregator/bridge')
@@ -416,6 +435,8 @@ export function useTradeQuotes({
         const errorMessage = error instanceof Error ? error.message : 'Failed to fetch quote'
         toast.showError(errorMessage)
         setQuotes([])
+        setSelectedQuoteIndex(0)
+        isUserSelectionRef.current = false
         console.error('Quote fetch error:', error)
       } finally {
         if (!cancel && !controller.signal.aborted) {
@@ -515,11 +536,16 @@ export function useTradeQuotes({
     setCurrentBuffer(calculateReverseQuoteBuffer(slippage))
   }, [slippage])
 
+  const wrappedSetSelectedQuoteIndex = useCallback((index: number) => {
+    isUserSelectionRef.current = true
+    setSelectedQuoteIndex(index)
+  }, [])
+
   return {
     quotes,
     quoting,
     selectedQuoteIndex,
-    setSelectedQuoteIndex,
+    setSelectedQuoteIndex: wrappedSetSelectedQuoteIndex,
     amountWei,
     refreshQuotes,
     abortQuotes,
