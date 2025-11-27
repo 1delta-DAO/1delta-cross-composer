@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { ActionDefinition, ActionCategory, ActionType } from './actionDefinitions'
-import { CATEGORIES, getPriorityActions, getRemainingActionsCount, getRegisteredActions } from './actionDefinitions'
+import { CATEGORIES } from './actionDefinitions'
 import type { RawCurrency } from '../../../types/currency'
 import { useContainerWidth } from '../../../hooks/useContainerWidth'
 
@@ -40,42 +40,46 @@ export function ActionIconGrid({
     return actions.filter((action) => action.category === selectedCategory)
   }, [actions, selectedCategory])
 
-  const priorityActions = useMemo(() => getPriorityActions(srcCurrency), [srcCurrency])
-  const remainingCount = useMemo(() => getRemainingActionsCount(priorityActions, srcCurrency), [priorityActions, srcCurrency])
-
   const maxVisibleItems = useMemo(() => {
     if (width === 0) return 3
-    if (width < 500) return 2
-    if (width < 600) return 3
-    if (width < 700) return 4
-    if (width < 800) return 5
-    if (width < 900) return 6
-    if (width < 950) return 7
-    if (width < 1000) return 8
-    return 9
+
+    const buttonWidth = 130
+    const gapWidth = 8
+    const plusButtonWidth = 60
+    const reservedSpace = 100
+
+    const availableWidth = width - reservedSpace
+    const itemsWithCounter = Math.floor((availableWidth - plusButtonWidth - gapWidth) / (buttonWidth + gapWidth))
+    const itemsWithoutCounter = Math.floor(availableWidth / (buttonWidth + gapWidth))
+
+    const maxItems = Math.max(itemsWithCounter, itemsWithoutCounter)
+
+    return Math.max(2, Math.min(maxItems, 50))
   }, [width])
 
   const collapsedActions = useMemo(() => {
-    const baseActions = priorityActions.slice(0, maxVisibleItems)
+    const allActionsSorted = [...filteredActions].sort((a, b) => a.priority - b.priority)
 
     if (!selectedAction) {
-      return baseActions
+      return allActionsSorted.slice(0, maxVisibleItems)
     }
 
-    const selectedActionDef = actions.find((a) => a.id === selectedAction)
+    const selectedActionDef = allActionsSorted.find((a) => a.id === selectedAction)
     if (!selectedActionDef) {
-      return baseActions
+      return allActionsSorted.slice(0, maxVisibleItems)
     }
 
-    const isSelectedInPriority = priorityActions.some((a) => a.id === selectedAction)
+    const selectedIndex = allActionsSorted.findIndex((a) => a.id === selectedAction)
+    const isInVisibleRange = selectedIndex < maxVisibleItems
 
-    if (isSelectedInPriority) {
-      return baseActions
+    if (isInVisibleRange) {
+      return allActionsSorted.slice(0, maxVisibleItems)
     }
 
     const remainingSlots = maxVisibleItems - 1
-    return [selectedActionDef, ...priorityActions.slice(0, remainingSlots)]
-  }, [priorityActions, selectedAction, actions, maxVisibleItems])
+    const otherActions = allActionsSorted.filter((a) => a.id !== selectedAction).slice(0, remainingSlots)
+    return [selectedActionDef, ...otherActions]
+  }, [filteredActions, selectedAction, maxVisibleItems])
 
   const handleActionClick = (actionId: ActionType) => {
     onActionSelect(actionId)
@@ -84,12 +88,9 @@ export function ActionIconGrid({
     }
   }
 
-  const allAvailableActions = useMemo(() => {
-    return getRegisteredActions().filter((action) => !action.requiresSrcCurrency || srcCurrency)
-  }, [srcCurrency])
-
   const visibleCount = collapsedActions.length
-  const actualRemainingCount = Math.max(0, allAvailableActions.length - visibleCount)
+  const totalFilteredActions = filteredActions.length
+  const actualRemainingCount = Math.max(0, totalFilteredActions - visibleCount)
 
   return (
     <div ref={containerRef} className="space-y-3">
@@ -136,7 +137,7 @@ export function ActionIconGrid({
           })}
         </div>
       ) : (
-        /* Collapsed View - Priority Actions + Counter */
+        /* Collapsed View*/
         <div className="flex items-center gap-2 flex-wrap">
           {collapsedActions.map((action) => {
             const Icon = action.icon

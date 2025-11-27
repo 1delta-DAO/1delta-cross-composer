@@ -76,17 +76,3 @@ export function getActionsByCategory(category: ActionCategory, srcCurrency?: Raw
   }
   return actions.filter((action) => action.category === category && (!action.requiresSrcCurrency || srcCurrency))
 }
-
-// Get priority actions for collapsed view (top 3 by priority)
-export function getPriorityActions(srcCurrency?: RawCurrency): ActionDefinition[] {
-  return getRegisteredActions()
-    .filter((action) => !action.requiresSrcCurrency || srcCurrency)
-    .sort((a, b) => a.priority - b.priority)
-    .slice(0, 3)
-}
-
-// Get remaining actions count for collapsed view
-export function getRemainingActionsCount(priorityActions: ActionDefinition[], srcCurrency?: RawCurrency): number {
-  const allAvailable = getRegisteredActions().filter((action) => !action.requiresSrcCurrency || srcCurrency)
-  return Math.max(0, allAvailable.length - priorityActions.length)
-}
