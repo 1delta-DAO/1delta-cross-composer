@@ -6,7 +6,8 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const getListUrl = (chainId: string) => `https://raw.githubusercontent.com/1delta-DAO/asset-lists/main/${chainId}.json`
+const getListUrl = (chainId: string) =>
+  `https://raw.githubusercontent.com/1delta-DAO/asset-lists/main/${chainId}.json`
 
 async function fetchChains() {
   const dir = path.resolve(__dirname, './data/assets')
@@ -29,7 +30,7 @@ async function fetchChains() {
       } catch (error) {
         console.error(`Error fetching ${chainId}:`, error)
       }
-    }),
+    })
   )
   console.log('Done!')
 }

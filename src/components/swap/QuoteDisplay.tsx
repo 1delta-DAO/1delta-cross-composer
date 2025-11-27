@@ -98,14 +98,17 @@ export function QuoteDisplay({
             const rate = amount && Number(amount) > 0 ? output / Number(amount) : 0
             const isSelected = idx === selectedQuoteIndex
             const isBestQuote = idx === 0
-            const diffPercent = bestOutput > 0 && idx > 0 ? ((output - bestOutput) / bestOutput) * 100 : 0
+            const diffPercent =
+              bestOutput > 0 && idx > 0 ? ((output - bestOutput) / bestOutput) * 100 : 0
             const outputUsd = dstPrice ? output * dstPrice : undefined
 
             return (
               <div
                 key={idx}
                 className={`flex items-center justify-between p-3 rounded border cursor-pointer transition-colors ${
-                  isSelected ? 'border-primary bg-primary/10' : 'border-base-300 hover:border-primary/50'
+                  isSelected
+                    ? 'border-primary bg-primary/10'
+                    : 'border-base-300 hover:border-primary/50'
                 }`}
                 onClick={() => {
                   onSelectQuote(idx)
@@ -113,17 +116,26 @@ export function QuoteDisplay({
                 }}
               >
                 <div className="flex items-center gap-3 flex-1">
-                  <Logo src={getLogo(q.label)} alt={q.label} size={20} fallbackText={q.label.slice(0, 2).toUpperCase()} />
+                  <Logo
+                    src={getLogo(q.label)}
+                    alt={q.label}
+                    size={20}
+                    fallbackText={q.label.slice(0, 2).toUpperCase()}
+                  />
                   <div className="flex flex-col">
                     <div className="text-sm font-medium">
                       {output.toFixed(6)} {dstSymbol}
                     </div>
-                    {outputUsd !== undefined && <div className="text-xs opacity-70">${outputUsd.toFixed(2)}</div>}
+                    {outputUsd !== undefined && (
+                      <div className="text-xs opacity-70">${outputUsd.toFixed(2)}</div>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {isBestQuote && <span className="badge badge-success text-xs">BEST</span>}
-                  {diffPercent < 0 && <span className="text-xs text-error">{diffPercent.toFixed(2)}%</span>}
+                  {diffPercent < 0 && (
+                    <span className="text-xs text-error">{diffPercent.toFixed(2)}%</span>
+                  )}
                   <div className="flex flex-col items-end">
                     <div className="text-sm font-medium">{q.label}</div>
                   </div>

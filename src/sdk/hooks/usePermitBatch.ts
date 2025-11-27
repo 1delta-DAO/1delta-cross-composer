@@ -38,7 +38,7 @@ export function usePermitBatch() {
         return null
       }
     },
-    [chainId],
+    [chainId]
   )
 
   const { signTypedDataAsync } = useSignTypedData()
@@ -59,9 +59,16 @@ export function usePermitBatch() {
 
   const fetchDecimals = useCallback(
     async (tokenAddress: Address): Promise<number | null> => {
-      return fetchDecimalsUtil(tokenAddress, String(chainId), decimalsCache, loadingDecimals, setDecimalsCache, setLoadingDecimals)
+      return fetchDecimalsUtil(
+        tokenAddress,
+        String(chainId),
+        decimalsCache,
+        loadingDecimals,
+        setDecimalsCache,
+        setLoadingDecimals
+      )
     },
-    [chainId, decimalsCache, loadingDecimals],
+    [chainId, decimalsCache, loadingDecimals]
   )
 
   const executeSelfTransmit = useCallback(
@@ -129,19 +136,30 @@ export function usePermitBatch() {
           address: CALL_PERMIT_PRECOMPILE,
           abi: CALL_PERMIT_ABI,
           functionName: 'dispatch',
-          args: [params.from, BATCH_PRECOMPILE, BigInt(0), batchData, gasLimit, params.deadline, v, r, s],
+          args: [
+            params.from,
+            BATCH_PRECOMPILE,
+            BigInt(0),
+            batchData,
+            gasLimit,
+            params.deadline,
+            v,
+            r,
+            s,
+          ],
         })
 
         return { hash, error: null }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to execute self-transmit transaction'
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to execute self-transmit transaction'
         setError(errorMessage)
         return { hash: null, error: errorMessage }
       } finally {
         setIsLoading(false)
       }
     },
-    [address, DOMAIN_SEPARATOR, fetchNonce, createBatchData, signTypedDataAsync, writeContractAsync],
+    [address, DOMAIN_SEPARATOR, fetchNonce, createBatchData, signTypedDataAsync, writeContractAsync]
   )
 
   const createERC20Calls = useCallback(
@@ -152,7 +170,7 @@ export function usePermitBatch() {
         to: Address
         amount: string
         decimals?: number
-      }>,
+      }>
     ): BatchCall[] => {
       return operations.map((op) => {
         const amount = parseUnits(op.amount, op.decimals || 18)
@@ -170,7 +188,7 @@ export function usePermitBatch() {
         }
       })
     },
-    [],
+    []
   )
 
   const createArbitraryCalls = useCallback(
@@ -179,7 +197,7 @@ export function usePermitBatch() {
         target: Address
         calldata?: string
         value?: string
-      }>,
+      }>
     ): BatchCall[] => {
       return operations.map((op) => {
         const valueInWei = op.value ? parseUnits(op.value, 18) : BigInt(0)
@@ -192,7 +210,7 @@ export function usePermitBatch() {
         }
       })
     },
-    [],
+    []
   )
 
   const createBatchCalls = useCallback(
@@ -207,7 +225,7 @@ export function usePermitBatch() {
         target?: Address
         calldata?: string
         value?: string
-      }>,
+      }>
     ): BatchCall[] => {
       const erc20Ops = operations.filter((op) => op.operationType === 'erc20')
       const arbitraryOps = operations.filter((op) => op.operationType === 'arbitrary')
@@ -217,7 +235,7 @@ export function usePermitBatch() {
 
       return [...erc20Calls, ...arbitraryCalls]
     },
-    [createERC20Calls, createArbitraryCalls],
+    [createERC20Calls, createArbitraryCalls]
   )
 
   return {

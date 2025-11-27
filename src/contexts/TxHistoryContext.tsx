@@ -18,7 +18,9 @@ export type TxHistoryEntry = {
 
 type TxHistoryContextValue = {
   entries: TxHistoryEntry[]
-  createEntry: (entry: Omit<TxHistoryEntry, 'id' | 'createdAt'> & { id?: string; createdAt?: number }) => string
+  createEntry: (
+    entry: Omit<TxHistoryEntry, 'id' | 'createdAt'> & { id?: string; createdAt?: number }
+  ) => string
   updateEntry: (id: string, patch: Partial<TxHistoryEntry>) => void
   clearAll: () => void
   isPolling: boolean
@@ -57,13 +59,16 @@ export function TxHistoryProvider({ children }: { children: ReactNode }) {
     } catch {}
   }, [entries])
 
-  const createEntry = useCallback((entry: Omit<TxHistoryEntry, 'id' | 'createdAt'> & { id?: string; createdAt?: number }) => {
-    const id = entry.id || `${Date.now()}-${Math.random().toString(36).slice(2)}`
-    const createdAt = entry.createdAt || Date.now()
-    const full: TxHistoryEntry = { ...entry, id, createdAt }
-    setEntries((prev) => [full, ...prev])
-    return id
-  }, [])
+  const createEntry = useCallback(
+    (entry: Omit<TxHistoryEntry, 'id' | 'createdAt'> & { id?: string; createdAt?: number }) => {
+      const id = entry.id || `${Date.now()}-${Math.random().toString(36).slice(2)}`
+      const createdAt = entry.createdAt || Date.now()
+      const full: TxHistoryEntry = { ...entry, id, createdAt }
+      setEntries((prev) => [full, ...prev])
+      return id
+    },
+    []
+  )
 
   const updateEntry = useCallback((id: string, patch: Partial<TxHistoryEntry>) => {
     setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)))
@@ -75,7 +80,11 @@ export function TxHistoryProvider({ children }: { children: ReactNode }) {
 
   const isPolling = entries.some((e) => e.status === 'pending')
 
-  return <TxHistoryContext.Provider value={{ entries, createEntry, updateEntry, clearAll, isPolling }}>{children}</TxHistoryContext.Provider>
+  return (
+    <TxHistoryContext.Provider value={{ entries, createEntry, updateEntry, clearAll, isPolling }}>
+      {children}
+    </TxHistoryContext.Provider>
+  )
 }
 
 export function useTxHistory() {

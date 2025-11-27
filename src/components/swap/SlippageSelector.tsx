@@ -75,7 +75,10 @@ export function SlippageSelector({ slippage, onSlippageChange, priceImpact }: Pr
     <div className="space-y-2">
       <div className="px-2 py-1 text-xs opacity-70">Max slippage</div>
       <div className="flex flex-wrap gap-2 px-2 pb-2">
-        <button className={`btn btn-xs ${mode === 'auto' ? 'btn-primary' : 'btn-ghost'}`} onClick={handleAutoClick}>
+        <button
+          className={`btn btn-xs ${mode === 'auto' ? 'btn-primary' : 'btn-ghost'}`}
+          onClick={handleAutoClick}
+        >
           Auto
         </button>
         {PRESETS.map((preset) => (
@@ -106,7 +109,9 @@ export function SlippageSelector({ slippage, onSlippageChange, priceImpact }: Pr
           Auto: {autoSlippage.toFixed(2)}% (based on {priceImpact.toFixed(2)}% price impact)
         </div>
       )}
-      {mode === 'auto' && priceImpact === undefined && <div className="px-2 text-xs opacity-60">Auto: {autoSlippage.toFixed(2)}% (default)</div>}
+      {mode === 'auto' && priceImpact === undefined && (
+        <div className="px-2 text-xs opacity-60">Auto: {autoSlippage.toFixed(2)}% (default)</div>
+      )}
     </div>
   )
 }

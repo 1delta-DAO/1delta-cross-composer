@@ -23,12 +23,20 @@ type DepositActionModalProps = {
   onAmountChange?: (amount: string) => void
 }
 
-export function DepositActionModal({ open, onClose, market, selectedCurrency, setDestinationInfo, amount: externalAmount, onAmountChange }: DepositActionModalProps) {
+export function DepositActionModal({
+  open,
+  onClose,
+  market,
+  selectedCurrency,
+  setDestinationInfo,
+  amount: externalAmount,
+  onAmountChange,
+}: DepositActionModalProps) {
   const [internalAmount, setInternalAmount] = useState<string>('')
   const { address } = useConnection()
   const userAddress = address ?? DUMMY_ADDRESS
 
-  const amount = onAmountChange ? (externalAmount || '') : internalAmount
+  const amount = onAmountChange ? externalAmount || '' : internalAmount
 
   const handleAmountChange = (value: string) => {
     if (onAmountChange) {
@@ -64,7 +72,12 @@ export function DepositActionModal({ open, onClose, market, selectedCurrency, se
     })
 
     const parsedAmount = parseUnits(amount, underlying.decimals)
-    setDestinationInfo?.(CurrencyHandler.fromRawAmount(underlying, parsedAmount), undefined, destinationCalls, `${mTokenSymbol} shares`)
+    setDestinationInfo?.(
+      CurrencyHandler.fromRawAmount(underlying, parsedAmount),
+      undefined,
+      destinationCalls,
+      `${mTokenSymbol} shares`
+    )
 
     onClose()
   }
@@ -79,7 +92,9 @@ export function DepositActionModal({ open, onClose, market, selectedCurrency, se
         <div className="flex items-center justify-between mb-2">
           <div>
             <h3 className="font-semibold text-lg">Deposit</h3>
-            <p className="text-xs text-base-content/60 mt-0.5">Deposit into Moonwell and receive {mTokenSymbol} shares.</p>
+            <p className="text-xs text-base-content/60 mt-0.5">
+              Deposit into Moonwell and receive {mTokenSymbol} shares.
+            </p>
           </div>
           <button className="btn btn-sm btn-ghost btn-circle" onClick={onClose}>
             ✕
@@ -93,7 +108,9 @@ export function DepositActionModal({ open, onClose, market, selectedCurrency, se
               {iconSrc ? (
                 <img src={iconSrc} alt={symbol || 'Token'} className="h-full w-full object-cover" />
               ) : (
-                <span className="text-xs font-semibold">{(symbol || '?').slice(0, 3).toUpperCase()}</span>
+                <span className="text-xs font-semibold">
+                  {(symbol || '?').slice(0, 3).toUpperCase()}
+                </span>
               )}
             </div>
 
@@ -104,7 +121,9 @@ export function DepositActionModal({ open, onClose, market, selectedCurrency, se
           </div>
 
           {underlying?.chainId && (
-            <span className="badge badge-outline text-[0.7rem] px-2 py-1 whitespace-nowrap">Chain ID {underlying.chainId}</span>
+            <span className="badge badge-outline text-[0.7rem] px-2 py-1 whitespace-nowrap">
+              Chain ID {underlying.chainId}
+            </span>
           )}
         </div>
 
@@ -113,7 +132,9 @@ export function DepositActionModal({ open, onClose, market, selectedCurrency, se
           {/* Amount input */}
           <div className="form-control">
             <label className="label py-1">
-              <span className="label-text text-sm font-medium">Amount {symbol && `(${symbol})`}</span>
+              <span className="label-text text-sm font-medium">
+                Amount {symbol && `(${symbol})`}
+              </span>
             </label>
             <div className="input-group">
               <input
@@ -129,7 +150,8 @@ export function DepositActionModal({ open, onClose, market, selectedCurrency, se
           {/* Footer / actions */}
           <div className="flex items-center justify-between gap-3 pt-4 border-t border-base-300">
             <div className="text-[0.7rem] text-base-content/60">
-              You&apos;ll receive <span className="font-medium">{mTokenSymbol}</span> shares representing your deposit.
+              You&apos;ll receive <span className="font-medium">{mTokenSymbol}</span> shares
+              representing your deposit.
             </div>
             <div className="flex gap-2">
               <button className="btn btn-ghost btn-sm" onClick={onClose}>

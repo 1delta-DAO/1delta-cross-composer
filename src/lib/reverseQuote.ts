@@ -14,7 +14,7 @@ export function reverseQuote(
   priceIn: number,
   priceOut: number,
   slippage?: number,
-  customBuffer?: number,
+  customBuffer?: number
 ) {
   if (priceIn <= 0 || priceOut <= 0) {
     throw new Error('Invalid prices: priceIn and priceOut must be greater than 0')
@@ -36,7 +36,10 @@ export interface QuoteValidationResult {
 
 const MAX_BUFFER = 0.05
 
-export function validateQuoteOutput(quoteOutputAmount: number, minRequiredAmount: RawCurrencyAmount): QuoteValidationResult {
+export function validateQuoteOutput(
+  quoteOutputAmount: number,
+  minRequiredAmount: RawCurrencyAmount
+): QuoteValidationResult {
   const minRequired = CurrencyHandler.toExactNumber(minRequiredAmount)
 
   if (quoteOutputAmount >= minRequired) {
@@ -61,7 +64,11 @@ export function validateQuoteOutput(quoteOutputAmount: number, minRequiredAmount
   }
 }
 
-export function calculateAdjustedBuffer(currentBuffer: number, requiredBuffer: number, slippage?: number): number {
+export function calculateAdjustedBuffer(
+  currentBuffer: number,
+  requiredBuffer: number,
+  slippage?: number
+): number {
   const slippageBasedMin = calculateReverseQuoteBuffer(slippage)
   const neededBuffer = Math.max(currentBuffer, requiredBuffer, slippageBasedMin)
   return Math.min(MAX_BUFFER, neededBuffer)

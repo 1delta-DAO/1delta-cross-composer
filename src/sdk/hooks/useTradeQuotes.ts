@@ -14,7 +14,11 @@ import type { RawCurrency, RawCurrencyAmount } from '../../types/currency'
 import { usePriceQuery } from '../../hooks/prices/usePriceQuery'
 import type { PricesRecord } from '../../hooks/prices/usePriceQuery'
 import { useConnection } from 'wagmi'
-import { validateQuoteOutput, calculateAdjustedBuffer, calculateReverseQuoteBuffer } from '../../lib/reverseQuote'
+import {
+  validateQuoteOutput,
+  calculateAdjustedBuffer,
+  calculateReverseQuoteBuffer,
+} from '../../lib/reverseQuote'
 
 type Quote = { label: string; trade: GenericTrade }
 
@@ -108,7 +112,7 @@ export function useTradeQuotes({
       ct: typeof c.callType === 'number' ? c.callType : 0,
       ta: c.tokenAddress ? c.tokenAddress.toLowerCase() : '',
       bi: typeof c.balanceOfInjectIndex === 'number' ? c.balanceOfInjectIndex : 0,
-    })),
+    }))
   )
 
   useEffect(() => {
@@ -254,7 +258,9 @@ export function useTradeQuotes({
     } else {
       const elapsedRequoting = nowForTimeout - requotingStartTimeRef.current
       if (elapsedRequoting >= 120000) {
-        console.debug('Requoting timeout reached (2 minutes), stopping to prevent API rate limiting')
+        console.debug(
+          'Requoting timeout reached (2 minutes), stopping to prevent API rate limiting'
+        )
         setQuoting(false)
         requestInProgressRef.current = false
         if (abortControllerRef.current) {
@@ -333,7 +339,7 @@ export function useTradeQuotes({
               flashSwap: false,
               usePermit: true,
             } as any,
-            controller,
+            controller
           )
           allQuotes = trades.map((t) => ({ label: t.aggregator.toString(), trade: t.trade }))
         } else {
@@ -353,7 +359,8 @@ export function useTradeQuotes({
                 return {
                   ...base,
                   tokenAddress: c.tokenAddress,
-                  balanceOfInjectIndex: typeof c.balanceOfInjectIndex === 'number' ? c.balanceOfInjectIndex : 0,
+                  balanceOfInjectIndex:
+                    typeof c.balanceOfInjectIndex === 'number' ? c.balanceOfInjectIndex : 0,
                 }
               }
 
@@ -377,9 +384,12 @@ export function useTradeQuotes({
               destinationGasLimit,
             } as any,
             controller,
-            (axelarPrices || {}) as PricesRecord,
+            (axelarPrices || {}) as PricesRecord
           )
-          console.log('All actions received from trade-sdk:', { actions: actionTrades.map((t) => t.action), actionTrades })
+          console.log('All actions received from trade-sdk:', {
+            actions: actionTrades.map((t) => t.action),
+            actionTrades,
+          })
           allQuotes = actionTrades.map((t) => ({ label: t.action, trade: t.trade }))
         }
 
@@ -421,12 +431,18 @@ export function useTradeQuotes({
                 setCurrentBuffer(0.05)
                 updateQuotesAndSelection()
               } else {
-                const adjustedBuffer = calculateAdjustedBuffer(currentBuffer, validation.requiredBuffer, slippage)
+                const adjustedBuffer = calculateAdjustedBuffer(
+                  currentBuffer,
+                  validation.requiredBuffer,
+                  slippage
+                )
                 setCurrentBuffer(adjustedBuffer)
                 setHighSlippageLossWarning(false)
 
                 if (adjustedBuffer > currentBuffer) {
-                  console.debug('Buffer adjusted, but quotes already fetched. Validation warning may apply.')
+                  console.debug(
+                    'Buffer adjusted, but quotes already fetched. Validation warning may apply.'
+                  )
                 }
 
                 updateQuotesAndSelection()
@@ -532,7 +548,12 @@ export function useTradeQuotes({
   }
 
   useEffect(() => {
-    if (enableRequoting && minRequiredAmount && quotes.length > 0 && selectedQuoteIndex < quotes.length) {
+    if (
+      enableRequoting &&
+      minRequiredAmount &&
+      quotes.length > 0 &&
+      selectedQuoteIndex < quotes.length
+    ) {
       const selectedQuote = quotes[selectedQuoteIndex]
       const outputAmount = selectedQuote.trade.outputAmountRealized
       const validation = validateQuoteOutput(outputAmount, minRequiredAmount)

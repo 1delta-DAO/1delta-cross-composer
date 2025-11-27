@@ -56,7 +56,9 @@ export function ActionIconGrid({
     const reservedSpace = 100
 
     const availableWidth = width - reservedSpace
-    const itemsWithCounter = Math.floor((availableWidth - plusButtonWidth - gapWidth) / (buttonWidth + gapWidth))
+    const itemsWithCounter = Math.floor(
+      (availableWidth - plusButtonWidth - gapWidth) / (buttonWidth + gapWidth)
+    )
     const itemsWithoutCounter = Math.floor(availableWidth / (buttonWidth + gapWidth))
 
     const maxItems = Math.max(itemsWithCounter, itemsWithoutCounter)
@@ -84,7 +86,9 @@ export function ActionIconGrid({
     }
 
     const remainingSlots = maxVisibleItems - 1
-    const otherActions = allActionsSorted.filter((a) => a.id !== selectedAction).slice(0, remainingSlots)
+    const otherActions = allActionsSorted
+      .filter((a) => a.id !== selectedAction)
+      .slice(0, remainingSlots)
     return [selectedActionDef, ...otherActions]
   }, [filteredActions, selectedAction, maxVisibleItems])
 
@@ -115,9 +119,19 @@ export function ActionIconGrid({
             </button>
             <div className="flex-1"></div>
             {onSrcCurrencyChange && (
-              <InputTokenSelector srcCurrency={srcCurrency} onCurrencyChange={onSrcCurrencyChange} tokenLists={lists} chains={chains} />
+              <InputTokenSelector
+                srcCurrency={srcCurrency}
+                onCurrencyChange={onSrcCurrencyChange}
+                tokenLists={lists}
+                chains={chains}
+              />
             )}
-            <button type="button" className="btn btn-sm btn-ghost btn-circle" onClick={onReset} title="Reset">
+            <button
+              type="button"
+              className="btn btn-sm btn-ghost btn-circle"
+              onClick={onReset}
+              title="Reset"
+            >
               <span className="text-lg">↻</span>
             </button>
           </div>
@@ -159,7 +173,9 @@ export function ActionIconGrid({
                 onClick={() => isReady && handleActionClick(action.id)}
                 disabled={!isReady}
               >
-                {isLoading && <span className="loading loading-spinner loading-xs absolute top-1 right-1"></span>}
+                {isLoading && (
+                  <span className="loading loading-spinner loading-xs absolute top-1 right-1"></span>
+                )}
                 <Icon className={`w-8 h-8 ${isSelected ? 'text-primary' : ''}`} />
                 <span className="text-xs">{action.label}</span>
               </button>
@@ -185,7 +201,9 @@ export function ActionIconGrid({
                 disabled={!isReady}
                 title={action.label}
               >
-                {isLoading && <span className="loading loading-spinner loading-xs absolute -top-1 -right-1"></span>}
+                {isLoading && (
+                  <span className="loading loading-spinner loading-xs absolute -top-1 -right-1"></span>
+                )}
                 <Icon className={isSelected ? 'text-primary' : ''} />
                 <span className="text-xs">{action.label}</span>
               </button>

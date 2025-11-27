@@ -6,7 +6,10 @@ import { chains as dataChains } from '@1delta/data-sdk'
 import { loadTokenLists, getTokenFromCache } from '../../lib/data/tokenListsCache'
 import type { RawCurrency } from '../../types/currency'
 
-export function getAssetFromListsSync(chainId: string, assetAddress: string): { isReady: boolean; data?: RawCurrency } {
+export function getAssetFromListsSync(
+  chainId: string,
+  assetAddress: string
+): { isReady: boolean; data?: RawCurrency } {
   if (assetAddress.toLowerCase() === zeroAddress.toLowerCase()) {
     const info = dataChains()?.[chainId]?.nativeCurrency
     if (!info) return { isReady: false }
@@ -26,7 +29,12 @@ export function getAssetFromListsSync(chainId: string, assetAddress: string): { 
   return { isReady: !!token, data: token }
 }
 
-async function multicallRetry(chainId: string, calls: Call[], abis: any[], _retries?: number): Promise<any[]> {
+async function multicallRetry(
+  chainId: string,
+  calls: Call[],
+  abis: any[],
+  _retries?: number
+): Promise<any[]> {
   const results = await multicallViem(chainId, abis, calls, 0, true, undefined, true)
   return results
 }
@@ -67,7 +75,7 @@ export type Call = GeneralCall
 export async function fetchEvmUserTokenDataEnhanced(
   chainId: string,
   account: string | Address,
-  assets: string[] | Address[] = [],
+  assets: string[] | Address[] = []
 ): Promise<BalanceFetchReturnOnChain | null> {
   // Ensure token lists are loaded
   await loadTokenLists()
@@ -90,8 +98,20 @@ export async function fetchEvmUserTokenDataEnhanced(
     try {
       const st = performance.now()
 
-      const multicallResult = await multicallRetry(chainId, [balanceFetcherCall, argentCall], [...MulticallABI, ...BalanceFetcherAbi], undefined)
-      console.debug('multicall-enhanced: took', performance.now() - st, 'for', multicallResult.length, 'on', chainId)
+      const multicallResult = await multicallRetry(
+        chainId,
+        [balanceFetcherCall, argentCall],
+        [...MulticallABI, ...BalanceFetcherAbi],
+        undefined
+      )
+      console.debug(
+        'multicall-enhanced: took',
+        performance.now() - st,
+        'for',
+        multicallResult.length,
+        'on',
+        chainId
+      )
 
       balanceFetcherResult = multicallResult[0]
       argentCallResult = multicallResult[1]
@@ -217,15 +237,15 @@ function balanceFetcherEncoder(accounts: string[] | Address[], tokens: string[] 
   return (
     encodePacked(
       ['uint16', 'uint16'], // number of tokens, number of addresses
-      [tokens.length, accounts.length],
+      [tokens.length, accounts.length]
     ) +
     encodePacked(
       accounts.map(() => 'address'),
-      accounts,
+      accounts
     ).slice(2) +
     encodePacked(
       tokens.map(() => 'address'),
-      tokens,
+      tokens
     ).slice(2)
   )
 }

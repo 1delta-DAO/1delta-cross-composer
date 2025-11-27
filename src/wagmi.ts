@@ -21,7 +21,7 @@ export const evmTransportsWagmi = Object.assign(
       // @ts-ignore
       [id]: http(RPC_OVERRIDES[String(id)]),
     }
-  }),
+  })
 )
 
 export const config = getDefaultConfig({
@@ -43,7 +43,7 @@ export const config = getDefaultConfig({
         http('https://moonbeam.rpc.grove.city/v1/01fdb492'),
         http('https://moonbeam.api.onfinality.io/public'),
       ],
-      { rank: true, retryCount: 2 },
+      { rank: true, retryCount: 2 }
     ),
   },
   ssr: false,

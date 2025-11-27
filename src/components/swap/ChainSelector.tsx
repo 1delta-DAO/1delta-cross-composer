@@ -9,7 +9,11 @@ type Props = {
   onChange: (chainId: string) => void
 }
 
-const RELEVANT_CHAIN_IDS = [SupportedChainId.OP_MAINNET, SupportedChainId.BASE, SupportedChainId.MOONBEAM]
+const RELEVANT_CHAIN_IDS = [
+  SupportedChainId.OP_MAINNET,
+  SupportedChainId.BASE,
+  SupportedChainId.MOONBEAM,
+]
 
 export function ChainSelector({ value, onChange }: Props) {
   const { data, isLoading } = useChainsRegistry()
@@ -41,18 +45,34 @@ export function ChainSelector({ value, onChange }: Props) {
       .filter(([id]) => allowed.has(id as SupportedChainId))
       .map(([id, rec]) => ({ id, name: rec.data.name, icon: rec.data.icon }))
     return entries
-      .filter((e) => !query || e.name.toLowerCase().includes(query.toLowerCase()) || idMatches(e.id, query))
+      .filter(
+        (e) =>
+          !query || e.name.toLowerCase().includes(query.toLowerCase()) || idMatches(e.id, query)
+      )
       .sort((a, b) => a.name.localeCompare(b.name))
   }, [data, query, allowed])
 
-  const relevant = useMemo(() => items.filter((i) => RELEVANT_CHAIN_IDS.includes(i.id as SupportedChainId)).slice(0, 3), [items])
+  const relevant = useMemo(
+    () => items.filter((i) => RELEVANT_CHAIN_IDS.includes(i.id as SupportedChainId)).slice(0, 3),
+    [items]
+  )
   const selected = value && data ? data[value] : undefined
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button type="button" className="btn btn-outline w-full flex items-center gap-2" onClick={() => setOpen((o) => !o)}>
-        <Logo src={selected?.data.icon} alt={selected?.data.name || 'Chain'} fallbackText={selected?.data.shortName || selected?.data.chain} />
-        <span className="truncate">{selected?.data.name || (isLoading ? 'Loading chains...' : 'Select chain')}</span>
+      <button
+        type="button"
+        className="btn btn-outline w-full flex items-center gap-2"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <Logo
+          src={selected?.data.icon}
+          alt={selected?.data.name || 'Chain'}
+          fallbackText={selected?.data.shortName || selected?.data.chain}
+        />
+        <span className="truncate">
+          {selected?.data.name || (isLoading ? 'Loading chains...' : 'Select chain')}
+        </span>
         <span className="ml-auto tab">▼</span>
       </button>
       {open && (
@@ -67,7 +87,11 @@ export function ChainSelector({ value, onChange }: Props) {
                   setOpen(false)
                 }}
               >
-                <Logo src={data?.[c.id]?.data.icon} alt={c.name} fallbackText={data?.[c.id]?.data.shortName || data?.[c.id]?.data.chain} />
+                <Logo
+                  src={data?.[c.id]?.data.icon}
+                  alt={c.name}
+                  fallbackText={data?.[c.id]?.data.shortName || data?.[c.id]?.data.chain}
+                />
                 <span className="truncate">{c.name}</span>
               </button>
             ))}
@@ -89,7 +113,11 @@ export function ChainSelector({ value, onChange }: Props) {
                   setOpen(false)
                 }}
               >
-                <Logo src={data?.[c.id]?.data.icon} alt={c.name} fallbackText={data?.[c.id]?.data.shortName || data?.[c.id]?.data.chain} />
+                <Logo
+                  src={data?.[c.id]?.data.icon}
+                  alt={c.name}
+                  fallbackText={data?.[c.id]?.data.shortName || data?.[c.id]?.data.chain}
+                />
                 <span className="truncate">{c.name}</span>
               </button>
             ))}

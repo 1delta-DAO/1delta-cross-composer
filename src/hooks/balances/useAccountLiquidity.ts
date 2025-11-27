@@ -24,7 +24,10 @@ export type AccountLiquidity = {
   shortfall: bigint
 } | null
 
-async function fetchAccountLiquidity(chainId: string, userAddress: Address): Promise<AccountLiquidity> {
+async function fetchAccountLiquidity(
+  chainId: string,
+  userAddress: Address
+): Promise<AccountLiquidity> {
   try {
     const client = await getRpcSelectorEvmClient(chainId)
     if (!client) return null

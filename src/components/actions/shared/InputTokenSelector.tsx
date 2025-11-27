@@ -12,12 +12,21 @@ interface InputTokenSelectorProps {
   chains?: Record<string, { data?: { name?: string } }>
 }
 
-export function InputTokenSelector({ srcCurrency, onCurrencyChange, onChainChange, tokenLists, chains }: InputTokenSelectorProps) {
+export function InputTokenSelector({
+  srcCurrency,
+  onCurrencyChange,
+  onChainChange,
+  tokenLists,
+  chains,
+}: InputTokenSelectorProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const [query, setQuery] = useState('')
 
   const chainName = srcCurrency?.chainId && chains?.[srcCurrency.chainId]?.data?.name
-  const tokenInfo = srcCurrency?.chainId && srcCurrency?.address ? tokenLists?.[srcCurrency.chainId]?.[srcCurrency.address.toLowerCase()] : undefined
+  const tokenInfo =
+    srcCurrency?.chainId && srcCurrency?.address
+      ? tokenLists?.[srcCurrency.chainId]?.[srcCurrency.address.toLowerCase()]
+      : undefined
 
   const handleTokenSelect = (currency: RawCurrency) => {
     onCurrencyChange(currency)
@@ -31,21 +40,52 @@ export function InputTokenSelector({ srcCurrency, onCurrencyChange, onChainChang
 
   return (
     <>
-      <button type="button" className="btn btn-sm btn-outline flex items-center gap-2" onClick={() => setModalOpen(true)}>
+      <button
+        type="button"
+        className="btn btn-sm btn-outline flex items-center gap-2"
+        onClick={() => setModalOpen(true)}
+      >
         {srcCurrency ? (
           <>
-            <Logo src={tokenInfo?.logoURI} alt={srcCurrency.symbol || 'Token'} size={16} fallbackText={srcCurrency.symbol?.[0] || 'T'} />
+            <Logo
+              src={tokenInfo?.logoURI}
+              alt={srcCurrency.symbol || 'Token'}
+              size={16}
+              fallbackText={srcCurrency.symbol?.[0] || 'T'}
+            />
             <span className="text-sm">{srcCurrency.symbol || 'Token'}</span>
             {chainName && <span className="text-xs opacity-70">on {chainName}</span>}
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 opacity-70"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </>
         ) : (
           <>
             <span className="text-sm">Select payment token</span>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 opacity-70"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </>
         )}

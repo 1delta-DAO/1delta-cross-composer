@@ -22,7 +22,14 @@ interface StellaStakingPanelProps {
   resetKey?: number
 }
 
-export function StellaStakingPanel({ tokenLists, setDestinationInfo, srcCurrency, dstCurrency, slippage = 0.5, resetKey }: StellaStakingPanelProps) {
+export function StellaStakingPanel({
+  tokenLists,
+  setDestinationInfo,
+  srcCurrency,
+  dstCurrency,
+  slippage = 0.5,
+  resetKey,
+}: StellaStakingPanelProps) {
   const { address } = useConnection()
 
   const [outputAmount, setOutputAmount] = useState('')
@@ -73,7 +80,13 @@ export function StellaStakingPanel({ tokenLists, setDestinationInfo, srcCurrency
 
     try {
       const amountInWei = parseUnits(debouncedOutputAmount, xcDOTToken.decimals)
-      const inputAmount = reverseQuote(xcDOTToken.decimals, amountInWei.toString(), srcTokenPrice, xcDOTPrice, slippage)
+      const inputAmount = reverseQuote(
+        xcDOTToken.decimals,
+        amountInWei.toString(),
+        srcTokenPrice,
+        xcDOTPrice,
+        slippage
+      )
       return inputAmount
     } catch (error) {
       console.error('Error calculating reverse quote:', error)

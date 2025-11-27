@@ -29,7 +29,13 @@ interface OlderfallListingsListProps {
   onSelectOrderId: (orderId: string) => void
 }
 
-function OlderfallListingsList({ listings, dstChainId, tokenLists, selectedOrderId, onSelectOrderId }: OlderfallListingsListProps) {
+function OlderfallListingsList({
+  listings,
+  dstChainId,
+  tokenLists,
+  selectedOrderId,
+  onSelectOrderId,
+}: OlderfallListingsListProps) {
   const tokenChainId = dstChainId || SupportedChainId.MOONBEAM
 
   return (
@@ -71,7 +77,12 @@ const OLDERFALL_OPTIONS = [
 
 /* ---------- Main unified panel with tabs ---------- */
 
-export function OlderfallPanel({ tokenLists, setDestinationInfo, preloadedListings, resetKey }: OlderfallPanelProps) {
+export function OlderfallPanel({
+  tokenLists,
+  setDestinationInfo,
+  preloadedListings,
+  resetKey,
+}: OlderfallPanelProps) {
   const { address } = useConnection()
   const [selectedOlderfallOrderId, setSelectedOlderfallOrderId] = useState<string>('')
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(0)
@@ -81,7 +92,11 @@ export function OlderfallPanel({ tokenLists, setDestinationInfo, preloadedListin
   const dstChainId = String(selectedOption.chainId)
 
   const receiverAddressValid = isEmptyAddress(receiverAddress) || isValidAddress(receiverAddress)
-  const finalReceiverAddress = isEmptyAddress(receiverAddress) ? address : isValidAddress(receiverAddress) ? (receiverAddress as Address) : address
+  const finalReceiverAddress = isEmptyAddress(receiverAddress)
+    ? address
+    : isValidAddress(receiverAddress)
+      ? (receiverAddress as Address)
+      : address
 
   // Reset selected listing when switching chain
   useEffect(() => {
@@ -126,11 +141,11 @@ export function OlderfallPanel({ tokenLists, setDestinationInfo, preloadedListin
       // define output amount
       CurrencyHandler.fromRawAmount(
         tokenLists?.[chainId]?.[token.toLowerCase()]!,
-        listing.pricePerToken, // amount to pay
+        listing.pricePerToken // amount to pay
       ),
       undefined, // intermediate receiver: default
       destinationCalls,
-      nftName,
+      nftName
     )
     setSelectedOlderfallOrderId('')
   }

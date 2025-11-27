@@ -34,12 +34,17 @@ export function BridgePanel({
   slippage = 0.5,
   resetKey,
 }: BridgePanelProps) {
-  const [selectedDstCurrency, setSelectedDstCurrency] = useState<RawCurrency | undefined>(initialDstCurrency)
+  const [selectedDstCurrency, setSelectedDstCurrency] = useState<RawCurrency | undefined>(
+    initialDstCurrency
+  )
   const [outputAmount, setOutputAmount] = useState('')
   const [tokenModalOpen, setTokenModalOpen] = useState(false)
   const [tokenModalQuery, setTokenModalQuery] = useState('')
 
-  const dstCurrency = useMemo(() => selectedDstCurrency || initialDstCurrency, [selectedDstCurrency, initialDstCurrency])
+  const dstCurrency = useMemo(
+    () => selectedDstCurrency || initialDstCurrency,
+    [selectedDstCurrency, initialDstCurrency]
+  )
   const debouncedOutputAmount = useDebounce(outputAmount, 1000)
 
   useEffect(() => {
@@ -81,7 +86,8 @@ export function BridgePanel({
   }, [])
 
   const handleQuoteSelect = (index: number) => {
-    if (!srcCurrency || !dstCurrency || !setDestinationInfo || !quotes || !setSelectedQuoteIndex) return
+    if (!srcCurrency || !dstCurrency || !setDestinationInfo || !quotes || !setSelectedQuoteIndex)
+      return
 
     setSelectedQuoteIndex(index)
 
@@ -118,8 +124,16 @@ export function BridgePanel({
             onChange={(e) => handleOutputAmountChange(e.target.value)}
             inputMode="decimal"
           />
-          <button className="btn btn-outline" onClick={() => setTokenModalOpen(true)} disabled={!srcCurrency}>
-            {dstCurrency ? <span>{dstCurrency.symbol || 'Select token'}</span> : <span>Select token</span>}
+          <button
+            className="btn btn-outline"
+            onClick={() => setTokenModalOpen(true)}
+            disabled={!srcCurrency}
+          >
+            {dstCurrency ? (
+              <span>{dstCurrency.symbol || 'Select token'}</span>
+            ) : (
+              <span>Select token</span>
+            )}
           </button>
         </div>
 
@@ -148,7 +162,11 @@ export function BridgePanel({
         query={tokenModalQuery}
         onQueryChange={setTokenModalQuery}
         showChainSelector={true}
-        excludeAddresses={srcCurrency && dstCurrency && srcCurrency.chainId === dstCurrency.chainId ? [srcCurrency.address as Address] : undefined}
+        excludeAddresses={
+          srcCurrency && dstCurrency && srcCurrency.chainId === dstCurrency.chainId
+            ? [srcCurrency.address as Address]
+            : undefined
+        }
       />
     </div>
   )

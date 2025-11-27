@@ -14,5 +14,9 @@ export function OlderfallLoadingState() {
 }
 
 export function OlderfallEmptyState() {
-  return <div className="text-xs opacity-70">No Olderfall listings found or Sequence API not configured.</div>
+  return (
+    <div className="text-xs opacity-70">
+      No Olderfall listings found or Sequence API not configured.
+    </div>
+  )
 }

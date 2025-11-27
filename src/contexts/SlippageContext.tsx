@@ -21,7 +21,11 @@ export function SlippageProvider({ children }: { children: ReactNode }) {
     setPriceImpactState(newPriceImpact)
   }, [])
 
-  return <SlippageContext.Provider value={{ slippage, setSlippage, priceImpact, setPriceImpact }}>{children}</SlippageContext.Provider>
+  return (
+    <SlippageContext.Provider value={{ slippage, setSlippage, priceImpact, setPriceImpact }}>
+      {children}
+    </SlippageContext.Provider>
+  )
 }
 
 export function useSlippage() {

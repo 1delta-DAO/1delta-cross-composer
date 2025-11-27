@@ -1,5 +1,9 @@
 import { useMemo, useState, useEffect, useRef, useCallback } from 'react'
-import { isMarketsLoading, isMarketsReady, subscribeToCacheChanges } from '../lib/moonwell/marketCache'
+import {
+  isMarketsLoading,
+  isMarketsReady,
+  subscribeToCacheChanges,
+} from '../lib/moonwell/marketCache'
 import type { RawCurrency, RawCurrencyAmount } from '../types/currency'
 import { ActionIconGrid } from './actions/shared/ActionIconGrid'
 import { SelectedActionHeader } from './actions/shared/SelectedActionHeader'
@@ -202,9 +206,15 @@ export default function DestinationActionSelector({
 
   const wrappedSetDestinationInfo = useCallback<DestinationActionHandler>(
     (currencyAmount, receiverAddress, destinationCalls, actionLabel) => {
-      setDestinationInfo?.(currencyAmount, receiverAddress, destinationCalls, actionLabel, selectedAction || undefined)
+      setDestinationInfo?.(
+        currencyAmount,
+        receiverAddress,
+        destinationCalls,
+        actionLabel,
+        selectedAction || undefined
+      )
     },
-    [setDestinationInfo, selectedAction],
+    [setDestinationInfo, selectedAction]
   )
 
   const renderActionPanel = () => {
@@ -238,10 +248,17 @@ export default function DestinationActionSelector({
           setDestinationInfo: context.setDestinationInfo,
         }
 
-    return <Panel {...props} resetKey={resetKey !== undefined ? resetKey + panelResetKey : panelResetKey} />
+    return (
+      <Panel
+        {...props}
+        resetKey={resetKey !== undefined ? resetKey + panelResetKey : panelResetKey}
+      />
+    )
   }
 
-  const selectedActionDef = selectedAction ? getRegisteredActions().find((a) => a.id === selectedAction) : null
+  const selectedActionDef = selectedAction
+    ? getRegisteredActions().find((a) => a.id === selectedAction)
+    : null
 
   return (
     <div className="space-y-4">
@@ -267,7 +284,12 @@ export default function DestinationActionSelector({
       {selectedAction && selectedActionDef && (
         <div className="card bg-base-100 border border-primary/20 shadow-md">
           <div className="card-body p-0">
-            <SelectedActionHeader action={selectedActionDef} isExpanded={isPanelExpanded} onToggle={handlePanelToggle} onClose={handleCloseAction} />
+            <SelectedActionHeader
+              action={selectedActionDef}
+              isExpanded={isPanelExpanded}
+              onToggle={handlePanelToggle}
+              onClose={handleCloseAction}
+            />
             {isPanelExpanded && <div className="p-4">{renderActionPanel()}</div>}
           </div>
         </div>

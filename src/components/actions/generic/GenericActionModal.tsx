@@ -64,11 +64,26 @@ export function GenericActionModal({
   }, [actionConfig, selector])
 
   // Determine which token balance to fetch - always compute these values
-  const isWithdraw = useMemo(() => actionConfig?.name?.startsWith('Withdraw') || false, [actionConfig?.name])
-  const isDeposit = useMemo(() => actionConfig?.name?.startsWith('Deposit') || false, [actionConfig?.name])
-  const isRepay = useMemo(() => actionConfig?.name?.startsWith('Repay') || false, [actionConfig?.name])
-  const isBorrow = useMemo(() => actionConfig?.name?.startsWith('Borrow') || false, [actionConfig?.name])
-  const isStaking = useMemo(() => actionConfig?.group === 'staking' || (actionConfig?.meta as any)?.useComposer === true, [actionConfig])
+  const isWithdraw = useMemo(
+    () => actionConfig?.name?.startsWith('Withdraw') || false,
+    [actionConfig?.name]
+  )
+  const isDeposit = useMemo(
+    () => actionConfig?.name?.startsWith('Deposit') || false,
+    [actionConfig?.name]
+  )
+  const isRepay = useMemo(
+    () => actionConfig?.name?.startsWith('Repay') || false,
+    [actionConfig?.name]
+  )
+  const isBorrow = useMemo(
+    () => actionConfig?.name?.startsWith('Borrow') || false,
+    [actionConfig?.name]
+  )
+  const isStaking = useMemo(
+    () => actionConfig?.group === 'staking' || (actionConfig?.meta as any)?.useComposer === true,
+    [actionConfig]
+  )
 
   // For withdraw: fetch mToken balance (actionConfig.address is the mToken)
   // For deposit/repay/staking: fetch underlying token balance
@@ -219,7 +234,17 @@ export function GenericActionModal({
     } catch {
       return false
     }
-  }, [args, amountInputIndex, isRepay, isDeposit, isWithdraw, isStaking, useMax, borrowBalance, tokenBalance])
+  }, [
+    args,
+    amountInputIndex,
+    isRepay,
+    isDeposit,
+    isWithdraw,
+    isStaking,
+    useMax,
+    borrowBalance,
+    tokenBalance,
+  ])
 
   const handleConfirm = () => {
     if (!actionConfig || !selector) return
@@ -277,10 +302,14 @@ export function GenericActionModal({
             ✕
           </button>
         </div>
-        {actionConfig.description && <div className="text-sm opacity-70 mb-4">{actionConfig.description}</div>}
+        {actionConfig.description && (
+          <div className="text-sm opacity-70 mb-4">{actionConfig.description}</div>
+        )}
         {fnAbi ? (
           <div className="space-y-4">
-            <div className={useSingleColumn ? 'space-y-4' : 'grid grid-cols-1 md:grid-cols-2 gap-4'}>
+            <div
+              className={useSingleColumn ? 'space-y-4' : 'grid grid-cols-1 md:grid-cols-2 gap-4'}
+            >
               {fnAbi.inputs?.map((inp: any, i: number) => {
                 const isAmountInput = i === amountInputIndex && inp.type === 'uint256'
                 const showMaxButton =
@@ -299,19 +328,29 @@ export function GenericActionModal({
                       {isAmountInput && (
                         <div className="flex items-center gap-2 flex-wrap">
                           {displayBalance && (
-                            <span className={`text-xs ${displayBalance.isDebt ? 'text-warning' : 'opacity-70'}`}>
+                            <span
+                              className={`text-xs ${displayBalance.isDebt ? 'text-warning' : 'opacity-70'}`}
+                            >
                               {displayBalance.isDebt ? 'Debt: ' : 'Balance: '}
                               {displayBalance.formatted} {displayBalance.symbol}
                             </span>
                           )}
                           {isBorrow && canBorrow !== null && (
-                            <span className={`text-xs ${canBorrow ? 'text-success' : 'text-error'}`}>
+                            <span
+                              className={`text-xs ${canBorrow ? 'text-success' : 'text-error'}`}
+                            >
                               {canBorrow ? '✓ Can borrow' : '✗ Insufficient collateral'}
                             </span>
                           )}
-                          {isRepay && hasDebt !== null && !hasDebt && <span className="text-xs text-warning">No debt to repay</span>}
+                          {isRepay && hasDebt !== null && !hasDebt && (
+                            <span className="text-xs text-warning">No debt to repay</span>
+                          )}
                           {showMaxButton && (
-                            <button type="button" className="btn btn-xs btn-ghost" onClick={handleMaxClick}>
+                            <button
+                              type="button"
+                              className="btn btn-xs btn-ghost"
+                              onClick={handleMaxClick}
+                            >
                               Max
                             </button>
                           )}
@@ -330,7 +369,9 @@ export function GenericActionModal({
                                 setUseMax(e.target.checked)
                               }}
                             />
-                            <span className="label-text text-sm">Use Max (stake all available DOT)</span>
+                            <span className="label-text text-sm">
+                              Use Max (stake all available DOT)
+                            </span>
                           </label>
                         </div>
                         <input
@@ -362,7 +403,13 @@ export function GenericActionModal({
                     )}
                     {isAmountInput && exceedsBalance && (
                       <span className="label-text-alt text-warning mt-1 flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"

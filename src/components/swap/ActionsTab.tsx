@@ -45,7 +45,10 @@ export function ActionsTab({ onResetStateChange }: Props) {
   const actionChainId = actionCurrency?.chainId
 
   const inputTokensMap = inputChainId ? lists?.[inputChainId] || {} : {}
-  const inputAddrs = useMemo(() => (inputChainId ? (Object.keys(inputTokensMap) as Address[]).slice(0, 300) : []), [inputTokensMap, inputChainId])
+  const inputAddrs = useMemo(
+    () => (inputChainId ? (Object.keys(inputTokensMap) as Address[]).slice(0, 300) : []),
+    [inputTokensMap, inputChainId]
+  )
 
   useEffect(() => {
     if (inputCurrency || !lists || !chains) return
@@ -134,12 +137,14 @@ export function ActionsTab({ onResetStateChange }: Props) {
 
   const debouncedAmount = useDebounce(amount, 1000)
   const inputKey = useMemo(
-    () => `${inputCurrency?.chainId || inputChainId}|${(inputCurrency?.address || '').toLowerCase()}`,
-    [inputCurrency, inputChainId],
+    () =>
+      `${inputCurrency?.chainId || inputChainId}|${(inputCurrency?.address || '').toLowerCase()}`,
+    [inputCurrency, inputChainId]
   )
   const actionKey = useMemo(
-    () => `${actionCurrency?.chainId || actionChainId}|${(actionCurrency?.address || '').toLowerCase()}`,
-    [actionCurrency, actionChainId],
+    () =>
+      `${actionCurrency?.chainId || actionChainId}|${(actionCurrency?.address || '').toLowerCase()}`,
+    [actionCurrency, actionChainId]
   )
   const debouncedInputKey = useDebounce(inputKey, 1000)
   const debouncedActionKey = useDebounce(actionKey, 1000)
@@ -221,7 +226,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
       receiverAddress: string | undefined,
       destinationCalls: DestinationCall[],
       actionLabel?: string,
-      actionId?: string,
+      actionId?: string
     ) => {
       if (!currencyAmount) {
         setDestinationInfoState(undefined)
@@ -254,7 +259,13 @@ export function ActionsTab({ onResetStateChange }: Props) {
       }
 
       const decimalsOut = actionCur.decimals
-      const amountIn = reverseQuote(decimalsOut, currencyAmount.amount.toString(), priceIn, priceOut, slippage)
+      const amountIn = reverseQuote(
+        decimalsOut,
+        currencyAmount.amount.toString(),
+        priceIn,
+        priceOut,
+        slippage
+      )
 
       setCalculatedInputAmount(amountIn)
       setDestinationInfoState({ currencyAmount, actionLabel, actionId })
@@ -262,7 +273,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
 
       setAmount(amountIn)
     },
-    [inputCurrency, inputPrice, actionTokenPrice, slippage],
+    [inputCurrency, inputPrice, actionTokenPrice, slippage]
   )
 
   useEffect(() => {
@@ -278,13 +289,20 @@ export function ActionsTab({ onResetStateChange }: Props) {
 
     if (priceIn > 0 && priceOut > 0) {
       const lastPrices = lastCalculatedPricesRef.current
-      const pricesChanged = !lastPrices || lastPrices.priceIn !== priceIn || lastPrices.priceOut !== priceOut
+      const pricesChanged =
+        !lastPrices || lastPrices.priceIn !== priceIn || lastPrices.priceOut !== priceOut
 
       if (pricesChanged || !calculatedInputAmount) {
         const actionCur = destinationInfo.currencyAmount.currency as RawCurrency
         const decimalsOut = actionCur.decimals
         try {
-          const amountIn = reverseQuote(decimalsOut, destinationInfo.currencyAmount.amount.toString(), priceIn, priceOut, slippage)
+          const amountIn = reverseQuote(
+            decimalsOut,
+            destinationInfo.currencyAmount.amount.toString(),
+            priceIn,
+            priceOut,
+            slippage
+          )
           setCalculatedInputAmount(amountIn)
           setAmount(amountIn)
           lastCalculatedPricesRef.current = { priceIn, priceOut }
@@ -295,7 +313,14 @@ export function ActionsTab({ onResetStateChange }: Props) {
     } else {
       lastCalculatedPricesRef.current = null
     }
-  }, [destinationInfo, inputPrice, actionTokenPrice, isLoadingPrices, calculatedInputAmount, slippage])
+  }, [
+    destinationInfo,
+    inputPrice,
+    actionTokenPrice,
+    isLoadingPrices,
+    calculatedInputAmount,
+    slippage,
+  ])
 
   return (
     <div>
@@ -325,9 +350,14 @@ export function ActionsTab({ onResetStateChange }: Props) {
                 <div className="flex-1">
                   <div className="text-sm font-medium text-warning">High Slippage Loss Warning</div>
                   <div className="text-xs text-warning/80 mt-1">
-                    This trade has high slippage loss. Consider increasing your slippage tolerance to ensure the transaction succeeds.
+                    This trade has high slippage loss. Consider increasing your slippage tolerance
+                    to ensure the transaction succeeds.
                   </div>
-                  {currentBuffer > 0.003 && <div className="text-xs text-warning/70 mt-1">Current buffer: {(currentBuffer * 100).toFixed(2)}%</div>}
+                  {currentBuffer > 0.003 && (
+                    <div className="text-xs text-warning/70 mt-1">
+                      Current buffer: {(currentBuffer * 100).toFixed(2)}%
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

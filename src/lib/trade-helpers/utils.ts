@@ -4,7 +4,10 @@ import type { RawCurrency } from '../../types/currency'
 import { chains } from '@1delta/data-sdk'
 import { CurrencyHandler } from '@1delta/lib-utils/dist/services/currency/currencyUtils'
 
-export function getCurrency(chainId: string, tokenAddress: Address | undefined): RawCurrency | undefined {
+export function getCurrency(
+  chainId: string,
+  tokenAddress: Address | undefined
+): RawCurrency | undefined {
   if (!tokenAddress || !chainId) {
     return undefined
   }

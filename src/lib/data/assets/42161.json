@@ -6144,7 +6144,16 @@
       "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x6B175474E89094C44Da98b954EedeAC495271d0F/logo.png",
       "assetGroup": "DAI",
       "currencyId": "Dai Stablecoin::DAI",
-      "tags": ["openocean", "coingecko", "debridge", "biconomy-gas-token", "AAVE_V3", "AVALON", "GRANARY", "YLDR"]
+      "tags": [
+        "openocean",
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "AVALON",
+        "GRANARY",
+        "YLDR"
+      ]
     },
     "0xdaf69e281a30b15e387e27fb334c4116c0a87709": {
       "chainId": "42161",
@@ -7415,7 +7424,15 @@
       "logoURI": "https://assets.coingecko.com/coins/images/20764/large/reth.png?1637652366",
       "assetGroup": "RETH",
       "currencyId": "Rocket Pool ETH::rETH",
-      "tags": ["coingecko", "debridge", "biconomy-gas-token", "AAVE_V3", "GRANARY", "COMPOUND_V3_WETH", "RADIANT_V2"]
+      "tags": [
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "GRANARY",
+        "COMPOUND_V3_WETH",
+        "RADIANT_V2"
+      ]
     },
     "0xef888bca6ab6b1d26dbec977c455388ecd794794": {
       "chainId": "42161",
@@ -7893,7 +7910,17 @@
       "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png",
       "assetGroup": "USDC",
       "currencyId": "Bridged USDC::USDC.e",
-      "tags": ["bridged", "openocean", "coingecko", "debridge", "biconomy-gas-token", "AAVE_V3", "GRANARY", "YLDR", "COMPOUND_V3_USDCE"],
+      "tags": [
+        "bridged",
+        "openocean",
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "GRANARY",
+        "YLDR",
+        "COMPOUND_V3_USDCE"
+      ],
       "props": {
         "permit": {
           "type": 1,
@@ -8534,7 +8561,15 @@
       "logoURI": "https://assets.coingecko.com/coins/images/18323/large/arbit.png?1631532468",
       "assetGroup": "GMX",
       "currencyId": "GMX::GMX",
-      "tags": ["openocean", "coingecko", "debridge", "biconomy-gas-token", "COMPOUND_V3_USDC", "COMPOUND_V3_USDT", "COMPOUND_V3_USDCE"]
+      "tags": [
+        "openocean",
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "COMPOUND_V3_USDC",
+        "COMPOUND_V3_USDT",
+        "COMPOUND_V3_USDCE"
+      ]
     },
     "0x25f05699548d3a0820b99f93c10c8bb573e27083": {
       "chainId": "42161",
@@ -9714,7 +9749,14 @@
       "logoURI": "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x2416092f143378750bb29b79eD961ab195CcEea5/logo.png",
       "assetGroup": "EZETH",
       "currencyId": "Renzo Restaked ETH::ezETH",
-      "tags": ["coingecko", "debridge", "biconomy-gas-token", "AAVE_V3", "COMPOUND_V3_USDC", "COMPOUND_V3_WETH"],
+      "tags": [
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "COMPOUND_V3_USDC",
+        "COMPOUND_V3_WETH"
+      ],
       "props": {
         "permit": {
           "type": 1,
@@ -9731,7 +9773,15 @@
       "logoURI": "https://assets.coingecko.com/coins/images/33033/thumb/weETH.png?1701438396",
       "assetGroup": "WEETH",
       "currencyId": "Wrapped eETH::weETH",
-      "tags": ["coingecko", "debridge", "biconomy-gas-token", "AAVE_V3", "COMPOUND_V3_WETH", "VENUS_ETH", "RADIANT_V2"],
+      "tags": [
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "COMPOUND_V3_WETH",
+        "VENUS_ETH",
+        "RADIANT_V2"
+      ],
       "props": {
         "permit": {
           "type": 1,

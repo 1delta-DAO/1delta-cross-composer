@@ -6,12 +6,17 @@ import type { RawCurrencyAmount } from '../../types/currency'
 import { CurrencyHandler } from '@1delta/lib-utils/dist/services/currency/currencyUtils'
 import { getCurrency } from '../../lib/trade-helpers/utils'
 
-async function fetchTokenBalance(chainId: string, userAddress: Address, tokenAddress: Address): Promise<RawCurrencyAmount | undefined> {
+async function fetchTokenBalance(
+  chainId: string,
+  userAddress: Address,
+  tokenAddress: Address
+): Promise<RawCurrencyAmount | undefined> {
   try {
     const currency = getCurrency(chainId, tokenAddress)
     if (!currency) return undefined
 
-    const assetsToFetch = tokenAddress.toLowerCase() === zeroAddress.toLowerCase() ? [] : [tokenAddress]
+    const assetsToFetch =
+      tokenAddress.toLowerCase() === zeroAddress.toLowerCase() ? [] : [tokenAddress]
     const balanceData = await fetchEvmUserTokenDataEnhanced(chainId, userAddress, assetsToFetch)
     if (!balanceData) return undefined
 
@@ -32,7 +37,11 @@ async function fetchTokenBalance(chainId: string, userAddress: Address, tokenAdd
   }
 }
 
-export function useTokenBalance(params: { chainId: string; userAddress?: Address; tokenAddress?: Address }) {
+export function useTokenBalance(params: {
+  chainId: string
+  userAddress?: Address
+  tokenAddress?: Address
+}) {
   const { chainId, userAddress, tokenAddress } = params
   return useQuery({
     queryKey: ['tokenBalance', chainId, userAddress ?? '0x', tokenAddress?.toLowerCase() ?? '0x'],

@@ -81,7 +81,9 @@ export const SEQUENCE_MARKET_ABI: Abi = [
   },
 ] as Abi
 
-export const SEQUENCE_PROJECT_ACCESS_KEY = import.meta.env.VITE_SEQUENCE_PROJECT_ACCESS_KEY as string | undefined
+export const SEQUENCE_PROJECT_ACCESS_KEY = import.meta.env.VITE_SEQUENCE_PROJECT_ACCESS_KEY as
+  | string
+  | undefined
 
 export const SEQUENCE_PROJECT_ID = import.meta.env.VITE_SEQUENCE_PROJECT_ID as string | undefined
 

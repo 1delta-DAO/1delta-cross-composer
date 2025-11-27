@@ -10,7 +10,13 @@ interface OlderfallListingCardProps {
   onSelect: () => void
 }
 
-export function OlderfallListingCard({ listing, title, priceLabel, isSelected, onSelect }: OlderfallListingCardProps) {
+export function OlderfallListingCard({
+  listing,
+  title,
+  priceLabel,
+  isSelected,
+  onSelect,
+}: OlderfallListingCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const handleInfoClick = (e: React.MouseEvent) => {
@@ -30,7 +36,14 @@ export function OlderfallListingCard({ listing, title, priceLabel, isSelected, o
           onClick={handleInfoClick}
           title="View metadata"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-4 h-4"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -49,7 +62,11 @@ export function OlderfallListingCard({ listing, title, priceLabel, isSelected, o
           <div className="text-xs font-semibold">{priceLabel}</div>
         </div>
       </div>
-      <NftMetadataModal open={isModalOpen} onClose={() => setIsModalOpen(false)} listing={listing} />
+      <NftMetadataModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        listing={listing}
+      />
     </>
   )
 }

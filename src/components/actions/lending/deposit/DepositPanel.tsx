@@ -21,7 +21,13 @@ type DepositPanelProps = {
   isRequoting?: boolean
 }
 
-export function DepositPanel({ chainId, setDestinationInfo, resetKey, destinationInfo, isRequoting }: DepositPanelProps) {
+export function DepositPanel({
+  chainId,
+  setDestinationInfo,
+  resetKey,
+  destinationInfo,
+  isRequoting,
+}: DepositPanelProps) {
   const { address } = useConnection()
   const [isExpanded, setIsExpanded] = useState(false)
   const [marketsReady, setMarketsReady] = useState(isMarketsReady())
@@ -49,7 +55,9 @@ export function DepositPanel({ chainId, setDestinationInfo, resetKey, destinatio
 
   const [selectedMarket, setSelectedMarket] = useState<undefined | MoonwellMarket>(undefined)
   const [marketAmounts, setMarketAmounts] = useState<Map<string, string>>(new Map())
-  const [lastSelectedMarketAddress, setLastSelectedMarketAddress] = useState<string | undefined>(undefined)
+  const [lastSelectedMarketAddress, setLastSelectedMarketAddress] = useState<string | undefined>(
+    undefined
+  )
 
   useEffect(() => {
     if (resetKey !== undefined && resetKey > 0) {
@@ -115,18 +123,28 @@ export function DepositPanel({ chainId, setDestinationInfo, resetKey, destinatio
       <div className="card-body p-4">
         <div className="grid grid-cols-2 min-[600px]:grid-cols-3 min-[800px]:grid-cols-4 min-[1000px]:grid-cols-5 gap-3 max-h-[400px] overflow-y-auto">
           {depositMarkets.length === 0 ? (
-            <div className="col-span-full text-sm opacity-50 text-center py-4">No markets available</div>
+            <div className="col-span-full text-sm opacity-50 text-center py-4">
+              No markets available
+            </div>
           ) : (
             depositMarkets.map((market) => {
               const marketKey = market.mTokenCurrency.address
               const enteredAmount = marketAmounts.get(marketKey)
-              const isSelected = lastSelectedMarketAddress === marketKey && enteredAmount !== undefined && enteredAmount.trim() !== '' && Number(enteredAmount) > 0
+              const isSelected =
+                lastSelectedMarketAddress === marketKey &&
+                enteredAmount !== undefined &&
+                enteredAmount.trim() !== '' &&
+                Number(enteredAmount) > 0
               return (
                 <DepositCard
                   key={marketKey}
                   market={market}
                   onActionClick={() => handleMarketClick(market)}
-                  currencyFromList={list[market.mTokenCurrency.chainId]?.[market.underlyingCurrency.address.toLowerCase()]}
+                  currencyFromList={
+                    list[market.mTokenCurrency.chainId]?.[
+                      market.underlyingCurrency.address.toLowerCase()
+                    ]
+                  }
                   underlyingCurrency={market.underlyingCurrency}
                   enteredAmount={isSelected ? enteredAmount : undefined}
                 />
@@ -140,13 +158,19 @@ export function DepositPanel({ chainId, setDestinationInfo, resetKey, destinatio
         <DepositActionModal
           open={!!selectedMarket}
           market={selectedMarket}
-          selectedCurrency={list[selectedMarket.mTokenCurrency.chainId]?.[selectedMarket.underlyingCurrency.address.toLowerCase()]}
+          selectedCurrency={
+            list[selectedMarket.mTokenCurrency.chainId]?.[
+              selectedMarket.underlyingCurrency.address.toLowerCase()
+            ]
+          }
           onClose={() => setSelectedMarket(undefined)}
           userAddress={address as any}
           chainId={chainId}
           setDestinationInfo={setDestinationInfo}
           amount={marketAmounts.get(selectedMarket.mTokenCurrency.address) || ''}
-          onAmountChange={(amount) => handleAmountChange(selectedMarket.mTokenCurrency.address, amount)}
+          onAmountChange={(amount) =>
+            handleAmountChange(selectedMarket.mTokenCurrency.address, amount)
+          }
         />
       )}
     </>

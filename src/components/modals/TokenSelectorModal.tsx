@@ -33,7 +33,9 @@ export function TokenSelectorModal({
   initialChainId,
 }: Props) {
   const { address } = useConnection()
-  const [chainId, setChainId] = useState<string | undefined>(initialChainId ?? currency?.chainId ?? Chain.POLYGON_MAINNET)
+  const [chainId, setChainId] = useState<string | undefined>(
+    initialChainId ?? currency?.chainId ?? Chain.POLYGON_MAINNET
+  )
 
   useEffect(() => {
     if (open) {
@@ -65,7 +67,10 @@ export function TokenSelectorModal({
 
   return (
     <div className="modal modal-open" onClick={onClose}>
-      <div className="modal-box max-w-2xl max-h-[90dvh] p-0 flex flex-col" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal-box max-w-2xl max-h-[90dvh] p-0 flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-base-300 shrink-0">
           <h3 className="font-bold">Select a token</h3>

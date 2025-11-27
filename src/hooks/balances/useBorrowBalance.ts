@@ -6,7 +6,11 @@ import { MTOKEN_ABI } from '../../lib/actions/lending/moonwell/mTokenAbi'
 
 export type BorrowBalance = { raw: string; value: string } | undefined
 
-async function fetchBorrowBalance(chainId: string, userAddress: Address, mTokenAddress: Address): Promise<BorrowBalance> {
+async function fetchBorrowBalance(
+  chainId: string,
+  userAddress: Address,
+  mTokenAddress: Address
+): Promise<BorrowBalance> {
   try {
     const client = await getRpcSelectorEvmClient(chainId)
     if (!client) return undefined
@@ -26,12 +30,19 @@ async function fetchBorrowBalance(chainId: string, userAddress: Address, mTokenA
       value: balanceBigInt.toString(), // We'll format it in the component with decimals
     }
   } catch (e) {
-    console.warn(`Failed to fetch borrow balance for mToken ${mTokenAddress} on chain ${chainId}:`, e)
+    console.warn(
+      `Failed to fetch borrow balance for mToken ${mTokenAddress} on chain ${chainId}:`,
+      e
+    )
     return undefined
   }
 }
 
-export function useBorrowBalance(params: { chainId: string; userAddress?: Address; mTokenAddress?: Address }) {
+export function useBorrowBalance(params: {
+  chainId: string
+  userAddress?: Address
+  mTokenAddress?: Address
+}) {
   const { chainId, userAddress, mTokenAddress } = params
   return useQuery({
     queryKey: ['borrowBalance', chainId, userAddress ?? '0x', mTokenAddress?.toLowerCase() ?? '0x'],

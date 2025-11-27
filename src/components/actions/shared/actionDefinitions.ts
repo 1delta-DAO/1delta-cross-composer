@@ -71,10 +71,15 @@ export const CATEGORIES: { id: ActionCategory; label: string }[] = [
 ]
 
 // Get actions filtered by category
-export function getActionsByCategory(category: ActionCategory, srcCurrency?: RawCurrency): ActionDefinition[] {
+export function getActionsByCategory(
+  category: ActionCategory,
+  srcCurrency?: RawCurrency
+): ActionDefinition[] {
   const actions = getRegisteredActions()
   if (category === 'all') {
     return actions.filter((action) => !action.requiresSrcCurrency || srcCurrency)
   }
-  return actions.filter((action) => action.category === category && (!action.requiresSrcCurrency || srcCurrency))
+  return actions.filter(
+    (action) => action.category === category && (!action.requiresSrcCurrency || srcCurrency)
+  )
 }

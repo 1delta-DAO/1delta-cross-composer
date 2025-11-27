@@ -43,7 +43,13 @@ export function TokenSelectorListMode({
 
   return (
     <div className="w-full">
-      <RelevantTokensBar chainId={chainId} chains={chains} relevant={relevant} tokensMap={tokensMap} onChange={onChange} />
+      <RelevantTokensBar
+        chainId={chainId}
+        chains={chains}
+        relevant={relevant}
+        tokensMap={tokensMap}
+        onChange={onChange}
+      />
 
       {relevant.length > 0 && <div className="divider my-1" />}
 

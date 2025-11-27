@@ -1847,7 +1847,16 @@
       "logoURI": "https://basescan.org/token/images/usdbc_ofc_32.png",
       "assetGroup": "USDBC",
       "currencyId": "USD Base Coin::USDbC",
-      "tags": ["coingecko", "debridge", "biconomy-gas-token", "AAVE_V3", "GRANARY", "YLDR", "COMPOUND_V3_USDBC", "MOONCAKE"]
+      "tags": [
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "GRANARY",
+        "YLDR",
+        "COMPOUND_V3_USDBC",
+        "MOONCAKE"
+      ]
     },
     "0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22": {
       "chainId": "8453",
@@ -2453,7 +2462,16 @@
       "logoURI": "https://basescan.org/token/images/aerodrome_32.png",
       "assetGroup": "AERO",
       "currencyId": "Aerodrome Finance::AERO",
-      "tags": ["coingecko", "debridge", "biconomy-gas-token", "ZEROLEND", "GRANARY", "POLTER", "XLEND", "COMPOUND_V3_AERO"]
+      "tags": [
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "ZEROLEND",
+        "GRANARY",
+        "POLTER",
+        "XLEND",
+        "COMPOUND_V3_AERO"
+      ]
     },
     "0x97c806e7665d3afd84a8fe1837921403d59f3dcc": {
       "chainId": "8453",
@@ -2952,7 +2970,14 @@
       "logoURI": "https://raw.githubusercontent.com/uniswap/assets/master/blockchains/ethereum/assets/0x18084fbA666a33d37592fA2633fD49a74DD93a88/logo.png",
       "assetGroup": "tBTC::tBTC",
       "currencyId": "tBTC::tBTC",
-      "tags": ["coingecko", "debridge", "biconomy-gas-token", "XLEND", "COMPOUND_V3_USDC", "AAVE_V3"]
+      "tags": [
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "XLEND",
+        "COMPOUND_V3_USDC",
+        "AAVE_V3"
+      ]
     },
     "0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4": {
       "chainId": "8453",
@@ -8590,7 +8615,15 @@
       "logoURI": "https://assets.coingecko.com/coins/images/33033/thumb/weETH.png?1701438396",
       "assetGroup": "WEETH",
       "currencyId": "Wrapped eETH::weETH",
-      "tags": ["coingecko", "debridge", "biconomy-gas-token", "AAVE_V3", "XLEND", "COMPOUND_V3_WETH", "RADIANT_V2"]
+      "tags": [
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "XLEND",
+        "COMPOUND_V3_WETH",
+        "RADIANT_V2"
+      ]
     },
     "0xce74702e67e3127613f3465384282bad77757ca3": {
       "chainId": "8453",
@@ -8799,7 +8832,14 @@
       "logoURI": "https://assets.coingecko.com/coins/images/39829/thumb/Wrapped_Super_OETH.png?1724208632",
       "assetGroup": "WSUPEROETHB",
       "currencyId": "Wrapped Super OETH::wsuperOETHb",
-      "tags": ["coingecko", "debridge", "biconomy-gas-token", "ZEROLEND", "COMPOUND_V3_WETH", "VENUS"]
+      "tags": [
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "ZEROLEND",
+        "COMPOUND_V3_WETH",
+        "VENUS"
+      ]
     },
     "0x543ba622733bc9a7bfadd1d07b6c35ae1f9659d9": {
       "chainId": "8453",
@@ -13782,7 +13822,14 @@
       "logoURI": "https://assets.coingecko.com/coins/images/37919/thumb/rseth.png?1715936438",
       "assetGroup": "Wrapped rsETH::wrsETH",
       "currencyId": "Wrapped rsETH::wrsETH",
-      "tags": ["coingecko", "debridge", "biconomy-gas-token", "AAVE_V3", "XLEND", "COMPOUND_V3_WETH"]
+      "tags": [
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "XLEND",
+        "COMPOUND_V3_WETH"
+      ]
     },
     "0xca30c93b02514f86d5c86a6e375e3a330b435fb5": {
       "chainId": "8453",
@@ -14464,7 +14511,15 @@
       "logoURI": "https://assets.coingecko.com/coins/images/39969/thumb/LBTC_Logo.png?1724959872",
       "assetGroup": "LBTC",
       "currencyId": "Lombard Staked BTC::LBTC",
-      "tags": ["coingecko", "debridge", "biconomy-gas-token", "AAVE_V3", "ZEROLEND", "XLEND", "RADIANT_V2"]
+      "tags": [
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "ZEROLEND",
+        "XLEND",
+        "RADIANT_V2"
+      ]
     },
     "0x7f05a7a9af2f5a07d1e64877c8dc37a64a22508e": {
       "chainId": "8453",

@@ -5526,7 +5526,16 @@
       "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png",
       "assetGroup": "USDC",
       "currencyId": "Bridged USDC::USDC.e",
-      "tags": ["bridged", "openocean", "debridge", "biconomy-gas-token", "AAVE_V3", "AAVE_V2", "YLDR", "COMPOUND_V3_USDCE"]
+      "tags": [
+        "bridged",
+        "openocean",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "AAVE_V2",
+        "YLDR",
+        "COMPOUND_V3_USDCE"
+      ]
     },
     "0x6f3b3286fd86d8b47ec737ceb3d0d354cc657b3e": {
       "chainId": "137",
@@ -5548,7 +5557,15 @@
       "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
       "assetGroup": "USDT",
       "currencyId": "Tether USD::USDT",
-      "tags": ["openocean", "debridge", "biconomy-gas-token", "AAVE_V3", "AAVE_V2", "YLDR", "COMPOUND_V3_USDT"]
+      "tags": [
+        "openocean",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "AAVE_V2",
+        "YLDR",
+        "COMPOUND_V3_USDT"
+      ]
     },
     "0x692597b009d13c4049a947cab2239b7d6517875f": {
       "chainId": "137",
@@ -5706,7 +5723,16 @@
       "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599/logo.png",
       "assetGroup": "WBTC",
       "currencyId": "Wrapped BTC::WBTC",
-      "tags": ["openocean", "debridge", "biconomy-gas-token", "AAVE_V3", "AAVE_V2", "YLDR", "COMPOUND_V3_USDT", "COMPOUND_V3_USDCE"]
+      "tags": [
+        "openocean",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "AAVE_V2",
+        "YLDR",
+        "COMPOUND_V3_USDT",
+        "COMPOUND_V3_USDCE"
+      ]
     },
     "0x90bb6feb70a9a43cfaaa615f856ba309fd759a90": {
       "chainId": "137",
@@ -5728,7 +5754,16 @@
       "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
       "assetGroup": "ETH",
       "currencyId": "Wrapped Ether::WETH",
-      "tags": ["openocean", "debridge", "biconomy-gas-token", "AAVE_V3", "AAVE_V2", "YLDR", "COMPOUND_V3_USDT", "COMPOUND_V3_USDCE"]
+      "tags": [
+        "openocean",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "AAVE_V2",
+        "YLDR",
+        "COMPOUND_V3_USDT",
+        "COMPOUND_V3_USDCE"
+      ]
     },
     "0x157b28e46f301c596668a4b85c59f710f9c4bbaa": {
       "chainId": "137",
@@ -5781,7 +5816,17 @@
       "logoURI": "https://assets.coingecko.com/coins/images/4713/thumb/matic-token-icon.png?1624446912",
       "assetGroup": "POL",
       "currencyId": "Wrapped POL::WPOL",
-      "tags": ["openocean", "debridge", "wnative", "biconomy-gas-token", "AAVE_V3", "AAVE_V2", "YLDR", "COMPOUND_V3_USDT", "COMPOUND_V3_USDCE"],
+      "tags": [
+        "openocean",
+        "debridge",
+        "wnative",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "AAVE_V2",
+        "YLDR",
+        "COMPOUND_V3_USDT",
+        "COMPOUND_V3_USDCE"
+      ],
       "props": {
         "wnative": true
       }
@@ -6234,7 +6279,14 @@
       "logoURI": "https://assets.coingecko.com/coins/images/24185/standard/stMATIC.png?1696523373",
       "assetGroup": "STMATIC",
       "currencyId": "Staked MATIC::stMATIC",
-      "tags": ["openocean", "debridge", "biconomy-gas-token", "AAVE_V3", "COMPOUND_V3_USDT", "COMPOUND_V3_USDCE"]
+      "tags": [
+        "openocean",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "COMPOUND_V3_USDT",
+        "COMPOUND_V3_USDCE"
+      ]
     },
     "0x55555555a687343c6ce28c8e1f6641dc71659fad": {
       "chainId": "137",

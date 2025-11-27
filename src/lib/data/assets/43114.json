@@ -186,7 +186,16 @@
       "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x6B175474E89094C44Da98b954EedeAC495271d0F/logo.png",
       "assetGroup": "DAI",
       "currencyId": "Dai Stablecoin::DAI",
-      "tags": ["openocean", "coingecko", "debridge", "biconomy-gas-token", "AAVE_V3", "NEREUS", "GRANARY", "BENQI"]
+      "tags": [
+        "openocean",
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "NEREUS",
+        "GRANARY",
+        "BENQI"
+      ]
     },
     "0x03e8d118a1864c7dc53bf91e007ab7d91f5a06fa": {
       "chainId": "43114",
@@ -603,7 +612,15 @@
       "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png",
       "assetGroup": "USDC",
       "currencyId": "USD Coin::USDC",
-      "tags": ["openocean", "coingecko", "debridge", "biconomy-gas-token", "AAVE_V3", "BENQI", "BENQI_AVALANCE_ECOSYSTEM"]
+      "tags": [
+        "openocean",
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "BENQI",
+        "BENQI_AVALANCE_ECOSYSTEM"
+      ]
     },
     "0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7": {
       "chainId": "43114",
@@ -625,7 +642,16 @@
       "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599/logo.png",
       "assetGroup": "WBTC",
       "currencyId": "Wrapped BTC::WBTC",
-      "tags": ["openocean", "coingecko", "debridge", "biconomy-gas-token", "AAVE_V3", "NEREUS", "GRANARY", "BENQI"]
+      "tags": [
+        "openocean",
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "NEREUS",
+        "GRANARY",
+        "BENQI"
+      ]
     },
     "0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab": {
       "chainId": "43114",
@@ -636,7 +662,16 @@
       "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png",
       "assetGroup": "ETH",
       "currencyId": "Wrapped Ether::WETH",
-      "tags": ["openocean", "coingecko", "debridge", "biconomy-gas-token", "AAVE_V3", "NEREUS", "GRANARY", "BENQI"]
+      "tags": [
+        "openocean",
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "NEREUS",
+        "GRANARY",
+        "BENQI"
+      ]
     },
     "0xabc9547b534519ff73921b1fba6e672b5f58d083": {
       "chainId": "43114",
@@ -746,7 +781,16 @@
       "logoURI": "https://raw.githubusercontent.com/Uniswap/assets/master/blockchains/avalanchec/assets/0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7/logo.png",
       "assetGroup": "AVAX",
       "currencyId": "Wrapped AVAX::WAVAX",
-      "tags": ["openocean", "coingecko", "debridge", "wnative", "biconomy-gas-token", "AAVE_V3", "NEREUS", "GRANARY"],
+      "tags": [
+        "openocean",
+        "coingecko",
+        "debridge",
+        "wnative",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "NEREUS",
+        "GRANARY"
+      ],
       "props": {
         "wnative": true
       }
@@ -782,7 +826,14 @@
       "logoURI": "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a/logo.png",
       "assetGroup": "AUSD",
       "currencyId": "AUSD::AUSD",
-      "tags": ["coingecko", "debridge", "biconomy-gas-token", "AAVE_V3", "BENQI", "BENQI_AVALANCE_ECOSYSTEM"]
+      "tags": [
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "BENQI",
+        "BENQI_AVALANCE_ECOSYSTEM"
+      ]
     },
     "0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd": {
       "chainId": "43114",
@@ -793,7 +844,14 @@
       "logoURI": "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd/logo.png",
       "assetGroup": "JOE",
       "currencyId": "TraderJoe Token::JOE",
-      "tags": ["openocean", "coingecko", "debridge", "biconomy-gas-token", "NEREUS", "BENQI_AVALANCE_ECOSYSTEM"]
+      "tags": [
+        "openocean",
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "NEREUS",
+        "BENQI_AVALANCE_ECOSYSTEM"
+      ]
     },
     "0xd1c3f94de7e5b45fa4edbba472491a9f4b166fc4": {
       "chainId": "43114",
@@ -848,7 +906,16 @@
       "logoURI": "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0xc7198437980c041c805A1EDcbA50c1Ce5db95118/logo.png",
       "assetGroup": "USDT",
       "currencyId": "Bridged USDT::USDT.e",
-      "tags": ["bridged", "openocean", "coingecko", "debridge", "biconomy-gas-token", "NEREUS", "GRANARY", "BENQI"]
+      "tags": [
+        "bridged",
+        "openocean",
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "NEREUS",
+        "GRANARY",
+        "BENQI"
+      ]
     },
     "0x59414b3089ce2af0010e7523dea7e2b35d776ec7": {
       "chainId": "43114",
@@ -870,7 +937,14 @@
       "logoURI": "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x8729438EB15e2C8B576fCc6AeCdA6A148776C0F5/logo.png",
       "assetGroup": "QI",
       "currencyId": "Benqi::QI",
-      "tags": ["openocean", "coingecko", "debridge", "biconomy-gas-token", "BENQI", "BENQI_AVALANCE_ECOSYSTEM"]
+      "tags": [
+        "openocean",
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "BENQI",
+        "BENQI_AVALANCE_ECOSYSTEM"
+      ]
     },
     "0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664": {
       "chainId": "43114",
@@ -881,7 +955,16 @@
       "logoURI": "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664/logo.png",
       "assetGroup": "USDC",
       "currencyId": "Bridged USDC::USDC.e",
-      "tags": ["bridged", "openocean", "coingecko", "debridge", "biconomy-gas-token", "NEREUS", "GRANARY", "BENQI"]
+      "tags": [
+        "bridged",
+        "openocean",
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "NEREUS",
+        "GRANARY",
+        "BENQI"
+      ]
     },
     "0xec3492a2508ddf4fdc0cd76f31f340b30d1793e6": {
       "chainId": "43114",
@@ -2499,7 +2582,15 @@
       "logoURI": "https://assets.coingecko.com/coins/images/21150/thumb/UST_wh_small.png?1696520528",
       "assetGroup": "UST (Wormhole)::UST",
       "currencyId": "UST (Wormhole)::UST",
-      "tags": ["wormhole", "bridged", "openocean", "coingecko", "debridge", "biconomy-gas-token", "NEREUS"]
+      "tags": [
+        "wormhole",
+        "bridged",
+        "openocean",
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "NEREUS"
+      ]
     },
     "0x120ad3e5a7c796349e591f1570d9f7980f4ea9cb": {
       "chainId": "43114",

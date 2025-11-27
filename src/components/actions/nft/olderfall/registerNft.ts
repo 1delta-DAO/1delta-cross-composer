@@ -18,7 +18,9 @@ export function registerNftAction(): void {
     priority: 2,
     actionType: 'game_token',
     requiresExactDestinationAmount: true,
-    dataLoader: async (context: ActionLoaderContext): Promise<Record<string, OlderfallListing[]>> => {
+    dataLoader: async (
+      context: ActionLoaderContext
+    ): Promise<Record<string, OlderfallListing[]>> => {
       const supportedChains = [String(Chain.POLYGON_MAINNET), String(Chain.MOONBEAM)]
       const results: Record<string, OlderfallListing[]> = {}
 
@@ -38,7 +40,7 @@ export function registerNftAction(): void {
             console.error(`Failed to load Olderfall listings for chain ${chainId}:`, error)
             results[chainId] = []
           }
-        }),
+        })
       )
 
       return results

@@ -62,10 +62,14 @@ export function getMarketByMToken(mToken: Address): MoonwellMarket | undefined {
 
 export function getMarketByUnderlying(underlying: Address): MoonwellMarket | undefined {
   if (!cachedMarkets) return undefined
-  return cachedMarkets.find((m) => m.underlyingCurrency.address.toLowerCase() === underlying.toLowerCase())
+  return cachedMarkets.find(
+    (m) => m.underlyingCurrency.address.toLowerCase() === underlying.toLowerCase()
+  )
 }
 
-export async function initializeMoonwellMarkets(chainId: string = SupportedChainId.MOONBEAM): Promise<void> {
+export async function initializeMoonwellMarkets(
+  chainId: string = SupportedChainId.MOONBEAM
+): Promise<void> {
   if (isInitialized && cachedMarkets !== undefined) {
     return
   }
@@ -102,8 +106,13 @@ export async function initializeMoonwellMarkets(chainId: string = SupportedChain
         functionName: 'getMarketInfo',
         args: [mToken],
       })) as any
-      const underlyingFromLens = (info?.[18]?.token || info?.underlying || info?.underlyingAssetAddress || undefined) as Address | undefined
-      const resolvedUnderlying = (underlying && underlying !== ('' as Address) ? underlying : underlyingFromLens) as Address
+      const underlyingFromLens = (info?.[18]?.token ||
+        info?.underlying ||
+        info?.underlyingAssetAddress ||
+        undefined) as Address | undefined
+      const resolvedUnderlying = (
+        underlying && underlying !== ('' as Address) ? underlying : underlyingFromLens
+      ) as Address
 
       let symbol: string | undefined
       let decimals: number | undefined
@@ -150,7 +159,7 @@ export async function initializeMoonwellMarkets(chainId: string = SupportedChain
         mToken,
         mTokenDecimals ?? 18,
         mTokenSymbol || 'mToken',
-        mTokenSymbol || 'Moonwell Market Token',
+        mTokenSymbol || 'Moonwell Market Token'
       )
 
       const underlyingCurrency = CurrencyHandler.Currency(
@@ -158,7 +167,7 @@ export async function initializeMoonwellMarkets(chainId: string = SupportedChain
         resolvedUnderlying || underlying,
         decimals ?? 18,
         symbol || 'Token',
-        symbol || 'Token',
+        symbol || 'Token'
       )
 
       results.push({
@@ -187,7 +196,9 @@ export async function initializeMoonwellMarkets(chainId: string = SupportedChain
 /**
  * Force refresh the markets data
  */
-export async function refreshMoonwellMarkets(chainId: string = SupportedChainId.MOONBEAM): Promise<void> {
+export async function refreshMoonwellMarkets(
+  chainId: string = SupportedChainId.MOONBEAM
+): Promise<void> {
   isInitialized = false
   cachedMarkets = undefined
   await initializeMoonwellMarkets(chainId)

@@ -4,10 +4,18 @@ import { CurrencyHandler, SupportedChainId } from '@1delta/lib-utils'
 import { TokenListsMeta } from './types'
 import { getTokenFromCache } from '../../../../lib/data/tokenListsCache'
 
-export function formatListingPriceLabel(listing: any, tokenChainId: string | number | undefined, tokenLists?: TokenListsMeta): string {
-  const tokenMeta = tokenLists && tokenChainId && listing.currency ? tokenLists[tokenChainId]?.[listing.currency.toLowerCase()] : undefined
+export function formatListingPriceLabel(
+  listing: any,
+  tokenChainId: string | number | undefined,
+  tokenLists?: TokenListsMeta
+): string {
+  const tokenMeta =
+    tokenLists && tokenChainId && listing.currency
+      ? tokenLists[tokenChainId]?.[listing.currency.toLowerCase()]
+      : undefined
 
-  const decimals = typeof tokenMeta?.decimals === 'number' ? tokenMeta.decimals : listing.priceDecimals
+  const decimals =
+    typeof tokenMeta?.decimals === 'number' ? tokenMeta.decimals : listing.priceDecimals
   const symbol = tokenMeta?.symbol || 'TOKEN'
 
   try {
@@ -29,9 +37,16 @@ export function formatListingPriceLabel(listing: any, tokenChainId: string | num
   }
 }
 
-export function buildCurrencyMetaForListing(listing: any, dstChainId?: string, tokenLists?: TokenListsMeta) {
+export function buildCurrencyMetaForListing(
+  listing: any,
+  dstChainId?: string,
+  tokenLists?: TokenListsMeta
+) {
   const tokenChainId = dstChainId || SupportedChainId.MOONBEAM
-  const tokenMeta = tokenLists && tokenChainId && listing.currency ? tokenLists[tokenChainId]?.[listing.currency.toLowerCase()] : undefined
+  const tokenMeta =
+    tokenLists && tokenChainId && listing.currency
+      ? tokenLists[tokenChainId]?.[listing.currency.toLowerCase()]
+      : undefined
 
   const cachedToken = getTokenFromCache(tokenChainId, listing.currency)
 

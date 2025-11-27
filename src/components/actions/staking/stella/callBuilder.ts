@@ -9,7 +9,9 @@ export type StellaStakingCallBuilderParams = {
   userAddress: Address
 }
 
-export const buildCalls: DestinationCallBuilder<StellaStakingCallBuilderParams> = async ({ userAddress }) => {
+export const buildCalls: DestinationCallBuilder<StellaStakingCallBuilderParams> = async ({
+  userAddress,
+}) => {
   const approveCall: DestinationCall = {
     target: XCDOT_ADDRESS,
     calldata: encodeFunctionData({

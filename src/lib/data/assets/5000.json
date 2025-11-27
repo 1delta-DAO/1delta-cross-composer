@@ -508,7 +508,16 @@
       "logoURI": "https://raw.githubusercontent.com/merchant-moe/moe-tokenlists/main/logos/0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8/logo.png",
       "assetGroup": "MNT",
       "currencyId": "Wrapped Mantle::WMNT",
-      "tags": ["coingecko", "wnative", "biconomy-gas-token", "debridge", "LENDLE", "AURELIUS", "KINZA", "INIT"],
+      "tags": [
+        "coingecko",
+        "wnative",
+        "biconomy-gas-token",
+        "debridge",
+        "LENDLE",
+        "AURELIUS",
+        "KINZA",
+        "INIT"
+      ],
       "props": {
         "wnative": true
       }
@@ -522,7 +531,16 @@
       "logoURI": "https://raw.githubusercontent.com/merchant-moe/moe-tokenlists/main/logos/0x201EBa5CC46D216Ce6DC03F6a759e8E766e956aE/logo.png",
       "assetGroup": "USDT",
       "currencyId": "Tether USD::USDT",
-      "tags": ["mantlelist", "coingecko", "biconomy-gas-token", "debridge", "LENDLE", "AURELIUS", "KINZA", "INIT"]
+      "tags": [
+        "mantlelist",
+        "coingecko",
+        "biconomy-gas-token",
+        "debridge",
+        "LENDLE",
+        "AURELIUS",
+        "KINZA",
+        "INIT"
+      ]
     },
     "0x09bc4e0d864854c6afb6eb9a9cdf58ac190d0df9": {
       "chainId": "5000",
@@ -533,7 +551,16 @@
       "logoURI": "https://raw.githubusercontent.com/merchant-moe/moe-tokenlists/main/logos/0x09Bc4E0D864854c6aFB6eB9A9cdF58aC190D0dF9/logo.png",
       "assetGroup": "USDC",
       "currencyId": "USD Coin::USDC",
-      "tags": ["mantlelist", "coingecko", "biconomy-gas-token", "debridge", "LENDLE", "AURELIUS", "KINZA", "INIT"],
+      "tags": [
+        "mantlelist",
+        "coingecko",
+        "biconomy-gas-token",
+        "debridge",
+        "LENDLE",
+        "AURELIUS",
+        "KINZA",
+        "INIT"
+      ],
       "props": {
         "permit": {
           "type": 1,
@@ -623,7 +650,15 @@
       "logoURI": "https://raw.githubusercontent.com/traderjoe-xyz/moe-tokenlists/main/logos/0x5bE26527e817998A7206475496fDE1E68957c5A6/logo.png",
       "assetGroup": "USDY",
       "currencyId": "Ondo U.S. Dollar Yield::USDY",
-      "tags": ["mantlelist", "coingecko", "biconomy-gas-token", "debridge", "AURELIUS", "KINZA", "INIT"]
+      "tags": [
+        "mantlelist",
+        "coingecko",
+        "biconomy-gas-token",
+        "debridge",
+        "AURELIUS",
+        "KINZA",
+        "INIT"
+      ]
     },
     "0x25356aeca4210ef7553140edb9b8026089e49396": {
       "chainId": "5000",
@@ -667,7 +702,17 @@
       "logoURI": "https://raw.githubusercontent.com/traderjoe-xyz/moe-tokenlists/main/logos/0xcDA86A272531e8640cD7F1a92c01839911B90bb0/logo.png",
       "assetGroup": "METH",
       "currencyId": "mETH::mETH",
-      "tags": ["mantlelist", "coingecko", "biconomy-gas-token", "debridge", "LENDLE", "AURELIUS", "KINZA", "COMPOUND_V3_USDE", "INIT"],
+      "tags": [
+        "mantlelist",
+        "coingecko",
+        "biconomy-gas-token",
+        "debridge",
+        "LENDLE",
+        "AURELIUS",
+        "KINZA",
+        "COMPOUND_V3_USDE",
+        "INIT"
+      ],
       "props": {
         "permit": {
           "type": 1,
@@ -704,7 +749,18 @@
       "logoURI": "https://raw.githubusercontent.com/merchant-moe/moe-tokenlists/main/logos/0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34/logo.png",
       "assetGroup": "USDE",
       "currencyId": "USDe::USDe",
-      "tags": ["mantlelist", "biconomy-gas-token", "debridge", "coingecko", "LENDLE", "AURELIUS", "KINZA", "COMPOUND_V3_USDE", "INIT", "LENDLE_SUSDE"]
+      "tags": [
+        "mantlelist",
+        "biconomy-gas-token",
+        "debridge",
+        "coingecko",
+        "LENDLE",
+        "AURELIUS",
+        "KINZA",
+        "COMPOUND_V3_USDE",
+        "INIT",
+        "LENDLE_SUSDE"
+      ]
     },
     "0x58538e6a46e07434d7e7375bc268d3cb839c0133": {
       "chainId": "5000",
@@ -796,7 +852,17 @@
       "logoURI": "https://raw.githubusercontent.com/merchant-moe/moe-tokenlists/main/logos/0xC96dE26018A54D51c097160568752c4E3BD6C364/logo.png",
       "assetGroup": "FBTC",
       "currencyId": "Fire Bitcoin::FBTC",
-      "tags": ["mantlelist", "coingecko", "biconomy-gas-token", "debridge", "LENDLE", "AURELIUS", "KINZA", "COMPOUND_V3_USDE", "INIT"]
+      "tags": [
+        "mantlelist",
+        "coingecko",
+        "biconomy-gas-token",
+        "debridge",
+        "LENDLE",
+        "AURELIUS",
+        "KINZA",
+        "COMPOUND_V3_USDE",
+        "INIT"
+      ]
     },
     "0xbe5acfd64358805616b5cbd5277b9a85011d7cf1": {
       "chainId": "5000",
@@ -863,7 +929,16 @@
       "logoURI": "https://raw.githubusercontent.com/merchant-moe/moe-tokenlists/main/logos/0xE6829d9a7eE3040e1276Fa75293Bde931859e8fA/logo.png",
       "assetGroup": "CMETH",
       "currencyId": "cmETH::cmETH",
-      "tags": ["mantlelist", "coingecko", "biconomy-gas-token", "debridge", "LENDLE", "AURELIUS", "INIT", "LENDLE_CMETH"]
+      "tags": [
+        "mantlelist",
+        "coingecko",
+        "biconomy-gas-token",
+        "debridge",
+        "LENDLE",
+        "AURELIUS",
+        "INIT",
+        "LENDLE_CMETH"
+      ]
     },
     "0xd2b4c9b0d70e3da1fbdd98f469bd02e77e12fc79": {
       "chainId": "5000",
@@ -891,7 +966,15 @@
       "logoURI": "https://raw.githubusercontent.com/merchant-moe/moe-tokenlists/main/logos/0x211Cc4DD073734dA055fbF44a2b4667d5E5fE5d2/logo.png",
       "assetGroup": "SUSDE",
       "currencyId": "Staked USDe::sUSDe",
-      "tags": ["mantlelist", "biconomy-gas-token", "LENDLE", "AURELIUS", "LENDLE_SUSDE", "coingecko", "debridge"]
+      "tags": [
+        "mantlelist",
+        "biconomy-gas-token",
+        "LENDLE",
+        "AURELIUS",
+        "LENDLE_SUSDE",
+        "coingecko",
+        "debridge"
+      ]
     },
     "0x96630b0d78d29e7e8d87f8703de7c14b2d5ae413": {
       "chainId": "5000",

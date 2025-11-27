@@ -1,7 +1,12 @@
 import { fetchBridgeTradeWithoutComposed } from '@1delta/trade-sdk'
 import { Bridge, getBridges } from '@1delta/bridge-configs'
 import type { GenericTrade, RawCurrency } from '@1delta/lib-utils'
-import type { AcrossBaseInput, AxelarBaseInput, BaseBridgeInput, DeltaCall } from '@1delta/trade-sdk/dist/types'
+import type {
+  AcrossBaseInput,
+  AxelarBaseInput,
+  BaseBridgeInput,
+  DeltaCall,
+} from '@1delta/trade-sdk/dist/types'
 import type { Address } from 'viem'
 import { getCurrency as getCurrencyRaw } from '../../lib/trade-helpers/utils'
 import { fetchAxelarTradeWithSwaps } from '@1delta/trade-sdk/dist/composedTrades/axelar/axelarWithSwaps'
@@ -48,14 +53,14 @@ function buildPricesCallbackFromRecord(prices?: PricesRecord): useGeneralPricesC
 export async function fetchAllActionTrades(
   input: ExtendedBridgeInput,
   controller?: AbortController,
-  prices?: PricesRecord,
+  prices?: PricesRecord
 ): Promise<Array<{ action: string; trade: GenericTrade }>> {
   const availableBridges = getBridges()
   const hasAdditionalCalls = Boolean(input.additionalCalls && input.additionalCalls.length > 0)
 
   console.debug(
     'Fetching from actions:',
-    availableBridges.map((b) => (b.toString ? b.toString() : String(b))),
+    availableBridges.map((b) => (b.toString ? b.toString() : String(b)))
   )
   if (availableBridges.length === 0) return []
 
@@ -75,7 +80,12 @@ export async function fetchAllActionTrades(
               },
             }
             const pricesCallback = buildPricesCallbackFromRecord(prices)
-            trade = await fetchAxelarTradeWithSwaps(composedInput, getCurrency, pricesCallback, controller)
+            trade = await fetchAxelarTradeWithSwaps(
+              composedInput,
+              getCurrency,
+              pricesCallback,
+              controller
+            )
           } else if (bridge === Bridge.ACROSS) {
             const composedInput: AcrossBaseInput = {
               ...input,
@@ -90,7 +100,11 @@ export async function fetchAllActionTrades(
             ...input,
           }
 
-          trade = await fetchBridgeTradeWithoutComposed(bridge, baseInput, controller || new AbortController())
+          trade = await fetchBridgeTradeWithoutComposed(
+            bridge,
+            baseInput,
+            controller || new AbortController()
+          )
         }
 
         if (trade) return { action: bridge.toString(), trade }
@@ -102,14 +116,16 @@ export async function fetchAllActionTrades(
         })
       }
       return undefined
-    }),
+    })
   )
 
-  const trades = (results.filter(Boolean) as Array<{ action: string; trade: GenericTrade }>).filter(({ trade }) => {
-    const hasAssemble = typeof (trade as any)?.assemble === 'function'
-    const hasTx = Boolean((trade as any)?.transaction)
-    return hasAssemble || hasTx
-  })
+  const trades = (results.filter(Boolean) as Array<{ action: string; trade: GenericTrade }>).filter(
+    ({ trade }) => {
+      const hasAssemble = typeof (trade as any)?.assemble === 'function'
+      const hasTx = Boolean((trade as any)?.transaction)
+      return hasAssemble || hasTx
+    }
+  )
 
   return trades.sort((a, b) => b.trade.outputAmountRealized - a.trade.outputAmountRealized)
 }

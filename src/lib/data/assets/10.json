@@ -541,7 +541,17 @@
       "logoURI": "https://ethereum-optimism.github.io/data/OP/logo.png",
       "assetGroup": "OP",
       "currencyId": "Optimism::OP",
-      "tags": ["openocean", "debridge", "biconomy-gas-token", "AAVE_V3", "GRANARY", "XLEND", "COMPOUND_V3_USDC", "COMPOUND_V3_USDT", "VENUS"],
+      "tags": [
+        "openocean",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "GRANARY",
+        "XLEND",
+        "COMPOUND_V3_USDC",
+        "COMPOUND_V3_USDT",
+        "VENUS"
+      ],
       "props": {
         "permit": {
           "type": 1,
@@ -856,7 +866,17 @@
       "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png",
       "assetGroup": "USDT",
       "currencyId": "Tether USD::USDT",
-      "tags": ["openocean", "debridge", "biconomy-gas-token", "AAVE_V3", "GRANARY", "XLEND", "COMPOUND_V3_WETH", "COMPOUND_V3_USDT", "VENUS"]
+      "tags": [
+        "openocean",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "GRANARY",
+        "XLEND",
+        "COMPOUND_V3_WETH",
+        "COMPOUND_V3_USDT",
+        "VENUS"
+      ]
     },
     "0x7d14206c937e70e19e3a5b94011faf0d5b3928e2": {
       "chainId": "10",
@@ -1252,7 +1272,15 @@
       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
       "assetGroup": "USDC",
       "currencyId": "USD Coin::USDC",
-      "tags": ["debridge", "biconomy-gas-token", "AAVE_V3", "XLEND", "COMPOUND_V3_USDC", "COMPOUND_V3_WETH", "VENUS"]
+      "tags": [
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "XLEND",
+        "COMPOUND_V3_USDC",
+        "COMPOUND_V3_WETH",
+        "VENUS"
+      ]
     },
     "0x9560e827af36c94d2ac33a39bce1fe78631088db": {
       "chainId": "10",

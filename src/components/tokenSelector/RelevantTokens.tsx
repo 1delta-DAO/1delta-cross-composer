@@ -9,7 +9,13 @@ type RelevantTokensBarProps = {
   onChange: (addr: Address) => void
 }
 
-export function RelevantTokensBar({ chainId, chains, relevant, tokensMap, onChange }: RelevantTokensBarProps) {
+export function RelevantTokensBar({
+  chainId,
+  chains,
+  relevant,
+  tokensMap,
+  onChange,
+}: RelevantTokensBarProps) {
   if (!relevant.length) return null
 
   return (

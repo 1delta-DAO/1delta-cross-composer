@@ -5,7 +5,11 @@ import { fetchEvmUserTokenDataEnhanced } from '../../sdk/utils/fetchBalances'
 
 export type ChainBalancesRecord = Record<string, Record<string, { raw: string; value: string }>>
 
-async function fetchBalances(chainId: string, userAddress: Address, tokenAddresses: Address[]): Promise<ChainBalancesRecord> {
+async function fetchBalances(
+  chainId: string,
+  userAddress: Address,
+  tokenAddresses: Address[]
+): Promise<ChainBalancesRecord> {
   const result: Record<string, { raw: string; value: string }> = {}
   if (tokenAddresses.length === 0) return { [chainId]: result }
 
@@ -33,7 +37,11 @@ async function fetchBalances(chainId: string, userAddress: Address, tokenAddress
   return { [chainId]: result }
 }
 
-export function useEvmBalances(params: { chainId: string; userAddress?: Address; tokenAddresses: Address[] }) {
+export function useEvmBalances(params: {
+  chainId: string
+  userAddress?: Address
+  tokenAddresses: Address[]
+}) {
   const { chainId, userAddress, tokenAddresses } = params
   return useQuery({
     queryKey: [

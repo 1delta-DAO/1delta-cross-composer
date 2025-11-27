@@ -52,7 +52,10 @@ export default function App() {
           {/* TABS + SLIPPAGE */}
           <div className="w-full max-w-[1000px] min-w-[450px] flex items-center justify-between">
             <div className="join">
-              <button className={`btn btn-sm join-item ${activeTab === 'swap' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setActiveTab('swap')}>
+              <button
+                className={`btn btn-sm join-item ${activeTab === 'swap' ? 'btn-primary' : 'btn-ghost'}`}
+                onClick={() => setActiveTab('swap')}
+              >
                 Swap
               </button>
               <button
@@ -67,7 +70,14 @@ export default function App() {
               {activeTab === 'swap' && <SwapSlippageSelector />}
               {activeTab === 'swap' && showSwapReset && (
                 <button className="btn btn-ghost btn-xs" onClick={handleSwapReset}>
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-4 h-4"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -102,7 +112,9 @@ export default function App() {
                         <div className="card-body">
                           <h3 className="card-title text-lg">Transaction Hash</h3>
                           <div className="flex flex-row gap-2 items-center pt-2">
-                            <p className="flex-1 font-mono text-s w-10/11 border rounded-md p-2">{transactionHash}</p>
+                            <p className="flex-1 font-mono text-s w-10/11 border rounded-md p-2">
+                              {transactionHash}
+                            </p>
                           </div>
                         </div>
                       </div>

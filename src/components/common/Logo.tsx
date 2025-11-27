@@ -15,12 +15,17 @@ export function Logo({ src, alt, size = 20, fallbackText, className }: Props) {
   if (!src || error) {
     return (
       <div
-        className={'rounded-full bg-base-200 text-base-content/70 flex items-center justify-center ' + (className || '')}
+        className={
+          'rounded-full bg-base-200 text-base-content/70 flex items-center justify-center ' +
+          (className || '')
+        }
         style={dimension}
         aria-label={alt}
         title={alt}
       >
-        <span style={{ fontSize: Math.max(10, Math.floor(size * 0.45)) }}>{fallbackText?.slice(0, 2)?.toUpperCase() || '?'}</span>
+        <span style={{ fontSize: Math.max(10, Math.floor(size * 0.45)) }}>
+          {fallbackText?.slice(0, 2)?.toUpperCase() || '?'}
+        </span>
       </div>
     )
   }

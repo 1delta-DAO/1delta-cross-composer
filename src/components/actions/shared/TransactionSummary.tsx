@@ -47,7 +47,10 @@ export function TransactionSummary({
     return currencies
   }, [srcCurrency, dstCurrency])
 
-  const { data: pricesData } = usePriceQuery({ currencies: currenciesForPrice, enabled: currenciesForPrice.length > 0 })
+  const { data: pricesData } = usePriceQuery({
+    currencies: currenciesForPrice,
+    enabled: currenciesForPrice.length > 0,
+  })
 
   const srcPrice = useMemo(() => {
     if (!pricesData || !srcCurrency) return undefined
@@ -101,7 +104,11 @@ export function TransactionSummary({
   if (!shouldShow) return null
 
   const hasInputAmount = inputAmount && Number(inputAmount) > 0
-  const formattedInput = hasInputAmount ? formatDisplayAmount(inputAmount) : showCalculatingTimeout ? 'Price unavailable' : 'Calculating...'
+  const formattedInput = hasInputAmount
+    ? formatDisplayAmount(inputAmount)
+    : showCalculatingTimeout
+      ? 'Price unavailable'
+      : 'Calculating...'
   const formattedOutput = formatDisplayAmount(outputAmount || '0')
 
   return (
@@ -136,7 +143,9 @@ export function TransactionSummary({
               <span className="text-sm opacity-70">You'll receive:</span>
               <span className="font-medium">
                 {formattedOutput} {dstCurrency?.symbol}
-                {destinationActionLabel && <span className="ml-1 opacity-80">→ {destinationActionLabel}</span>}
+                {destinationActionLabel && (
+                  <span className="ml-1 opacity-80">→ {destinationActionLabel}</span>
+                )}
               </span>
             </div>
             <div className="flex justify-between items-center">

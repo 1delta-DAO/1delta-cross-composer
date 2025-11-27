@@ -13,7 +13,12 @@ export type OlderfallCallBuilderParams = {
   listing: OlderfallListing
 }
 
-export const buildCalls: DestinationCallBuilder<OlderfallCallBuilderParams> = async ({ chainId, buyer, userAddress, listing }) => {
+export const buildCalls: DestinationCallBuilder<OlderfallCallBuilderParams> = async ({
+  chainId,
+  buyer,
+  userAddress,
+  listing,
+}) => {
   const orderId = String(listing.orderId || '')
   const tokenId = String(listing.tokenId || '')
   const currency = String(listing.currency || '')

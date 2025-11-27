@@ -1351,7 +1351,11 @@
       "logoURI": "https://raw.githubusercontent.com/1delta-DAO/asset-icons/main/native/xpl.webp",
       "assetGroup": "XPL",
       "currencyId": "Plasma::XPL",
-      "tags": ["native", "biconomy-gas-token", "wrapped:0x6100e367285b01f48d07953803a2d8dca5d19873"],
+      "tags": [
+        "native",
+        "biconomy-gas-token",
+        "wrapped:0x6100e367285b01f48d07953803a2d8dca5d19873"
+      ],
       "props": {
         "isNative": true,
         "wrapped": "0x6100e367285b01f48d07953803a2d8dca5d19873"

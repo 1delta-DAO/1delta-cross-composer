@@ -60,7 +60,15 @@ export function usePriceImpact({
   }, [pricesData, dstCurrency])
 
   return useMemo(() => {
-    if (!selectedTrade || !amount || !quoteOut || !srcToken || !dstToken || !srcChainId || !dstChainId) {
+    if (
+      !selectedTrade ||
+      !amount ||
+      !quoteOut ||
+      !srcToken ||
+      !dstToken ||
+      !srcChainId ||
+      !dstChainId
+    ) {
       return undefined
     }
     try {
@@ -81,5 +89,15 @@ export function usePriceImpact({
     } catch {
       return undefined
     }
-  }, [selectedTrade, amount, quoteOut, srcToken, dstToken, srcChainId, dstChainId, srcPrice, dstPrice])
+  }, [
+    selectedTrade,
+    amount,
+    quoteOut,
+    srcToken,
+    dstToken,
+    srcChainId,
+    dstChainId,
+    srcPrice,
+    dstPrice,
+  ])
 }

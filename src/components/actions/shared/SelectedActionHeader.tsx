@@ -7,7 +7,12 @@ interface SelectedActionHeaderProps {
   onClose: () => void
 }
 
-export function SelectedActionHeader({ action, isExpanded, onToggle, onClose }: SelectedActionHeaderProps) {
+export function SelectedActionHeader({
+  action,
+  isExpanded,
+  onToggle,
+  onClose,
+}: SelectedActionHeaderProps) {
   const Icon = action.icon
 
   return (
@@ -23,7 +28,12 @@ export function SelectedActionHeader({ action, isExpanded, onToggle, onClose }: 
             <Icon className="h-5 w-5" />
             <span className="font-medium">{action.label}</span>
           </button>
-          <button type="button" className="btn btn-sm btn-ghost btn-circle" onClick={onClose} title="Close">
+          <button
+            type="button"
+            className="btn btn-sm btn-ghost btn-circle"
+            onClick={onClose}
+            title="Close"
+          >
             <span className="text-lg">×</span>
           </button>
         </div>

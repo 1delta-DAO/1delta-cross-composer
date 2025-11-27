@@ -1926,7 +1926,15 @@
       "logoURI": "https://assets.coingecko.com/coins/images/9576/thumb/BUSD.png?1568947766",
       "assetGroup": "BUSD",
       "currencyId": "BUSD Token::BUSD",
-      "tags": ["openocean", "coingecko", "debridge", "biconomy-gas-token", "KINZA", "VENUS", "VALAS"]
+      "tags": [
+        "openocean",
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "KINZA",
+        "VENUS",
+        "VALAS"
+      ]
     },
     "0x2170ed0880ac9a755fd29b2688956bd959f933f8": {
       "chainId": "56",
@@ -1996,7 +2004,16 @@
       "logoURI": "https://tokens.pancakeswap.finance/images/0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82.png",
       "assetGroup": "CAKE",
       "currencyId": "PancakeSwap::CAKE",
-      "tags": ["openocean", "coingecko", "debridge", "biconomy-gas-token", "AAVE_V3", "KINZA", "VENUS", "VALAS"]
+      "tags": [
+        "openocean",
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "KINZA",
+        "VENUS",
+        "VALAS"
+      ]
     },
     "0x22a213852cee93eb6d41601133414d180c5684c2": {
       "chainId": "56",
@@ -2627,7 +2644,15 @@
       "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x6B175474E89094C44Da98b954EedeAC495271d0F/logo.png",
       "assetGroup": "DAI",
       "currencyId": "Dai Stablecoin::DAI",
-      "tags": ["openocean", "coingecko", "debridge", "biconomy-gas-token", "GRANARY", "VENUS", "VALAS"]
+      "tags": [
+        "openocean",
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "GRANARY",
+        "VENUS",
+        "VALAS"
+      ]
     },
     "0x4d2d32d8652058bf98c772953e1df5c5c85d9f45": {
       "chainId": "56",
@@ -7945,7 +7970,15 @@
       "logoURI": "https://tokens.pancakeswap.finance/images/0x0782b6d8c4551B9760e74c0545a9bCD90bdc41E5.png",
       "assetGroup": "Lista USD::lisUSD",
       "currencyId": "Lista USD::lisUSD",
-      "tags": ["coingecko", "debridge", "biconomy-gas-token", "AVALON_LISTA", "KINZA", "VENUS", "VENUS_STABLE"]
+      "tags": [
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "AVALON_LISTA",
+        "KINZA",
+        "VENUS",
+        "VENUS_STABLE"
+      ]
     },
     "0x6aa217312960a21adbde1478dc8cbcf828110a67": {
       "chainId": "56",
@@ -8275,7 +8308,15 @@
       "logoURI": "https://tokens.pancakeswap.finance/images/0x40af3827F39D0EAcBF4A168f8D4ee67c121D11c9.png",
       "assetGroup": "TrueUSD::TUSD",
       "currencyId": "TrueUSD::TUSD",
-      "tags": ["openocean", "coingecko", "debridge", "biconomy-gas-token", "KINZA", "VENUS", "VALAS"]
+      "tags": [
+        "openocean",
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "KINZA",
+        "VENUS",
+        "VALAS"
+      ]
     },
     "0x0034719300501b06e10ebb1d07ea5967301f0941": {
       "chainId": "56",
@@ -8418,7 +8459,16 @@
       "logoURI": "https://tokens.pancakeswap.finance/images/0xc5f0f7b66764F6ec8C8Dff7BA683102295E16409.png",
       "assetGroup": "FDUSD",
       "currencyId": "First Digital USD::FDUSD",
-      "tags": ["coingecko", "debridge", "biconomy-gas-token", "AAVE_V3", "AVALON_LISTA", "KINZA", "VENUS", "RADIANT_V2"]
+      "tags": [
+        "coingecko",
+        "debridge",
+        "biconomy-gas-token",
+        "AAVE_V3",
+        "AVALON_LISTA",
+        "KINZA",
+        "VENUS",
+        "RADIANT_V2"
+      ]
     },
     "0xf00600ebc7633462bc4f9c61ea2ce99f5aaebd4a": {
       "chainId": "56",
@@ -9287,7 +9337,15 @@
       "logoURI": "https://tokens.debridge.finance/Logo/56/0xd17479997f34dd9156deef8f95a52d81d265be9c/small/token-logo.png",
       "assetGroup": "USDD",
       "currencyId": "USDD::USDD",
-      "tags": ["openocean", "debridge", "biconomy-gas-token", "VENUS_GAMEFI", "VENUS_STABLE", "VENUS_TRON", "VENUS_DEFI"]
+      "tags": [
+        "openocean",
+        "debridge",
+        "biconomy-gas-token",
+        "VENUS_GAMEFI",
+        "VENUS_STABLE",
+        "VENUS_TRON",
+        "VENUS_DEFI"
+      ]
     },
     "0x738d96caf7096659db4c1afbf1e1bdfd281f388c": {
       "chainId": "56",

@@ -17,7 +17,9 @@
   color-scheme: dark;
 
   /* Global font for this theme (optional, but nice for terminal feel) */
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
 
   /* Base background + text */
   --color-base-100: #020617; /* main background (near black) */

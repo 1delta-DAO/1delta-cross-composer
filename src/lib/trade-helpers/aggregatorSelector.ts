@@ -4,7 +4,7 @@ import type { GenericTrade, AggregatorApiInput } from '@1delta/lib-utils'
 export async function fetchAllAggregatorTrades(
   chainId: string,
   input: AggregatorApiInput,
-  controller?: AbortController,
+  controller?: AbortController
 ): Promise<Array<{ aggregator: string; trade: GenericTrade }>> {
   const availableAggregators = getAvailableAggregators(chainId)
   if (availableAggregators.length === 0) return []
@@ -17,7 +17,7 @@ export async function fetchAllAggregatorTrades(
         if (trade) return { aggregator: aggregatorName, trade }
       } catch {}
       return undefined
-    }),
+    })
   )
 
   const trades = results.filter(Boolean) as Array<{ aggregator: string; trade: GenericTrade }>

@@ -42,11 +42,19 @@ export function TokenRow({
   const balanceText = bal?.value ? Number(bal.value).toFixed(4) : undefined
 
   return (
-    <button style={style} className="w-full py-2 px-2 hover:bg-base-200 rounded flex items-center gap-3" onClick={onClick}>
+    <button
+      style={style}
+      className="w-full py-2 px-2 hover:bg-base-200 rounded flex items-center gap-3"
+      onClick={onClick}
+    >
       <div className="relative w-6 h-6">
         <Logo src={token.logoURI} alt={token.symbol || ''} fallbackText={token.symbol || ''} />
         {chains?.[chainId]?.data?.icon && (
-          <img src={chains[chainId].data.icon} alt="chain" className="w-3 h-3 rounded-full absolute -right-1 -bottom-1 border border-base-100" />
+          <img
+            src={chains[chainId].data.icon}
+            alt="chain"
+            className="w-3 h-3 rounded-full absolute -right-1 -bottom-1 border border-base-100"
+          />
         )}
       </div>
       <div className="flex-1 text-left">

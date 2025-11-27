@@ -1,7 +1,14 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import type { Address, Hex } from 'viem'
 import { zeroAddress } from 'viem'
-import { useSendTransaction, useWriteContract, usePublicClient, useReadContract, useConnection, useSwitchChain } from 'wagmi'
+import {
+  useSendTransaction,
+  useWriteContract,
+  usePublicClient,
+  useReadContract,
+  useConnection,
+  useSwitchChain,
+} from 'wagmi'
 import type { GenericTrade } from '../../sdk/types'
 import { SupportedChainId } from '../../sdk/types'
 import { buildTransactionUrl } from '../../lib/explorer'
@@ -16,8 +23,16 @@ import type { RawCurrency } from '../../types/currency'
 type StepStatus = 'idle' | 'active' | 'done' | 'error'
 
 function Step({ label, status }: { label: string; status: StepStatus }) {
-  const icon = status === 'done' ? '✅' : status === 'error' ? '❌' : status === 'active' ? '⏳' : '•'
-  const cls = status === 'error' ? 'text-error' : status === 'done' ? 'text-success' : status === 'active' ? 'text-warning' : ''
+  const icon =
+    status === 'done' ? '✅' : status === 'error' ? '❌' : status === 'active' ? '⏳' : '•'
+  const cls =
+    status === 'error'
+      ? 'text-error'
+      : status === 'done'
+        ? 'text-success'
+        : status === 'active'
+          ? 'text-warning'
+          : ''
   return (
     <div className={`flex items-center gap-1 ${cls}`}>
       <span>{icon}</span>
@@ -31,7 +46,7 @@ async function trackBridgeCompletion(
   srcChainId: string,
   dstChainId: string,
   srcHash: string,
-  onDone: (hashes: { src?: string; dst?: string; completed?: boolean }) => void,
+  onDone: (hashes: { src?: string; dst?: string; completed?: boolean }) => void
 ) {
   if (!trade.crossChainParams) {
     onDone({ src: srcHash })
@@ -42,7 +57,9 @@ async function trackBridgeCompletion(
     const { getBridgeStatus } = await import('@1delta/trade-sdk')
     const { Bridge } = await import('@1delta/bridge-configs')
 
-    const bridgeName = Object.values(Bridge).find((b) => b.toString() === trade.aggregator.toString()) || (trade.aggregator as any)
+    const bridgeName =
+      Object.values(Bridge).find((b) => b.toString() === trade.aggregator.toString()) ||
+      (trade.aggregator as any)
 
     const maxAttempts = 60
     const delayMs = 5000
@@ -56,7 +73,7 @@ async function trackBridgeCompletion(
             toChainId: dstChainId,
             fromHash: srcHash,
           } as any,
-          trade.crossChainParams,
+          trade.crossChainParams
         )
 
         const statusAny = status as any
@@ -85,9 +102,18 @@ async function trackBridgeCompletion(
           return
         }
 
-        if (bridgeStatus === 'FAILED' || bridgeStatus === 'TRANSFER_REFUNDED' || bridgeStatus === 'INVALID' || bridgeStatus === 'REVERTED') {
+        if (
+          bridgeStatus === 'FAILED' ||
+          bridgeStatus === 'TRANSFER_REFUNDED' ||
+          bridgeStatus === 'INVALID' ||
+          bridgeStatus === 'REVERTED'
+        ) {
           const errorCode = bridgeStatus
-          const errorMessage = statusInfo?.message || statusAny?.message || statusAny?.error || 'Bridge transaction failed'
+          const errorMessage =
+            statusInfo?.message ||
+            statusAny?.message ||
+            statusAny?.error ||
+            'Bridge transaction failed'
           console.error('Bridge failed:', errorCode, errorMessage)
           onDone({ src: srcHash })
           return
@@ -139,7 +165,9 @@ export default function ExecuteButton({
   const { address } = useConnection()
   const { isConnected } = useConnection()
   const { switchChain } = useSwitchChain()
-  const [step, setStep] = useState<'idle' | 'approving' | 'signing' | 'broadcast' | 'confirmed' | 'error'>('idle')
+  const [step, setStep] = useState<
+    'idle' | 'approving' | 'signing' | 'broadcast' | 'confirmed' | 'error'
+  >('idle')
   const [srcHash, setSrcHash] = useState<string | undefined>()
   const [dstHash, setDstHash] = useState<string | undefined>()
   const [isConfirmed, setIsConfirmed] = useState(false)
@@ -171,17 +199,29 @@ export default function ExecuteButton({
   const skipApprove = trade ? (trade as any).skipApprove || false : false
 
   const { data: currentAllowance } = useReadContract({
-    address: srcToken && srcToken.toLowerCase() !== zeroAddress.toLowerCase() ? srcToken : undefined,
+    address:
+      srcToken && srcToken.toLowerCase() !== zeroAddress.toLowerCase() ? srcToken : undefined,
     abi: ERC20_ABI,
     functionName: 'allowance',
     args: address && spender ? [address, spender] : undefined,
     query: {
-      enabled: Boolean(srcToken && address && spender && srcToken.toLowerCase() !== zeroAddress.toLowerCase() && !skipApprove),
+      enabled: Boolean(
+        srcToken &&
+          address &&
+          spender &&
+          srcToken.toLowerCase() !== zeroAddress.toLowerCase() &&
+          !skipApprove
+      ),
     },
   })
 
   const needsApproval = useMemo(() => {
-    if (!srcToken || srcToken.toLowerCase() === zeroAddress.toLowerCase() || !spender || skipApprove) {
+    if (
+      !srcToken ||
+      srcToken.toLowerCase() === zeroAddress.toLowerCase() ||
+      !spender ||
+      skipApprove
+    ) {
       return false
     }
     if (!amountWei) return false
@@ -285,7 +325,9 @@ export default function ExecuteButton({
       }
 
       const tradeDestinationCalls =
-        (trade as any).additionalCalls || (trade as any).destinationCalls || (trade as any).crossChainParams?.additionalCalls
+        (trade as any).additionalCalls ||
+        (trade as any).destinationCalls ||
+        (trade as any).crossChainParams?.additionalCalls
       console.debug('=== Destination Calls Debug ===')
       console.debug('Destination calls from prop:', destinationCalls)
       console.debug('Destination calls from trade object:', tradeDestinationCalls)
@@ -306,7 +348,12 @@ export default function ExecuteButton({
       setSrcHash(hash)
       setStep('confirmed')
 
-      const type = isBridge && destinationCalls && destinationCalls.length > 0 ? 'bridge_with_actions' : isBridge ? 'bridge' : 'swap'
+      const type =
+        isBridge && destinationCalls && destinationCalls.length > 0
+          ? 'bridge_with_actions'
+          : isBridge
+            ? 'bridge'
+            : 'swap'
 
       if (!historyIdRef.current) {
         historyIdRef.current = createEntry({
@@ -342,7 +389,8 @@ export default function ExecuteButton({
             }
 
             if (isBridge && trade?.crossChainParams) {
-              const bridgeDestinationCalls = (trade as any).crossChainParams?.additionalCalls || (trade as any).additionalCalls
+              const bridgeDestinationCalls =
+                (trade as any).crossChainParams?.additionalCalls || (trade as any).additionalCalls
               console.debug('=== Bridge Transaction with Destination Calls ===')
               console.debug('Bridge destination calls from trade:', bridgeDestinationCalls)
               console.debug('Cross chain params:', trade.crossChainParams)
@@ -421,7 +469,8 @@ export default function ExecuteButton({
         }
 
         if (isBridge && trade?.crossChainParams) {
-          const bridgeDestinationCalls = (trade as any).crossChainParams?.additionalCalls || (trade as any).additionalCalls
+          const bridgeDestinationCalls =
+            (trade as any).crossChainParams?.additionalCalls || (trade as any).additionalCalls
           console.debug('=== Bridge Transaction with Destination Calls (no publicClient) ===')
           console.debug('Bridge destination calls from trade:', bridgeDestinationCalls)
           console.debug('Cross chain params:', trade.crossChainParams)
@@ -526,18 +575,45 @@ export default function ExecuteButton({
         <div className="space-y-3">
           <div className="flex items-center gap-4">
             {needsApproval && shouldShow('approving') && (
-              <Step label="Approve token" status={step === 'approving' ? 'active' : step === 'error' ? 'error' : 'done'} />
+              <Step
+                label="Approve token"
+                status={step === 'approving' ? 'active' : step === 'error' ? 'error' : 'done'}
+              />
             )}
             {shouldShow('signing') && (
               <Step
                 label={isBridge ? 'Prepare bridge' : 'Prepare swap'}
-                status={step === 'signing' ? 'active' : step === 'error' ? 'error' : step === 'confirmed' ? 'done' : 'idle'}
+                status={
+                  step === 'signing'
+                    ? 'active'
+                    : step === 'error'
+                      ? 'error'
+                      : step === 'confirmed'
+                        ? 'done'
+                        : 'idle'
+                }
               />
             )}
             {shouldShow('broadcast') && (
-              <Step label="Send tx" status={step === 'broadcast' ? 'active' : step === 'error' ? 'error' : step === 'confirmed' ? 'done' : 'idle'} />
+              <Step
+                label="Send tx"
+                status={
+                  step === 'broadcast'
+                    ? 'active'
+                    : step === 'error'
+                      ? 'error'
+                      : step === 'confirmed'
+                        ? 'done'
+                        : 'idle'
+                }
+              />
             )}
-            {shouldShow('confirmed') && <Step label="Confirmed" status={step === 'confirmed' ? 'done' : step === 'error' ? 'error' : 'idle'} />}
+            {shouldShow('confirmed') && (
+              <Step
+                label="Confirmed"
+                status={step === 'confirmed' ? 'done' : step === 'error' ? 'error' : 'idle'}
+              />
+            )}
           </div>
         </div>
       )}
@@ -553,7 +629,11 @@ export default function ExecuteButton({
             >
               {srcHash.slice(0, 4)}...{srcHash.slice(-4)}
             </a>
-            {isConfirmed ? <span className="text-success">✓</span> : <span className="loading loading-spinner loading-xs"></span>}
+            {isConfirmed ? (
+              <span className="text-success">✓</span>
+            ) : (
+              <span className="loading loading-spinner loading-xs"></span>
+            )}
           </div>
         </div>
       )}

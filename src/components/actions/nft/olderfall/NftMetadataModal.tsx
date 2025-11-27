@@ -18,7 +18,10 @@ export function NftMetadataModal({ open, onClose, listing }: NftMetadataModalPro
 
   return (
     <div className={`modal ${open ? 'modal-open' : ''}`} onClick={onClose}>
-      <div className="modal-box max-w-2xl max-h-[90dvh] p-0 flex flex-col" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal-box max-w-2xl max-h-[90dvh] p-0 flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between px-4 py-3 border-b border-base-300 shrink-0">
           <h3 className="font-bold text-lg">NFT Metadata</h3>
           <button className="btn btn-sm btn-ghost btn-circle" onClick={onClose}>
@@ -56,7 +59,10 @@ export function NftMetadataModal({ open, onClose, listing }: NftMetadataModalPro
                     const traitType = attr.trait_type || attr.TraitType || 'Attribute'
                     const value = attr.value !== undefined ? String(attr.value) : ''
                     return (
-                      <div key={index} className="border border-base-300 rounded-lg p-2 bg-base-200/40">
+                      <div
+                        key={index}
+                        className="border border-base-300 rounded-lg p-2 bg-base-200/40"
+                      >
                         <div className="text-xs text-base-content/60 mb-1">{traitType}</div>
                         <div className="text-sm font-medium">{value || 'N/A'}</div>
                       </div>
@@ -81,7 +87,9 @@ export function NftMetadataModal({ open, onClose, listing }: NftMetadataModalPro
             )}
 
             {!description && attributes.length === 0 && !externalUrl && (
-              <div className="text-sm text-base-content/60 text-center py-4">No metadata available</div>
+              <div className="text-sm text-base-content/60 text-center py-4">
+                No metadata available
+              </div>
             )}
           </div>
         </div>
@@ -89,4 +97,3 @@ export function NftMetadataModal({ open, onClose, listing }: NftMetadataModalPro
     </div>
   )
 }
-

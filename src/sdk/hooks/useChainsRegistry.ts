@@ -73,6 +73,6 @@ export function useChainsRegistry() {
       isLoading: !ready || !data,
       error,
     }),
-    [data, ready, error],
+    [data, ready, error]
   )
 }

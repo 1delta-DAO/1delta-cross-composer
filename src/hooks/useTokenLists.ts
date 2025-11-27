@@ -43,6 +43,6 @@ export function useTokenLists() {
       isLoading,
       error: null,
     }),
-    [data, isLoading],
+    [data, isLoading]
   )
 }

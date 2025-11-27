@@ -34,12 +34,28 @@ export function TxHistoryButton() {
 
   return (
     <div className="relative" ref={containerRef}>
-      <button type="button" className="btn btn-ghost btn-circle" onClick={() => setOpen((v) => !v)} aria-label="Transaction history">
+      <button
+        type="button"
+        className="btn btn-ghost btn-circle"
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Transaction history"
+      >
         {isPolling ? (
           <span className="loading loading-spinner" style={{ width: iconSize, height: iconSize }} />
         ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-6 h-6">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l2.5 2.5M12 3a9 9 0 1 0 9 9" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+            className="w-6 h-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 8v4l2.5 2.5M12 3a9 9 0 1 0 9 9"
+            />
             <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.25 3 7.5M3 7.5h4.5" />
           </svg>
         )}
@@ -61,18 +77,43 @@ export function TxHistoryButton() {
             <div className="divide-y divide-base-300">
               {sortedEntries.map((entry) => {
                 const created = new Date(entry.createdAt)
-                const time = created.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                const time = created.toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit',
+                })
                 const date = created.toLocaleDateString()
 
-                const typeLabel = entry.type === 'swap' ? 'Swap' : entry.type === 'bridge_with_actions' ? 'Bridge + actions' : 'Bridge'
+                const typeLabel =
+                  entry.type === 'swap'
+                    ? 'Swap'
+                    : entry.type === 'bridge_with_actions'
+                      ? 'Bridge + actions'
+                      : 'Bridge'
 
-                const statusLabel = entry.status === 'completed' ? 'Completed' : entry.status === 'failed' ? 'Failed' : 'Pending'
+                const statusLabel =
+                  entry.status === 'completed'
+                    ? 'Completed'
+                    : entry.status === 'failed'
+                      ? 'Failed'
+                      : 'Pending'
 
-                const statusClass = entry.status === 'completed' ? 'badge-success' : entry.status === 'failed' ? 'badge-error' : 'badge-warning'
+                const statusClass =
+                  entry.status === 'completed'
+                    ? 'badge-success'
+                    : entry.status === 'failed'
+                      ? 'badge-error'
+                      : 'badge-warning'
 
-                const srcUrl = entry.srcChainId && entry.srcHash ? buildTransactionUrl(chains || {}, entry.srcChainId, entry.srcHash) : undefined
+                const srcUrl =
+                  entry.srcChainId && entry.srcHash
+                    ? buildTransactionUrl(chains || {}, entry.srcChainId, entry.srcHash)
+                    : undefined
 
-                const dstUrl = entry.dstChainId && entry.dstHash ? buildTransactionUrl(chains || {}, entry.dstChainId, entry.dstHash) : undefined
+                const dstUrl =
+                  entry.dstChainId && entry.dstHash
+                    ? buildTransactionUrl(chains || {}, entry.dstChainId, entry.dstHash)
+                    : undefined
 
                 return (
                   <div key={entry.id} className="px-4 py-3 text-sm space-y-1">
@@ -89,7 +130,12 @@ export function TxHistoryButton() {
                       <div className="flex items-center gap-1 text-xs">
                         <span className="opacity-70">Source:</span>
                         {srcUrl ? (
-                          <a href={srcUrl} target="_blank" rel="noopener noreferrer" className="font-mono text-primary hover:underline">
+                          <a
+                            href={srcUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-primary hover:underline"
+                          >
                             {entry.srcHash.slice(0, 6)}...{entry.srcHash.slice(-4)}
                           </a>
                         ) : (
@@ -103,7 +149,12 @@ export function TxHistoryButton() {
                       <div className="flex items-center gap-1 text-xs">
                         <span className="opacity-70">Destination:</span>
                         {dstUrl ? (
-                          <a href={dstUrl} target="_blank" rel="noopener noreferrer" className="font-mono text-primary hover:underline">
+                          <a
+                            href={dstUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-primary hover:underline"
+                          >
                             {entry.dstHash.slice(0, 6)}...{entry.dstHash.slice(-4)}
                           </a>
                         ) : (
@@ -113,13 +164,17 @@ export function TxHistoryButton() {
                         )}
                       </div>
                     )}
-                    {entry.type === 'bridge_with_actions' && <div className="text-xs text-info">Includes destination actions</div>}
+                    {entry.type === 'bridge_with_actions' && (
+                      <div className="text-xs text-info">Includes destination actions</div>
+                    )}
                   </div>
                 )
               })}
             </div>
           ) : (
-            <div className="px-4 py-6 text-sm text-center text-base-content/70">No recent actions</div>
+            <div className="px-4 py-6 text-sm text-center text-base-content/70">
+              No recent actions
+            </div>
           )}
         </div>
       )}

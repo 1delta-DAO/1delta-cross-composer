@@ -34,7 +34,9 @@ export function SwapPanel({
   const { address } = useConnection()
   const receiverAddress = address || DUMMY_ADDRESS
 
-  const [selectedDstCurrency, setSelectedDstCurrency] = useState<RawCurrency | undefined>(initialDstCurrency)
+  const [selectedDstCurrency, setSelectedDstCurrency] = useState<RawCurrency | undefined>(
+    initialDstCurrency
+  )
   const [outputAmount, setOutputAmount] = useState('')
   const [tokenModalOpen, setTokenModalOpen] = useState(false)
   const [tokenModalQuery, setTokenModalQuery] = useState('')
@@ -112,7 +114,15 @@ export function SwapPanel({
     }
 
     fetchQuotes()
-  }, [srcCurrency?.chainId, srcCurrency?.address, dstCurrency?.chainId, dstCurrency?.address, outputAmount, address, slippage])
+  }, [
+    srcCurrency?.chainId,
+    srcCurrency?.address,
+    dstCurrency?.chainId,
+    dstCurrency?.address,
+    outputAmount,
+    address,
+    slippage,
+  ])
 
   const handleOutputAmountChange = (value: string) => {
     setOutputAmount(value)
@@ -169,10 +179,19 @@ export function SwapPanel({
             onChange={(e) => handleOutputAmountChange(e.target.value)}
             inputMode="decimal"
           />
-          <button className="btn btn-outline flex items-center gap-2" onClick={() => setTokenModalOpen(true)} disabled={!srcCurrency}>
+          <button
+            className="btn btn-outline flex items-center gap-2"
+            onClick={() => setTokenModalOpen(true)}
+            disabled={!srcCurrency}
+          >
             {dstCurrency ? (
               <>
-                <Logo src={dstTokenInfo?.logoURI} alt={dstCurrency.symbol || 'Token'} size={16} fallbackText={dstCurrency.symbol?.[0] || 'T'} />
+                <Logo
+                  src={dstTokenInfo?.logoURI}
+                  alt={dstCurrency.symbol || 'Token'}
+                  size={16}
+                  fallbackText={dstCurrency.symbol?.[0] || 'T'}
+                />
                 <span>{dstCurrency.symbol || 'Select token'}</span>
               </>
             ) : (
@@ -181,7 +200,9 @@ export function SwapPanel({
           </button>
         </div>
 
-        {loadingQuotes && <div className="text-xs opacity-70 text-center py-2">Fetching quotes...</div>}
+        {loadingQuotes && (
+          <div className="text-xs opacity-70 text-center py-2">Fetching quotes...</div>
+        )}
 
         {quotes.length > 0 && (
           <div className="space-y-2 max-h-64 overflow-y-auto">

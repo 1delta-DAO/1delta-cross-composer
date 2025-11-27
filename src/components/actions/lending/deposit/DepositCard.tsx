@@ -9,16 +9,25 @@ type MarketTokenCardProps = {
   enteredAmount?: string
 }
 
-function DepositCard({ market, onActionClick, currencyFromList, underlyingCurrency, enteredAmount }: MarketTokenCardProps) {
+function DepositCard({
+  market,
+  onActionClick,
+  currencyFromList,
+  underlyingCurrency,
+  enteredAmount,
+}: MarketTokenCardProps) {
   const token = currencyFromList
 
   const symbol = market.symbol || token?.symbol || 'Unknown'
 
   const iconSrc = currencyFromList.logoURI
 
-  const isSelected = enteredAmount !== undefined && enteredAmount.trim() !== '' && Number(enteredAmount) > 0
+  const isSelected =
+    enteredAmount !== undefined && enteredAmount.trim() !== '' && Number(enteredAmount) > 0
 
-  const borderClass = isSelected ? 'border-2 border-primary' : 'border border-base-300 hover:border-primary/50'
+  const borderClass = isSelected
+    ? 'border-2 border-primary'
+    : 'border border-base-300 hover:border-primary/50'
 
   return (
     <button

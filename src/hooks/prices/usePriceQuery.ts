@@ -7,7 +7,8 @@ import { CurrencyHandler } from '@1delta/lib-utils/dist/services/currency/curren
 
 export type PricesRecord = Record<string, Record<string, { usd: number }>>
 
-const DEXSCREENER_TOKENS_URL = (chainId: string, addresses: string[]) => `https://api.dexscreener.com/tokens/v1/${chainId}/${addresses.join(',')}`
+const DEXSCREENER_TOKENS_URL = (chainId: string, addresses: string[]) =>
+  `https://api.dexscreener.com/tokens/v1/${chainId}/${addresses.join(',')}`
 
 const MAIN_PRICES_ENDPOINT = 'https://margin-data.staging.1delta.io/prices/live'
 const MAIN_PRICES_CACHE_DURATION = 10 * 60 * 1000
@@ -99,7 +100,10 @@ type DexscreenerResponse = Array<{
   }
 }>
 
-async function fetchDexscreenerPrices(chainId: string, addresses: string[]): Promise<Record<string, { usd: number }>> {
+async function fetchDexscreenerPrices(
+  chainId: string,
+  addresses: string[]
+): Promise<Record<string, { usd: number }>> {
   const result: Record<string, { usd: number }> = {}
 
   if (addresses.length === 0) return result
@@ -131,7 +135,11 @@ async function fetchDexscreenerPrices(chainId: string, addresses: string[]): Pro
       const volume = pair.volume?.h24 ? Number(pair.volume.h24) : 0
 
       const existing = pricesByAddress[addr]
-      if (!existing || liquidity > existing.liquidity || (liquidity === existing.liquidity && volume > existing.volume)) {
+      if (
+        !existing ||
+        liquidity > existing.liquidity ||
+        (liquidity === existing.liquidity && volume > existing.volume)
+      ) {
         pricesByAddress[addr] = { price, liquidity, volume }
       }
     }
@@ -162,7 +170,9 @@ export async function fetchPrices(currencies: RawCurrency[]): Promise<PricesReco
 
     const priceAddress =
       addr === zeroAddress.toLowerCase()
-        ? (CurrencyHandler.wrappedAddressFromAddress(chainId, zeroAddress) as Address | undefined) || (zeroAddress as Address)
+        ? (CurrencyHandler.wrappedAddressFromAddress(chainId, zeroAddress) as
+            | Address
+            | undefined) || (zeroAddress as Address)
         : (currency.address as Address)
 
     const assetGroup = currency?.assetGroup as string | undefined
@@ -178,7 +188,10 @@ export async function fetchPrices(currencies: RawCurrency[]): Promise<PricesReco
     currenciesNeedingDexscreener.push({ currency, priceAddress })
   }
 
-  const currenciesByChain: Record<string, Array<{ currency: RawCurrency; priceAddress: Address }>> = {}
+  const currenciesByChain: Record<
+    string,
+    Array<{ currency: RawCurrency; priceAddress: Address }>
+  > = {}
 
   for (const { currency, priceAddress } of currenciesNeedingDexscreener) {
     const chainId = currency.chainId
@@ -189,7 +202,9 @@ export async function fetchPrices(currencies: RawCurrency[]): Promise<PricesReco
   }
 
   const chainPromises = Object.entries(currenciesByChain).map(async ([chainId, items]) => {
-    const uniqueAddresses = Array.from(new Set(items.map((item) => item.priceAddress.toLowerCase()))) as Address[]
+    const uniqueAddresses = Array.from(
+      new Set(items.map((item) => item.priceAddress.toLowerCase()))
+    ) as Address[]
 
     const dexscreenerPrices = await fetchDexscreenerPrices(chainId, uniqueAddresses)
 

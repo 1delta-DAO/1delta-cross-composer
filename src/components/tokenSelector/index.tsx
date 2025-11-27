@@ -26,10 +26,33 @@ type Props = {
 }
 
 // Stablecoin symbols (common stablecoins)
-const STABLECOIN_SYMBOLS = new Set(['USDC', 'USDT', 'DAI', 'BUSD', 'FRAX', 'USDD', 'USDE', 'TUSD', 'LUSD', 'SUSD', 'GUSD', 'MIM', 'DOLA'])
+const STABLECOIN_SYMBOLS = new Set([
+  'USDC',
+  'USDT',
+  'DAI',
+  'BUSD',
+  'FRAX',
+  'USDD',
+  'USDE',
+  'TUSD',
+  'LUSD',
+  'SUSD',
+  'GUSD',
+  'MIM',
+  'DOLA',
+])
 
 // LST (Liquid Staking Token) patterns - common LST symbols
-const LST_SYMBOLS = new Set(['STETH', 'RETH', 'CBETH', 'SFRXETH', 'WBETH', 'STSOL', 'MSOL', 'JITOSOL'])
+const LST_SYMBOLS = new Set([
+  'STETH',
+  'RETH',
+  'CBETH',
+  'SFRXETH',
+  'WBETH',
+  'STSOL',
+  'MSOL',
+  'JITOSOL',
+])
 
 // Bitcoin tokens
 const BITCOIN_SYMBOLS = new Set(['WBTC', 'BTCB', 'HBTC', 'RENBTC', 'TBTC'])
@@ -98,7 +121,10 @@ export function TokenSelector({
       return relevantTokens.some((a) => a.toLowerCase() === addrLower)
     }
 
-    const addTokenIfNotIncluded = (candidates: [string, any][], selector: (candidates: [string, any][]) => [string, any] | undefined) => {
+    const addTokenIfNotIncluded = (
+      candidates: [string, any][],
+      selector: (candidates: [string, any][]) => [string, any] | undefined
+    ) => {
       if (candidates.length === 0) return
       const selected = selector(candidates)
       if (selected && !isAlreadyIncluded(selected[0])) {
@@ -131,7 +157,9 @@ export function TokenSelector({
     }
 
     // USDC selection logic
-    const usdcCandidates = Object.entries(tokensMap).filter(([, t]: [string, any]) => t?.assetGroup === 'USDC')
+    const usdcCandidates = Object.entries(tokensMap).filter(
+      ([, t]: [string, any]) => t?.assetGroup === 'USDC'
+    )
     addTokenIfNotIncluded(usdcCandidates, (candidates) => {
       const isMoonbeam = chainId === SupportedChainId.MOONBEAM
       if (isMoonbeam) {
@@ -142,11 +170,16 @@ export function TokenSelector({
         })
         if (xcUsdc) return xcUsdc
       }
-      return candidates.find(([, t]: [string, any]) => t?.symbol?.toUpperCase() === 'USDC') || candidates[0]
+      return (
+        candidates.find(([, t]: [string, any]) => t?.symbol?.toUpperCase() === 'USDC') ||
+        candidates[0]
+      )
     })
 
     // USDT selection logic
-    const usdtCandidates = Object.entries(tokensMap).filter(([, t]: [string, any]) => t?.assetGroup === 'USDT')
+    const usdtCandidates = Object.entries(tokensMap).filter(
+      ([, t]: [string, any]) => t?.assetGroup === 'USDT'
+    )
     addTokenIfNotIncluded(usdtCandidates, (candidates) => {
       const isMoonbeam = chainId === SupportedChainId.MOONBEAM
       if (isMoonbeam) {
@@ -157,7 +190,10 @@ export function TokenSelector({
         })
         if (xcUsdt) return xcUsdt
       }
-      return candidates.find(([, t]: [string, any]) => t?.symbol?.toUpperCase() === 'USDT') || candidates[0]
+      return (
+        candidates.find(([, t]: [string, any]) => t?.symbol?.toUpperCase() === 'USDT') ||
+        candidates[0]
+      )
     })
 
     // WBTC selection logic
@@ -165,25 +201,41 @@ export function TokenSelector({
       const symbolUpper = t?.symbol?.toUpperCase() || ''
       const assetGroupUpper = t?.assetGroup?.toUpperCase() || ''
       return (
-        symbolUpper.includes('WBTC') || assetGroupUpper.includes('WBTC') || (assetGroupUpper.includes('BTC') && !assetGroupUpper.includes('INTER'))
+        symbolUpper.includes('WBTC') ||
+        assetGroupUpper.includes('WBTC') ||
+        (assetGroupUpper.includes('BTC') && !assetGroupUpper.includes('INTER'))
       )
     })
     addTokenIfNotIncluded(wbtcCandidates, (candidates) => {
-      return candidates.find(([, t]: [string, any]) => t?.symbol?.toUpperCase() === 'WBTC') || candidates[0]
+      return (
+        candidates.find(([, t]: [string, any]) => t?.symbol?.toUpperCase() === 'WBTC') ||
+        candidates[0]
+      )
     })
 
     return relevantTokens
   }, [tokensMap, chainId, nativeCurrencySymbol])
 
-  const getStablecoinFallbackPrice = useCallback((chainId: string, address: string): number | undefined => {
-    const token = getTokenFromCache(chainId, address)
-    if (!token) return undefined
-    const symbol = (token as any)?.symbol?.toUpperCase?.() || ''
-    const assetGroup = (token as any)?.assetGroup || ''
-    if (assetGroup === 'USDC') return 1
-    if (symbol === 'USDC' || symbol === 'USDT' || symbol === 'DAI' || symbol === 'USDBC' || symbol === 'XCUSDC' || symbol === 'XCUSDT') return 1
-    return undefined
-  }, [])
+  const getStablecoinFallbackPrice = useCallback(
+    (chainId: string, address: string): number | undefined => {
+      const token = getTokenFromCache(chainId, address)
+      if (!token) return undefined
+      const symbol = (token as any)?.symbol?.toUpperCase?.() || ''
+      const assetGroup = (token as any)?.assetGroup || ''
+      if (assetGroup === 'USDC') return 1
+      if (
+        symbol === 'USDC' ||
+        symbol === 'USDT' ||
+        symbol === 'DAI' ||
+        symbol === 'USDBC' ||
+        symbol === 'XCUSDC' ||
+        symbol === 'XCUSDT'
+      )
+        return 1
+      return undefined
+    },
+    []
+  )
 
   const priceCurrencies = useMemo(() => {
     const currencies: RawCurrency[] = []
@@ -228,13 +280,19 @@ export function TokenSelector({
     (token: { symbol: string }): number => {
       const symbolUpper = token.symbol.toUpperCase()
       const isNative = symbolUpper === nativeCurrencySymbol
-      const isWrappedNative = symbolUpper === `W${nativeCurrencySymbol}` || symbolUpper.startsWith(`W${nativeCurrencySymbol}`)
+      const isWrappedNative =
+        symbolUpper === `W${nativeCurrencySymbol}` ||
+        symbolUpper.startsWith(`W${nativeCurrencySymbol}`)
 
       if (isNative || isWrappedNative) {
         return 1
       }
 
-      if (LST_SYMBOLS.has(symbolUpper) || symbolUpper.includes('ST') || (symbolUpper.includes('ETH') && symbolUpper.includes('S'))) {
+      if (
+        LST_SYMBOLS.has(symbolUpper) ||
+        symbolUpper.includes('ST') ||
+        (symbolUpper.includes('ETH') && symbolUpper.includes('S'))
+      ) {
         return 2
       }
 
@@ -248,7 +306,7 @@ export function TokenSelector({
 
       return 5
     },
-    [nativeCurrencySymbol],
+    [nativeCurrencySymbol]
   )
 
   const rows: TokenRowData[] = useMemo(() => {
@@ -271,9 +329,21 @@ export function TokenSelector({
         const usdValue = balanceAmount * finalPrice
 
         const isRelevant = relevantSet.has(addr.toLowerCase())
-        return { addr, token, usdValue, price: finalPrice, balanceAmount, category: getTokenCategory(token), isRelevant }
+        return {
+          addr,
+          token,
+          usdValue,
+          price: finalPrice,
+          balanceAmount,
+          category: getTokenCategory(token),
+          isRelevant,
+        }
       })
-      .filter(({ addr }) => !excludeAddresses || !excludeAddresses.map((a) => a.toLowerCase()).includes(addr.toLowerCase()))
+      .filter(
+        ({ addr }) =>
+          !excludeAddresses ||
+          !excludeAddresses.map((a) => a.toLowerCase()).includes(addr.toLowerCase())
+      )
       .filter(({ addr, token, isRelevant }) => {
         // Always include relevant tokens in the list, regardless of search query
         if (isRelevant) return true
@@ -309,7 +379,18 @@ export function TokenSelector({
       // Quaternary: Alphabetically by symbol
       return a.token.symbol.localeCompare(b.token.symbol)
     })
-  }, [allAddrs, tokensMap, searchQuery, balances, prices, chainId, excludeAddresses, getTokenCategory, relevant, getStablecoinFallbackPrice])
+  }, [
+    allAddrs,
+    tokensMap,
+    searchQuery,
+    balances,
+    prices,
+    chainId,
+    excludeAddresses,
+    getTokenCategory,
+    relevant,
+    getStablecoinFallbackPrice,
+  ])
 
   const selected = value ? tokensMap[value.toLowerCase()] : undefined
 
