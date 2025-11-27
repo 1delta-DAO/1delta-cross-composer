@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import type { ActionDefinition, ActionCategory, ActionType } from './actionDefinitions'
-import { CATEGORIES, getPriorityActions, getRemainingActionsCount } from './actionDefinitions'
+import { CATEGORIES, getPriorityActions, getRemainingActionsCount, getRegisteredActions } from './actionDefinitions'
 import type { RawCurrency } from '../../../types/currency'
+import { useContainerWidth } from '../../../hooks/useContainerWidth'
 
 interface ActionIconGridProps {
   actions: ActionDefinition[]
@@ -30,6 +31,8 @@ export function ActionIconGrid({
   isActionReady,
   isActionLoading,
 }: ActionIconGridProps) {
+  const { containerRef, width } = useContainerWidth()
+
   const filteredActions = useMemo(() => {
     if (selectedCategory === 'all') {
       return actions
@@ -40,24 +43,39 @@ export function ActionIconGrid({
   const priorityActions = useMemo(() => getPriorityActions(srcCurrency), [srcCurrency])
   const remainingCount = useMemo(() => getRemainingActionsCount(priorityActions, srcCurrency), [priorityActions, srcCurrency])
 
+  const maxVisibleItems = useMemo(() => {
+    if (width === 0) return 3
+    if (width < 500) return 2
+    if (width < 600) return 3
+    if (width < 700) return 4
+    if (width < 800) return 5
+    if (width < 900) return 6
+    if (width < 950) return 7
+    if (width < 1000) return 8
+    return 9
+  }, [width])
+
   const collapsedActions = useMemo(() => {
+    const baseActions = priorityActions.slice(0, maxVisibleItems)
+
     if (!selectedAction) {
-      return priorityActions
+      return baseActions
     }
 
     const selectedActionDef = actions.find((a) => a.id === selectedAction)
     if (!selectedActionDef) {
-      return priorityActions
+      return baseActions
     }
 
     const isSelectedInPriority = priorityActions.some((a) => a.id === selectedAction)
 
     if (isSelectedInPriority) {
-      return priorityActions
+      return baseActions
     }
 
-    return [selectedActionDef, ...priorityActions.slice(0, 2)]
-  }, [priorityActions, selectedAction, actions])
+    const remainingSlots = maxVisibleItems - 1
+    return [selectedActionDef, ...priorityActions.slice(0, remainingSlots)]
+  }, [priorityActions, selectedAction, actions, maxVisibleItems])
 
   const handleActionClick = (actionId: ActionType) => {
     onActionSelect(actionId)
@@ -66,8 +84,15 @@ export function ActionIconGrid({
     }
   }
 
+  const allAvailableActions = useMemo(() => {
+    return getRegisteredActions().filter((action) => !action.requiresSrcCurrency || srcCurrency)
+  }, [srcCurrency])
+
+  const visibleCount = collapsedActions.length
+  const actualRemainingCount = Math.max(0, allAvailableActions.length - visibleCount)
+
   return (
-    <div className="space-y-3">
+    <div ref={containerRef} className="space-y-3">
       {/* Category Tabs */}
       {isExpanded && (
         <div className="tabs tabs-boxed">
@@ -135,14 +160,14 @@ export function ActionIconGrid({
               </button>
             )
           })}
-          {remainingCount > 0 && (
+          {actualRemainingCount > 0 && (
             <button
               type="button"
               className="btn btn-sm btn-outline flex items-center gap-2"
               onClick={onToggleExpand}
-              title={`${remainingCount} more action${remainingCount > 1 ? 's' : ''}`}
+              title={`${actualRemainingCount} more action${actualRemainingCount > 1 ? 's' : ''}`}
             >
-              <span className="text-xs">+{remainingCount}</span>
+              <span className="text-xs">+{actualRemainingCount}</span>
             </button>
           )}
         </div>

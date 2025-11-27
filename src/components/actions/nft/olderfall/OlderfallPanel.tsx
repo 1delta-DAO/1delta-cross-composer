@@ -34,7 +34,7 @@ function OlderfallListingsList({ listings, dstChainId, tokenLists, selectedOrder
   const tokenChainId = dstChainId || SupportedChainId.MOONBEAM
 
   return (
-    <div className="space-y-2 max-h-64 overflow-y-auto">
+    <div className="grid grid-cols-1 min-[600px]:grid-cols-2 min-[800px]:grid-cols-3 min-[1000px]:grid-cols-4 gap-2 max-h-64 overflow-y-auto">
       {listings.map((l) => {
         const isSelected = selectedOrderId === l.orderId
         const priceLabel = formatListingPriceLabel(l, tokenChainId, tokenLists)

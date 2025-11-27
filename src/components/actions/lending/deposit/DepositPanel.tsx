@@ -92,11 +92,11 @@ export function DepositPanel({ chainId, setDestinationInfo, resetKey }: DepositP
           </div>
 
           {isExpanded && (
-            <div className="mt-4 max-w-[600px]">
+            <div className="mt-4">
               <div className="text-sm font-semibold mb-2 opacity-70">Deposit</div>
-              <div className="space-y-2 max-h-[400px] overflow-y-auto">
+              <div className="grid grid-cols-2 min-[600px]:grid-cols-3 min-[800px]:grid-cols-4 min-[1000px]:grid-cols-5 gap-3 max-h-[400px] overflow-y-auto">
                 {depositMarkets.length === 0 ? (
-                  <div className="text-sm opacity-50 text-center py-4">No markets available</div>
+                  <div className="col-span-full text-sm opacity-50 text-center py-4">No markets available</div>
                 ) : (
                   depositMarkets.map((market) => (
                     <DepositCard
