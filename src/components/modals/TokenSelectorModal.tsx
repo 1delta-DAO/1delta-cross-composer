@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import type { Address } from 'viem'
 import { ChainSelector } from '../swap/ChainSelector'
 import { TokenSelector } from '../tokenSelector'
@@ -44,23 +44,29 @@ export function TokenSelectorModal({
         setChainId(currency.chainId)
       }
     }
-  }, [open, initialChainId])
+  }, [open, initialChainId, currency?.chainId])
 
-  const tokenValue = currency?.address as Address | undefined
+  const tokenValue = useMemo(() => currency?.address as Address | undefined, [currency?.address])
 
-  const handleTokenSelect = (addr: Address) => {
-    if (!chainId) return
-    const selectedCurrency = getCurrency(chainId, addr)
-    if (selectedCurrency) {
-      onCurrencyChange(selectedCurrency)
-    }
-    onClose()
-  }
+  const handleTokenSelect = useCallback(
+    (addr: Address) => {
+      if (!chainId) return
+      const selectedCurrency = getCurrency(chainId, addr)
+      if (selectedCurrency) {
+        onCurrencyChange(selectedCurrency)
+      }
+      onClose()
+    },
+    [chainId, onCurrencyChange, onClose]
+  )
 
-  const handleChainChange = (cid: string) => {
-    setChainId(cid)
-    onChainChange?.(cid)
-  }
+  const handleChainChange = useCallback(
+    (cid: string) => {
+      setChainId(cid)
+      onChainChange?.(cid)
+    },
+    [onChainChange]
+  )
 
   if (!open) return null
 

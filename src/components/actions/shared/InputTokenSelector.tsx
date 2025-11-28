@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import type { RawCurrency } from '../../../types/currency'
 import { zeroAddress } from 'viem'
 import { Logo } from '../../common/Logo'
@@ -22,28 +22,48 @@ export function InputTokenSelector({
   const [modalOpen, setModalOpen] = useState(false)
   const [query, setQuery] = useState('')
 
-  const chainName = srcCurrency?.chainId && chains?.[srcCurrency.chainId]?.data?.name
-  const tokenInfo =
-    srcCurrency?.chainId && srcCurrency?.address
-      ? tokenLists?.[srcCurrency.chainId]?.[srcCurrency.address.toLowerCase()]
-      : undefined
+  const chainName = useMemo(
+    () => srcCurrency?.chainId && chains?.[srcCurrency.chainId]?.data?.name,
+    [srcCurrency?.chainId, chains]
+  )
+  const tokenInfo = useMemo(
+    () =>
+      srcCurrency?.chainId && srcCurrency?.address
+        ? tokenLists?.[srcCurrency.chainId]?.[srcCurrency.address.toLowerCase()]
+        : undefined,
+    [srcCurrency?.chainId, srcCurrency?.address, tokenLists]
+  )
 
-  const handleTokenSelect = (currency: RawCurrency) => {
-    onCurrencyChange(currency)
+  const handleTokenSelect = useCallback(
+    (currency: RawCurrency) => {
+      onCurrencyChange(currency)
+      setModalOpen(false)
+    },
+    [onCurrencyChange]
+  )
+
+  const handleChainSelect = useCallback(
+    (chainId: string) => {
+      onChainChange?.(chainId)
+      onCurrencyChange({ chainId: chainId, address: zeroAddress, decimals: 18 })
+    },
+    [onChainChange, onCurrencyChange]
+  )
+
+  const handleModalClose = useCallback(() => {
     setModalOpen(false)
-  }
+  }, [])
 
-  const handleChainSelect = (chainId: string) => {
-    onChainChange?.(chainId)
-    onCurrencyChange({ chainId: chainId, address: zeroAddress, decimals: 18 })
-  }
+  const handleModalOpen = useCallback(() => {
+    setModalOpen(true)
+  }, [])
 
   return (
     <>
       <button
         type="button"
         className="btn btn-sm btn-outline flex items-center gap-2"
-        onClick={() => setModalOpen(true)}
+        onClick={handleModalOpen}
       >
         {srcCurrency ? (
           <>
@@ -93,7 +113,7 @@ export function InputTokenSelector({
 
       <TokenSelectorModal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={handleModalClose}
         currency={srcCurrency}
         onCurrencyChange={handleTokenSelect}
         onChainChange={handleChainSelect}

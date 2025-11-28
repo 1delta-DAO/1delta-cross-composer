@@ -286,6 +286,8 @@ export default function ExecuteButton({
       return
     }
 
+    onTransactionStart?.()
+
     try {
       const srcChainIdNum = Number(srcChainId)
       switchChain({ chainId: srcChainIdNum })
@@ -304,8 +306,6 @@ export default function ExecuteButton({
           await publicClient.waitForTransactionReceipt({ hash: approvalHash as any })
         }
       }
-
-      onTransactionStart?.()
 
       setStep('signing')
       const txData = await getTransactionData()
