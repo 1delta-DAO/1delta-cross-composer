@@ -19,7 +19,6 @@ export function registerDepositAction(): void {
       setDestinationInfo: context.setDestinationInfo,
       chainId: context.chainId,
       destinationInfo: context.destinationInfo,
-      isRequoting: context.isRequoting,
     }),
     isReady: (context) => context.marketsReady,
   }

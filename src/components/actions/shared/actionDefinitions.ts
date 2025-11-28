@@ -1,5 +1,4 @@
 import type { ComponentType } from 'react'
-import type { ActionType } from '../../../lib/types/actionCalls'
 import type { RawCurrency, RawCurrencyAmount } from '../../../types/currency'
 import type { GenericTrade } from '@1delta/lib-utils'
 import { getRegisteredActions } from './actionRegistry'

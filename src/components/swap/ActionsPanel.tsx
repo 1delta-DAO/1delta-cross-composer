@@ -18,7 +18,6 @@ type ActionsPanelProps = {
   onSrcCurrencyChange: (currency: RawCurrency) => void
   calculatedInputAmount?: string
   destinationInfo?: { currencyAmount?: RawCurrencyAmount; actionLabel?: string }
-  isRequoting?: boolean
   resetKey?: number
 }
 
@@ -34,7 +33,6 @@ export function ActionsPanel({
   onSrcCurrencyChange,
   calculatedInputAmount,
   destinationInfo,
-  isRequoting,
   resetKey,
 }: ActionsPanelProps) {
   const { data: chains } = useChainsRegistry()
@@ -54,7 +52,6 @@ export function ActionsPanel({
           slippage={slippage}
           onSrcCurrencyChange={onSrcCurrencyChange}
           destinationInfo={destinationInfo}
-          isRequoting={isRequoting}
         />
 
         <TransactionSummary
@@ -63,7 +60,6 @@ export function ActionsPanel({
           inputAmount={calculatedInputAmount}
           currencyAmount={destinationInfo?.currencyAmount}
           destinationActionLabel={destinationInfo?.actionLabel}
-          isRequoting={isRequoting}
           chains={chains}
         />
       </div>

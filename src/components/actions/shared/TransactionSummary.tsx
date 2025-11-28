@@ -11,7 +11,6 @@ interface TransactionSummaryProps {
   outputAmount?: string
   currencyAmount?: RawCurrencyAmount
   destinationActionLabel?: string
-  isRequoting?: boolean
   route?: string
   chains?: Record<string, { data?: { name?: string } }>
 }
@@ -23,7 +22,6 @@ export function TransactionSummary({
   outputAmount: outputAmountProp,
   currencyAmount,
   destinationActionLabel,
-  isRequoting,
   route,
   chains,
 }: TransactionSummaryProps) {
@@ -156,13 +154,6 @@ export function TransactionSummary({
               </div>
             </div>
           </div>
-
-          {isRequoting && (
-            <div className="flex items-center gap-2 text-xs text-info pt-2 border-t border-base-300">
-              <span className="loading loading-spinner loading-xs"></span>
-              <span>Re-quoting to ensure sufficient amount...</span>
-            </div>
-          )}
 
           {route && (
             <div className="pt-2 border-t border-base-300">

@@ -21,7 +21,6 @@ import { ActionsPanel } from './ActionsPanel'
 import { formatDisplayAmount, pickPreferredToken } from './swapUtils'
 import type { ActionCall } from '../../lib/types/actionCalls'
 import { reverseQuote } from '../../lib/reverseQuote'
-import { getRegisteredActions } from '../actions/shared/actionRegistry'
 import {
   generateDestinationCallsKey,
   generateCurrencyKey,
@@ -163,12 +162,6 @@ export function ActionsTab({ onResetStateChange }: Props) {
     return Boolean(inputCurrency && actionCurrency)
   }, [inputCurrency, actionCurrency])
 
-  const enableRequoting = useMemo(() => {
-    if (!destinationInfo?.actionId) return false
-    const actionDef = getRegisteredActions().find((a) => a.id === destinationInfo.actionId)
-    return actionDef?.requiresExactDestinationAmount ?? false
-  }, [destinationInfo?.actionId])
-
   const srcAmount = useMemo<RawCurrencyAmount | undefined>(() => {
     if (!inputCurrency || !debouncedAmount) return undefined
     const amountNum = Number(debouncedAmount)
@@ -188,7 +181,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
     [destinationCalls]
   )
 
-  const validation = useQuoteValidation(enableRequoting ?? false, slippage)
+  const validation = useQuoteValidation(slippage)
 
   const shouldFetchQuotes = useMemo(() => {
     return !txInProgress && Boolean(srcAmount && actionCurrency)
@@ -224,8 +217,6 @@ export function ActionsTab({ onResetStateChange }: Props) {
     dstCurrency: actionCurrency,
     slippage,
     destinationCalls,
-    minRequiredAmount: destinationInfo?.currencyAmount,
-    enableRequoting,
     onQuotesChange: handleQuotesChange,
     shouldFetch: shouldFetchQuotes,
   })
@@ -293,14 +284,6 @@ export function ActionsTab({ onResetStateChange }: Props) {
     isUserSelectionRef.current = true
     setSelectedQuoteIndex(index)
   }, [])
-
-  useEffect(() => {
-    validation.checkSelectedQuoteValidation(
-      quotes,
-      selectedQuoteIndex,
-      destinationInfo?.currencyAmount
-    )
-  }, [quotes, selectedQuoteIndex, destinationInfo?.currencyAmount, validation])
 
   const highSlippageLossWarning = validation.highSlippageLossWarning
   const currentBuffer = validation.currentBuffer
@@ -455,7 +438,6 @@ export function ActionsTab({ onResetStateChange }: Props) {
         onSrcCurrencyChange={setInputCurrency}
         calculatedInputAmount={calculatedInputAmount}
         destinationInfo={destinationInfo}
-        isRequoting={quoting && enableRequoting}
       />
 
       {(tradeToUse || (destinationInfo && inputCurrency && actionCurrency)) && (

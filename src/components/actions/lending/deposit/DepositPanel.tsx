@@ -18,7 +18,6 @@ type DepositPanelProps = {
   setDestinationInfo?: DestinationActionHandler
   resetKey?: number
   destinationInfo?: { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string }
-  isRequoting?: boolean
 }
 
 export function DepositPanel({
@@ -26,7 +25,6 @@ export function DepositPanel({
   setDestinationInfo,
   resetKey,
   destinationInfo,
-  isRequoting,
 }: DepositPanelProps) {
   const { address } = useConnection()
   const [isExpanded, setIsExpanded] = useState(false)

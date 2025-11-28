@@ -23,8 +23,6 @@ export function useTradeQuotes({
   dstCurrency,
   slippage,
   destinationCalls,
-  minRequiredAmount,
-  enableRequoting,
   onQuotesChange,
   shouldFetch,
 }: {
@@ -32,8 +30,6 @@ export function useTradeQuotes({
   dstCurrency?: RawCurrency
   slippage: number
   destinationCalls?: ActionCall[]
-  minRequiredAmount?: RawCurrencyAmount
-  enableRequoting?: boolean
   onQuotesChange?: (quotes: Quote[]) => void
   shouldFetch?: boolean
 }) {
@@ -53,7 +49,7 @@ export function useTradeQuotes({
 
   const refreshHelpers = useQuoteRefreshHelpers()
 
-  const validation = useQuoteValidation(enableRequoting ?? false, slippage)
+  const validation = useQuoteValidation(slippage)
 
   const srcCurrency = useMemo(() => srcAmount?.currency, [srcAmount])
   const srcKey = useMemo(() => generateCurrencyKey(srcCurrency), [srcCurrency])
@@ -118,25 +114,8 @@ export function useTradeQuotes({
     const sameAsLast = areQuoteKeysEqual(lastQuotedKeyRef.current, currentKey)
     const elapsed = now - lastQuotedAtRef.current
 
-    if (lastQuotedKeyRef.current !== null && lastQuotedKeyRef.current !== currentKey) {
-      lastQuotedKeyRef.current = null
-      refreshHelpers.resetRequoting()
-    }
-
     if (sameAsLast && elapsed < REFRESH_INTERVAL_MS) {
       console.debug('Skipping re-quote: inputs unchanged and refresh interval not reached')
-      return
-    }
-
-    if (refreshHelpers.checkRequotingTimeout()) {
-      console.debug('Requoting timeout reached (2 minutes), stopping to prevent API rate limiting')
-      setQuoting(false)
-      requestInProgressRef.current = false
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort()
-        abortControllerRef.current = null
-      }
-      refreshHelpers.cleanup()
       return
     }
 
@@ -186,9 +165,7 @@ export function useTradeQuotes({
           setQuotes(allQuotes)
           onQuotesChange?.(allQuotes)
 
-          validation.validateAndUpdateQuotes(allQuotes, minRequiredAmount, isRefresh, false)
-
-          refreshHelpers.resetRequoting()
+          validation.validateAndUpdateQuotes(allQuotes, isRefresh, false)
         } else {
           throw new Error('No quote available from any aggregator/bridge')
         }
@@ -245,8 +222,6 @@ export function useTradeQuotes({
     destinationCallsKey,
     destinationCalls,
     receiverAddress,
-    minRequiredAmount,
-    enableRequoting,
     axelarPrices,
     validation,
     refreshHelpers,

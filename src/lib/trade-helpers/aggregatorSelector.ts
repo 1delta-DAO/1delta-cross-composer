@@ -10,7 +10,9 @@ export async function fetchAllAggregatorTrades(
   const availableAggregators = getAvailableAggregators(chainId)
   if (availableAggregators.length === 0) return []
 
-  const inputWithCalls: AggregatorApiInput = additionalCalls ? { ...input, additionalCalls } : input
+  const inputWithCalls: AggregatorApiInput = additionalCalls
+    ? { ...input, additionalCalls, disableComposer: false }
+    : input
 
   const results = await Promise.all(
     availableAggregators.map(async (aggregatorName: string) => {

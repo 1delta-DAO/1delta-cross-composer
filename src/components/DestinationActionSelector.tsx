@@ -30,7 +30,6 @@ interface DestinationActionSelectorProps {
   resetKey?: number
   onSrcCurrencyChange?: (currency: RawCurrency) => void
   destinationInfo?: { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string }
-  isRequoting?: boolean
 }
 
 export default function DestinationActionSelector({
@@ -45,7 +44,6 @@ export default function DestinationActionSelector({
   resetKey,
   onSrcCurrencyChange,
   destinationInfo,
-  isRequoting,
 }: DestinationActionSelectorProps) {
   const [marketsReady, setMarketsReady] = useState(isMarketsReady())
   const [marketsLoading, setMarketsLoading] = useState(isMarketsLoading())
@@ -236,9 +234,7 @@ export default function DestinationActionSelector({
       quotes,
       selectedQuoteIndex,
       setSelectedQuoteIndex,
-      requiresExactDestinationAmount: actionDef.requiresExactDestinationAmount ?? false,
       destinationInfo,
-      isRequoting,
     }
 
     const props = actionDef.buildPanelProps
