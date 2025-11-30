@@ -12,7 +12,6 @@ import {
 } from './actions/shared/actionDefinitions'
 import { DestinationActionHandler } from './actions/shared/types'
 import type { GenericTrade } from '@1delta/lib-utils'
-import { getTokenListsCache } from '../lib/assetLists'
 
 interface ActionSelectorProps {
   srcCurrency?: RawCurrency
@@ -100,7 +99,6 @@ export default function ActionSelector({
       const loaderContext: ActionLoaderContext = {
         srcCurrency,
         dstCurrency,
-        chainId: dstChainId,
       }
 
       const loadPromises = availableActions.map(async (action) => {
@@ -122,7 +120,7 @@ export default function ActionSelector({
     }
 
     loadActionData()
-  }, [availableActions, srcCurrency, dstCurrency, dstChainId])
+  }, [availableActions, srcCurrency, dstCurrency])
 
   const prevSelectedActionRef = useRef<ActionType | null>(null)
 
@@ -200,7 +198,6 @@ export default function ActionSelector({
       srcCurrency,
       dstCurrency,
       slippage,
-      chainId: dstChainId,
       actionData: actionData[selectedAction],
       quotes,
       selectedQuoteIndex,
@@ -211,7 +208,6 @@ export default function ActionSelector({
     const props = actionDef.buildPanelProps
       ? actionDef.buildPanelProps(context)
       : {
-          tokenLists: getTokenListsCache(),
           setDestinationInfo: context.setDestinationInfo,
         }
 

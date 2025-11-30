@@ -40,9 +40,8 @@ export function registerDepositAction(): void {
       return await waitForMarkets()
     },
     buildPanelProps: (context) => ({
-      tokenLists: context.tokenLists,
       setDestinationInfo: context.setDestinationInfo,
-      chainId: context.chainId,
+      chainId: context.dstCurrency?.chainId,
       destinationInfo: context.destinationInfo,
       markets: context.actionData,
     }),

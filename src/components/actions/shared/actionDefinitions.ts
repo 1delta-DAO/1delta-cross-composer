@@ -7,22 +7,16 @@ import type { DestinationActionHandler } from './types'
 export type ActionType = string
 export type ActionCategory = 'all' | 'defi' | 'lending' | 'gaming' | 'yield'
 
-type TokenListsMeta = Record<string, Record<string, RawCurrency>>
-
 export interface ActionLoaderContext {
   srcCurrency?: RawCurrency
   dstCurrency?: RawCurrency
-  tokenLists?: TokenListsMeta
-  chainId?: string
 }
 
 export interface ActionPanelContext {
-  tokenLists?: TokenListsMeta
   setDestinationInfo?: DestinationActionHandler
   srcCurrency?: RawCurrency
   dstCurrency?: RawCurrency
   slippage?: number
-  chainId?: string
   actionData?: any
   quotes?: Array<{ label: string; trade: GenericTrade }>
   selectedQuoteIndex?: number
