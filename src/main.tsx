@@ -11,7 +11,7 @@ import { ToastProvider } from './components/common/ToastHost'
 import { SlippageProvider } from './contexts/SlippageContext'
 import { TxHistoryProvider } from './contexts/TxHistoryContext'
 import { rainbowDaisyTheme } from './rainbowkitTheme'
-import { initAll } from './lib/trade-helpers/initialize'
+import { initAll } from './initialize'
 
 const client = new QueryClient()
 
