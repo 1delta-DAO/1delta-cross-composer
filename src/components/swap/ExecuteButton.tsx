@@ -10,10 +10,9 @@ import {
   useSwitchChain,
 } from 'wagmi'
 import type { GenericTrade } from '../../sdk/types'
-import { SupportedChainId } from '../../sdk/types'
 import { buildTransactionUrl } from '../../lib/explorer'
-import { ERC20_ABI } from '../../lib/abi'
-import type { ActionCall } from '../../lib/types/actionCalls'
+import { erc20Abi } from 'viem'
+import type { ActionCall } from '../actions/shared/types'
 import { useChainsRegistry } from '../../sdk/hooks/useChainsRegistry'
 import { useToast } from '../common/ToastHost'
 import { WalletConnect } from '../connect'
@@ -197,7 +196,7 @@ export default function ExecuteButton({
   const { data: currentAllowance } = useReadContract({
     address:
       srcToken && srcToken.toLowerCase() !== zeroAddress.toLowerCase() ? srcToken : undefined,
-    abi: ERC20_ABI,
+    abi: erc20Abi,
     functionName: 'allowance',
     args: address && spender ? [address, spender] : undefined,
     query: {
@@ -323,7 +322,7 @@ export default function ExecuteButton({
         setStep('approving')
         approvalHash = await writeContractAsync({
           address: srcToken,
-          abi: ERC20_ABI as any,
+          abi: erc20Abi as any,
           functionName: 'approve',
           args: [spender as Address, BigInt(amountWei)],
         })

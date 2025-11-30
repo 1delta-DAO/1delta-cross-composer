@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 import type { RawCurrency, RawCurrencyAmount } from '../../../types/currency'
 import type { GenericTrade } from '@1delta/lib-utils'
 import { getRegisteredActions } from './actionRegistry'
-import type { DestinationActionHandler } from './types'
+import type { ActionHandler } from './types'
 
 export type ActionType = string
 export type ActionCategory = 'all' | 'defi' | 'lending' | 'gaming' | 'yield'
@@ -13,7 +13,7 @@ export interface ActionLoaderContext {
 }
 
 export interface ActionPanelContext {
-  setDestinationInfo?: DestinationActionHandler
+  setDestinationInfo?: ActionHandler
   srcCurrency?: RawCurrency
   dstCurrency?: RawCurrency
   slippage?: number

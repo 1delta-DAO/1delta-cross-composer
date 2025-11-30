@@ -1,10 +1,10 @@
 import { type Address, zeroAddress } from 'viem'
-import { VenusLensAbi } from '../abi/compV2'
 import { erc20Abi } from 'viem'
 import { getRpcSelectorEvmClient, SupportedChainId } from '@1delta/lib-utils'
 import { MOONWELL_LENS, MOONWELL_UNDERLYING_TO_MTOKEN } from './consts'
-import type { RawCurrency } from '../../types/currency'
+import type { RawCurrency } from '../../../../types/currency'
 import { CurrencyHandler } from '@1delta/lib-utils/dist/services/currency/currencyUtils'
+import { VenusLensAbi } from '../../../../lib/abi/compV2'
 
 export type MoonwellMarket = {
   mTokenCurrency: RawCurrency
@@ -102,7 +102,7 @@ export async function initializeMoonwellMarkets(
       // getMarketInfo(mToken) returns Market struct (see ABI)
       const info = (await client.readContract({
         address: MOONWELL_LENS,
-        abi: VenusLensAbi as any,
+        abi: VenusLensAbi,
         functionName: 'getMarketInfo',
         args: [mToken],
       })) as any

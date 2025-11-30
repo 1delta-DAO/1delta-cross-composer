@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import type { RawCurrency } from '../../../types/currency'
 import { CurrencyHandler } from '../../../sdk/types'
-import { DestinationActionHandler } from '../shared/types'
+import { ActionHandler } from '../shared/types'
 import { BridgeCard } from './BridgeCard'
 import { TokenSelectorModal } from '../../modals/TokenSelectorModal'
 import { parseUnits, zeroAddress } from 'viem'
@@ -13,7 +13,7 @@ import { getTokenFromCache } from '../../../lib/data/tokenListsCache'
 interface BridgePanelProps {
   srcCurrency?: RawCurrency
   dstCurrency?: RawCurrency
-  setDestinationInfo?: DestinationActionHandler
+  setDestinationInfo?: ActionHandler
   quotes?: Array<{ label: string; trade: GenericTrade }>
   selectedQuoteIndex?: number
   setSelectedQuoteIndex?: (index: number) => void

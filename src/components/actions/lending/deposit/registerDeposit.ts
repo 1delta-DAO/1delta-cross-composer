@@ -7,7 +7,7 @@ import {
   isMarketsReady,
   subscribeToCacheChanges,
   type MoonwellMarket,
-} from '../../../../lib/moonwell/marketCache'
+} from './marketCache'
 
 async function waitForMarkets(): Promise<MoonwellMarket[]> {
   return new Promise((resolve) => {

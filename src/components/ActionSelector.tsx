@@ -9,13 +9,13 @@ import {
   type ActionCategory,
   type ActionLoaderContext,
 } from './actions/shared/actionDefinitions'
-import { DestinationActionHandler } from './actions/shared/types'
+import { ActionHandler } from './actions/shared/types'
 import type { GenericTrade } from '@1delta/lib-utils'
 
 interface ActionSelectorProps {
   srcCurrency?: RawCurrency
   dstCurrency?: RawCurrency
-  setDestinationInfo?: DestinationActionHandler
+  setDestinationInfo?: ActionHandler
   quotes?: Array<{ label: string; trade: GenericTrade }>
   selectedQuoteIndex?: number
   setSelectedQuoteIndex?: (index: number) => void
@@ -166,7 +166,7 @@ export default function ActionSelector({
     setPanelResetKey((prev) => prev + 1)
   }
 
-  const wrappedSetDestinationInfo = useCallback<DestinationActionHandler>(
+  const wrappedSetDestinationInfo = useCallback<ActionHandler>(
     (currencyAmount, receiverAddress, destinationCalls, actionLabel) => {
       setDestinationInfo?.(
         currencyAmount,

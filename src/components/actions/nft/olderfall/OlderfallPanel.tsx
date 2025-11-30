@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { CurrencyHandler, SupportedChainId } from '../../../../sdk/types'
-import { DestinationActionHandler as ActionHandler } from '../../shared/types'
+import { ActionHandler as ActionHandler } from '../../shared/types'
 import { Chain } from '@1delta/chain-registry'
 import { OlderfallListingCard } from './OlderfallCard'
 import { formatListingPriceLabel } from './utils'

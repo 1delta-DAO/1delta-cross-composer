@@ -1,15 +1,15 @@
 import { useState, useEffect, useMemo } from 'react'
-import { type MoonwellMarket } from '../../../../lib/moonwell/marketCache'
+import { type MoonwellMarket } from './marketCache'
 import { DepositActionModal } from './DepositModal'
 import { DepositCard } from './DepositCard'
-import { DestinationActionHandler } from '../../shared/types'
+import { ActionHandler } from '../../shared/types'
 import { useConnection } from 'wagmi'
 import { useTokenLists } from '../../../../hooks/useTokenLists'
 import type { RawCurrencyAmount } from '../../../../types/currency'
 
 type DepositPanelProps = {
   chainId?: string
-  setDestinationInfo?: DestinationActionHandler
+  setDestinationInfo?: ActionHandler
   resetKey?: number
   destinationInfo?: { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string }
   markets?: MoonwellMarket[]

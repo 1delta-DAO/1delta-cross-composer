@@ -5,11 +5,11 @@ import {
   getComposerAddress,
   TransferToLenderType,
 } from '@1delta/calldata-sdk'
-import type { ActionCall } from '../../../../lib/types/actionCalls'
+import type { ActionCall } from '../../shared/types'
 import type { RawCurrency } from '../../../../types/currency'
-import type { DestinationCallBuilder } from '../../shared/types'
+import type { ActionCallBuilder } from '../../shared/types'
 import { encodeComposerCompose } from '../../../../lib/calldata/encodeComposerCompose'
-import { MOONWELL_UNDERLYING_TO_MTOKEN } from '../../../../hooks/useMoonwellMarkets'
+import { MOONWELL_UNDERLYING_TO_MTOKEN } from './consts'
 
 export type DepositCallBuilderParams = {
   amountHuman: string
@@ -17,7 +17,7 @@ export type DepositCallBuilderParams = {
   userAddress: Address
 }
 
-export const buildCalls: DestinationCallBuilder<DepositCallBuilderParams> = async ({
+export const buildCalls: ActionCallBuilder<DepositCallBuilderParams> = async ({
   amountHuman,
   underlying,
   userAddress,

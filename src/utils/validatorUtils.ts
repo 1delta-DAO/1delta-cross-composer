@@ -1,3 +1,5 @@
+import { Address, isAddress } from 'viem'
+
 export const isValidDecimal = (value: string): boolean => {
   if (!value || value.trim() === '') {
     return true
@@ -33,4 +35,28 @@ export const isValidAddressFormat = (value: string): boolean => {
   }
 
   return /^0x[a-fA-F0-9]{40}$/.test(value)
+}
+
+export const isValidAddress = (address: string): address is Address => {
+  if (!address || typeof address !== 'string') {
+    return false
+  }
+
+  return isAddress(address)
+}
+
+export const validateAndChecksumAddress = (address: string): Address | null => {
+  if (!isValidAddress(address)) {
+    return null
+  }
+
+  try {
+    return address as Address
+  } catch {
+    return null
+  }
+}
+
+export const isEmptyAddress = (address: string): boolean => {
+  return !address || address.trim() === ''
 }

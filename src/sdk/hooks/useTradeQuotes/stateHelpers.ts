@@ -1,4 +1,4 @@
-import type { ActionCall } from '../../../lib/types/actionCalls'
+import type { ActionCall } from '../../../components/actions/shared/types'
 import type { Address } from 'viem'
 import type { RawCurrency, RawCurrencyAmount } from '../../../types/currency'
 

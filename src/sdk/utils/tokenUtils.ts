@@ -1,5 +1,5 @@
 import { checksumAddress, type Address } from 'viem'
-import { ERC20_ABI } from '../../lib/abi'
+import { erc20Abi } from 'viem'
 import { getTokenFromCache } from '../../lib/data/tokenListsCache'
 import { getRpcSelectorEvmClient } from '@1delta/lib-utils'
 
@@ -66,7 +66,7 @@ export async function fetchDecimals(
     }
     const decimals = await publicClient.readContract({
       address: checksumAddress(tokenAddress),
-      abi: ERC20_ABI,
+      abi: erc20Abi,
       functionName: 'decimals',
     })
 

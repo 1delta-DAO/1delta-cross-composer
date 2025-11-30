@@ -1,8 +1,20 @@
 import { SUPPORTED_CHAIN_IDS } from './data/chainIds'
 import type { RawCurrency } from '../types/currency'
-import type { VersionedDeltaTokenList } from './types/tokenList'
 
 export type TokenListsRecord = Record<string, Record<string, RawCurrency>>
+interface VersionedDeltaTokenList {
+  name: string
+  version: {
+    major: number
+    minor: number
+    patch: number
+  }
+  timestamp: string
+  tags: Record<string, { name: string; description: string }>
+  logoURI: string
+  keywords: string[]
+  list: Record<string, RawCurrency>
+}
 
 let cachedTokenLists: TokenListsRecord | null = null
 let loadPromise: Promise<TokenListsRecord> | null = null

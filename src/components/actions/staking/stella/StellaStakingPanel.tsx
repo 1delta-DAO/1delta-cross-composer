@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { CurrencyHandler, SupportedChainId } from '../../../../sdk/types'
-import { DestinationActionHandler } from '../../shared/types'
+import { ActionHandler } from '../../shared/types'
 import { buildCalls } from './callBuilder'
 import { XCDOT_ADDRESS } from '../../../../lib/consts'
 import type { RawCurrency } from '../../../../types/currency'
@@ -13,7 +13,7 @@ import { getCurrency } from '../../../../lib/trade-helpers/utils'
 import { getTokenFromCache, isTokenListsReady } from '../../../../lib/data/tokenListsCache'
 
 interface StellaStakingPanelProps {
-  setDestinationInfo?: DestinationActionHandler
+  setDestinationInfo?: ActionHandler
   srcCurrency?: RawCurrency
   slippage?: number
   resetKey?: number

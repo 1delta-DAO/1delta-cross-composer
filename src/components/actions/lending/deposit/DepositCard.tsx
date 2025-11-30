@@ -1,4 +1,4 @@
-import type { MoonwellMarket } from '../../../../lib/moonwell/marketCache'
+import type { MoonwellMarket } from './marketCache'
 import { RawCurrency } from '../../../../types/currency'
 
 type MarketTokenCardProps = {

@@ -4,7 +4,7 @@ import { TradeType } from '@1delta/lib-utils'
 import { convertActionCallsToDeltaCalls } from '../../lib/trade-helpers/utils'
 import { fetchAllAggregatorTrades } from '../../lib/trade-helpers/aggregatorSelector'
 import { fetchAllActionTrades } from '../trade-helpers/actionSelector'
-import type { ActionCall } from '../../lib/types/actionCalls'
+import type { ActionCall } from '../../components/actions/shared/types'
 import type { RawCurrency, RawCurrencyAmount } from '../../types/currency'
 import type { PricesRecord } from '../../hooks/prices/usePriceQuery'
 

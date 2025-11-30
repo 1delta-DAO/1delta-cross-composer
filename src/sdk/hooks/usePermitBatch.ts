@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react'
 import { useConnection, useSignTypedData, useWriteContract, useChainId } from 'wagmi'
-import { encodeFunctionData, parseUnits, type Address, type Hex } from 'viem'
+import { encodeFunctionData, erc20Abi, parseUnits, type Address, type Hex } from 'viem'
 import { moonbeam } from 'viem/chains'
 import { BATCH_PRECOMPILE, CALL_PERMIT_PRECOMPILE, DOMAIN_SEPARATOR } from '../../lib/consts'
 import { BatchCall, PermitBatchParams } from '../../lib/types'
-import { BATCH_ABI, CALL_PERMIT_ABI, ERC20_ABI } from '../../lib/abi'
+import { BATCH_ABI, CALL_PERMIT_ABI } from '../../lib/abi'
 import { getRpcSelectorEvmClient } from '@1delta/lib-utils'
 import { fetchDecimals as fetchDecimalsUtil } from '../utils/tokenUtils'
 
@@ -175,7 +175,7 @@ export function usePermitBatch() {
       return operations.map((op) => {
         const amount = parseUnits(op.amount, op.decimals || 18)
         const callData = encodeFunctionData({
-          abi: ERC20_ABI,
+          abi: erc20Abi,
           functionName: op.type,
           args: [op.to, amount],
         })

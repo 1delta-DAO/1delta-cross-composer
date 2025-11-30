@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import type { RawCurrency } from '../../../types/currency'
 import { CurrencyHandler } from '../../../sdk/types'
-import { DestinationActionHandler } from '../shared/types'
+import { ActionHandler } from '../shared/types'
 import { TokenSelectorModal } from '../../modals/TokenSelectorModal'
 import { parseUnits } from 'viem'
 import type { Address } from 'viem'
@@ -11,7 +11,7 @@ import { getTokenFromCache } from '../../../lib/data/tokenListsCache'
 interface SwapPanelProps {
   srcCurrency?: RawCurrency
   dstCurrency?: RawCurrency
-  setDestinationInfo?: DestinationActionHandler
+  setDestinationInfo?: ActionHandler
   resetKey?: number
 }
 

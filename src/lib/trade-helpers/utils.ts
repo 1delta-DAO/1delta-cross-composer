@@ -3,7 +3,7 @@ import { getTokenFromCache } from '../data/tokenListsCache'
 import type { RawCurrency } from '../../types/currency'
 import { chains } from '@1delta/data-sdk'
 import { CurrencyHandler } from '@1delta/lib-utils/dist/services/currency/currencyUtils'
-import type { ActionCall } from '../types/actionCalls'
+import type { ActionCall } from '../../components/actions/shared/types'
 import type { DeltaCall } from '@1delta/lib-utils'
 
 export function getCurrency(

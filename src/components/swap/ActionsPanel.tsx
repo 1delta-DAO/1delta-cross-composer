@@ -1,6 +1,6 @@
 import ActionSelector from '../ActionSelector'
 import type { RawCurrency, RawCurrencyAmount } from '../../types/currency'
-import { DestinationActionHandler } from '../actions/shared/types'
+import { ActionHandler } from '../actions/shared/types'
 import type { GenericTrade } from '@1delta/lib-utils'
 import { TransactionSummary } from '../actions/shared/TransactionSummary'
 import { useChainsRegistry } from '../../sdk/hooks/useChainsRegistry'
@@ -9,7 +9,7 @@ type ActionsPanelProps = {
   srcCurrency?: RawCurrency
   dstCurrency?: RawCurrency
   currentChainId: number
-  setDestinationInfo?: DestinationActionHandler
+  setDestinationInfo?: ActionHandler
   quotes?: Array<{ label: string; trade: GenericTrade }>
   selectedQuoteIndex?: number
   setSelectedQuoteIndex?: (index: number) => void

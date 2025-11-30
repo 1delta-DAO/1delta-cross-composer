@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import type { Address } from 'viem'
 import { readContract } from 'viem/actions'
 import { getRpcSelectorEvmClient } from '@1delta/lib-utils'
-import { MOONWELL_COMPTROLLER } from '../../lib/moonwell/consts'
+import { MOONWELL_COMPTROLLER } from '../../components/actions/lending/deposit/consts'
 
 const COMPTROLLER_ABI = [
   {

@@ -2,11 +2,9 @@ import { useState } from 'react'
 import type { Address } from 'viem'
 import { parseUnits } from 'viem'
 import { CurrencyHandler } from '@1delta/lib-utils/dist/services/currency/currencyUtils'
-import { DestinationActionHandler } from '../../shared/types'
+import { ActionHandler } from '../../shared/types'
 import { buildCalls } from './callBuilder'
-import { MoonwellMarket } from '../../../../hooks/useMoonwellMarkets'
-import { getForwarderAddress } from '@1delta/lib-utils'
-import { getComposerAddress } from '@1delta/calldata-sdk'
+import { MoonwellMarket } from './marketCache'
 import { useConnection } from 'wagmi'
 import { DUMMY_ADDRESS } from '../../../../lib/consts'
 import { RawCurrency } from '../../../../types/currency'
@@ -18,7 +16,7 @@ type DepositActionModalProps = {
   selectedCurrency: RawCurrency
   userAddress?: Address
   chainId?: string
-  setDestinationInfo?: DestinationActionHandler
+  setDestinationInfo?: ActionHandler
   amount?: string
   onAmountChange?: (amount: string) => void
 }

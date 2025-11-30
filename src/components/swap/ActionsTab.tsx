@@ -15,11 +15,10 @@ import { useSlippage } from '../../contexts/SlippageContext'
 import { useTradeQuotes } from '../../sdk/hooks/useTradeQuotes'
 import { useQuoteValidation } from '../../sdk/hooks/useQuoteValidation'
 import type { Quote } from '../../sdk/hooks/useQuoteFetcher'
-import { usePriceImpact } from '../../hooks/usePriceImpact'
 import ExecuteButton from './ExecuteButton'
 import { ActionsPanel } from './ActionsPanel'
 import { formatDisplayAmount, pickPreferredToken } from './swapUtils'
-import type { ActionCall } from '../../lib/types/actionCalls'
+import type { ActionCall } from '../actions/shared/types'
 import { reverseQuote } from '../../lib/reverseQuote'
 import {
   generateDestinationCallsKey,
@@ -308,15 +307,23 @@ export function ActionsTab({ onResetStateChange }: Props) {
     }
   }, [selectedTrade, isSwapOrBridge])
 
-  const priceImpact = usePriceImpact({
-    selectedTrade,
-    amount,
-    quoteOut,
-    srcToken: inputCurrency?.address as any,
-    dstToken: actionCurrency?.address as any,
-    srcChainId: inputChainId,
-    dstChainId: actionChainId,
-  })
+  const priceImpact = useMemo(() => {
+    if (!selectedTrade || !amount || !quoteOut || !inputPrice || !actionTokenPrice) {
+      return undefined
+    }
+    try {
+      const inputValue = Number(amount) * inputPrice
+      const expectedOutput = inputValue / actionTokenPrice
+      const actualOutput = Number(quoteOut)
+
+      if (expectedOutput <= 0 || actualOutput <= 0) return undefined
+
+      const impact = ((expectedOutput - actualOutput) / expectedOutput) * 100
+      return Math.max(0, impact)
+    } catch {
+      return undefined
+    }
+  }, [selectedTrade, amount, quoteOut, inputPrice, actionTokenPrice])
 
   useEffect(() => {
     if (isSwapOrBridge) {

@@ -1,10 +1,10 @@
 import { encodeFunctionData, type Address } from 'viem'
-import type { ActionCall } from '../../../../lib/types/actionCalls'
+import type { ActionCall } from '../../shared/types'
 import { SEQUENCE_MARKET_ADDRESS } from './constants'
 import { generateOlderfallBuySteps, type OlderfallListing } from './api'
-import { ERC20_ABI } from '../../../../lib/abi'
+import { erc20Abi } from 'viem'
 import { DeltaCallType } from '@1delta/lib-utils'
-import type { DestinationCallBuilder } from '../../shared/types'
+import type { ActionCallBuilder } from '../../shared/types'
 
 export type OlderfallCallBuilderParams = {
   chainId: string
@@ -13,7 +13,7 @@ export type OlderfallCallBuilderParams = {
   listing: OlderfallListing
 }
 
-export const buildCalls: DestinationCallBuilder<OlderfallCallBuilderParams> = async ({
+export const buildCalls: ActionCallBuilder<OlderfallCallBuilderParams> = async ({
   chainId,
   buyer,
   userAddress,
@@ -32,7 +32,7 @@ export const buildCalls: DestinationCallBuilder<OlderfallCallBuilderParams> = as
   const priceAmount = BigInt(priceRaw)
 
   const approveCalldata = encodeFunctionData({
-    abi: ERC20_ABI,
+    abi: erc20Abi,
     functionName: 'approve',
     args: [SEQUENCE_MARKET_ADDRESS, priceAmount],
   })
@@ -65,7 +65,7 @@ export const buildCalls: DestinationCallBuilder<OlderfallCallBuilderParams> = as
   })
 
   const sweepCalldata = encodeFunctionData({
-    abi: ERC20_ABI,
+    abi: erc20Abi,
     functionName: 'transfer',
     args: [userAddress, 0n],
   })
