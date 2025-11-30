@@ -26,13 +26,8 @@ export interface ActionPanelContext {
   isRequoting?: boolean
 }
 
-export interface ActionReadinessContext {
-  srcCurrency?: RawCurrency
-}
-
 export type DataLoader = (context: ActionLoaderContext) => Promise<any>
 export type PanelPropsBuilder = (context: ActionPanelContext) => Record<string, any>
-export type ReadinessChecker = (context: ActionReadinessContext) => boolean
 
 export interface ActionDefinition {
   id: ActionType
@@ -46,7 +41,6 @@ export interface ActionDefinition {
   requiresMarkets?: boolean
   dataLoader?: DataLoader
   buildPanelProps?: PanelPropsBuilder
-  isReady?: ReadinessChecker
 }
 
 export { getRegisteredActions }

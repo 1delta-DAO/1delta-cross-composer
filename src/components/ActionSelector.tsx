@@ -8,7 +8,6 @@ import {
   type ActionType,
   type ActionCategory,
   type ActionLoaderContext,
-  type ActionReadinessContext,
 } from './actions/shared/actionDefinitions'
 import { DestinationActionHandler } from './actions/shared/types'
 import type { GenericTrade } from '@1delta/lib-utils'
@@ -64,18 +63,12 @@ export default function ActionSelector({
 
   const isActionReady = useMemo(() => {
     const ready: Record<string, boolean> = {}
-    const readinessContext: ActionReadinessContext = {
-      srcCurrency,
-    }
-
     availableActions.forEach((action) => {
       const isLoading = actionDataLoading[action.id] === true
       const hasData = actionData[action.id] !== null && actionData[action.id] !== undefined
 
       if (action.dataLoader) {
         ready[action.id] = !isLoading && hasData
-      } else if (action.isReady) {
-        ready[action.id] = action.isReady(readinessContext)
       } else {
         ready[action.id] = true
       }
