@@ -4,7 +4,6 @@ import { DestinationActionHandler as ActionHandler } from '../../shared/types'
 import { Chain } from '@1delta/chain-registry'
 import { OlderfallListingCard } from './OlderfallCard'
 import { formatListingPriceLabel } from './utils'
-import { OlderfallEmptyState, OlderfallHeader, OlderfallLoadingState } from './Generic'
 import { buildCalls } from './callBuilder'
 import type { OlderfallListing } from './api'
 import { useConnection } from 'wagmi'
@@ -23,6 +22,27 @@ interface OlderfallListingsListProps {
   dstChainId?: string | number
   selectedOrderId: string
   onSelectOrderId: (orderId: string) => void
+}
+
+export function OlderfallHeader() {
+  return <div className="font-semibold text-sm">Olderfall NFTs</div>
+}
+
+export function OlderfallLoadingState() {
+  return (
+    <div className="flex items-center gap-2 text-xs opacity-70">
+      <span className="loading loading-spinner loading-xs" />
+      <span>Loading listings from Sequence…</span>
+    </div>
+  )
+}
+
+export function OlderfallEmptyState() {
+  return (
+    <div className="text-xs opacity-70">
+      No Olderfall listings found or Sequence API not configured.
+    </div>
+  )
 }
 
 function OlderfallListingsList({

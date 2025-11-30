@@ -15,7 +15,6 @@ import { getTokenFromCache, isTokenListsReady } from '../../../../lib/data/token
 interface StellaStakingPanelProps {
   setDestinationInfo?: DestinationActionHandler
   srcCurrency?: RawCurrency
-  dstCurrency?: RawCurrency
   slippage?: number
   resetKey?: number
 }
@@ -23,7 +22,6 @@ interface StellaStakingPanelProps {
 export function StellaStakingPanel({
   setDestinationInfo,
   srcCurrency,
-  dstCurrency,
   slippage = 0.5,
   resetKey,
 }: StellaStakingPanelProps) {

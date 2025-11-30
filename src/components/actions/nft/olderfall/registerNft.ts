@@ -8,6 +8,34 @@ import type { ActionLoaderContext } from '../../shared/actionDefinitions'
 import { getCachedListings, setCachedListings } from './cache'
 import { OLDERFALL_SUPPORTED_CHAINS } from './constants'
 
+async function loadListings(
+  _context: ActionLoaderContext
+): Promise<Record<string, OlderfallListing[]>> {
+  const supportedChains = OLDERFALL_SUPPORTED_CHAINS
+  const results: Record<string, OlderfallListing[]> = {}
+
+  await Promise.all(
+    supportedChains.map(async (chainId) => {
+      try {
+        const cached = getCachedListings(chainId)
+        if (cached) {
+          results[chainId] = cached
+          return
+        }
+
+        const listings = await fetchOlderfallListings(chainId)
+        setCachedListings(chainId, listings)
+        results[chainId] = listings
+      } catch (error) {
+        console.error(`Failed to load Olderfall listings for chain ${chainId}:`, error)
+        results[chainId] = []
+      }
+    })
+  )
+
+  return results
+}
+
 export function registerNftAction(): void {
   const nftAction: ActionDefinition = {
     id: 'olderfall_nfts',
@@ -17,33 +45,7 @@ export function registerNftAction(): void {
     panel: OlderfallPanel,
     priority: 2,
     actionType: 'game_token',
-    dataLoader: async (
-      context: ActionLoaderContext
-    ): Promise<Record<string, OlderfallListing[]>> => {
-      const supportedChains = OLDERFALL_SUPPORTED_CHAINS
-      const results: Record<string, OlderfallListing[]> = {}
-
-      await Promise.all(
-        supportedChains.map(async (chainId) => {
-          try {
-            const cached = getCachedListings(chainId)
-            if (cached) {
-              results[chainId] = cached
-              return
-            }
-
-            const listings = await fetchOlderfallListings(chainId)
-            setCachedListings(chainId, listings)
-            results[chainId] = listings
-          } catch (error) {
-            console.error(`Failed to load Olderfall listings for chain ${chainId}:`, error)
-            results[chainId] = []
-          }
-        })
-      )
-
-      return results
-    },
+    dataLoader: loadListings,
     buildPanelProps: (context) => ({
       setDestinationInfo: context.setDestinationInfo,
       preloadedListings: context.actionData,

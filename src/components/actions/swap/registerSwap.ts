@@ -13,7 +13,6 @@ export function registerSwapAction(): void {
     priority: 4,
     actionType: 'lending',
     requiresSrcCurrency: true,
-    requiresExactDestinationAmount: false,
     buildPanelProps: (context) => ({
       setDestinationInfo: context.setDestinationInfo,
       srcCurrency: context.srcCurrency,
