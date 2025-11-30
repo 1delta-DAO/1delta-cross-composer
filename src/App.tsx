@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import type { Hex } from 'viem'
 import BatchTransactionForm from './components/BatchTransactionForm'
 import { ActionsTab } from './components/swap/ActionsTab'
 import { TradeSdkWalletSync } from './lib/trade-helpers/walletClient'
@@ -9,13 +8,13 @@ import { WalletConnect } from './components/connect'
 import { TxHistoryButton } from './components/history/TxHistoryButton'
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'swap' | 'transactions'>('swap')
-  const [transactionHash, setTransactionHash] = useState<Hex | null>(null)
+  enum Tabs {
+    ACTIONS = 'actions',
+    TRANSACTIONS = 'transactions',
+  }
+  const [activeTab, setActiveTab] = useState<Tabs>(Tabs.ACTIONS)
   const [showSwapReset, setShowSwapReset] = useState(false)
   const [swapResetCallback, setSwapResetCallback] = useState<(() => void) | null>(null)
-
-  const handleTransactionExecuted = (hash: Hex) => setTransactionHash(hash)
-  const handleReset = () => setTransactionHash(null)
 
   const handleSwapReset = () => {
     if (swapResetCallback) swapResetCallback()
@@ -53,22 +52,22 @@ export default function App() {
           <div className="w-full max-w-[1000px] min-w-[450px] flex items-center justify-between">
             <div className="join">
               <button
-                className={`btn btn-sm join-item ${activeTab === 'swap' ? 'btn-primary' : 'btn-ghost'}`}
-                onClick={() => setActiveTab('swap')}
+                className={`btn btn-sm join-item ${activeTab === Tabs.ACTIONS ? 'btn-primary' : 'btn-ghost'}`}
+                onClick={() => setActiveTab(Tabs.ACTIONS)}
               >
-                Swap
+                Actions
               </button>
               <button
-                className={`btn btn-sm join-item ${activeTab === 'transactions' ? 'btn-primary' : 'btn-ghost'}`}
-                onClick={() => setActiveTab('transactions')}
+                className={`btn btn-sm join-item ${activeTab === Tabs.TRANSACTIONS ? 'btn-primary' : 'btn-ghost'}`}
+                onClick={() => setActiveTab(Tabs.TRANSACTIONS)}
               >
                 Transactions
               </button>
             </div>
 
             <div className="flex items-center gap-2">
-              {activeTab === 'swap' && <SwapSlippageSelector />}
-              {activeTab === 'swap' && showSwapReset && (
+              {activeTab === Tabs.ACTIONS && <SwapSlippageSelector />}
+              {activeTab === Tabs.ACTIONS && showSwapReset && (
                 <button className="btn btn-ghost btn-xs" onClick={handleSwapReset}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -93,44 +92,15 @@ export default function App() {
           <div className="w-full max-w-[1000px] min-w-[450px]">
             <div className="card bg-base-100 shadow-xl rounded-2xl">
               <div className="card-body p-4 sm:p-6">
-                {activeTab === 'swap' ? (
+                {activeTab === Tabs.ACTIONS ? (
                   <ActionsTab
                     onResetStateChange={(showReset, resetCallback) => {
                       setShowSwapReset(showReset)
                       setSwapResetCallback(resetCallback || null)
                     }}
                   />
-                ) : transactionHash ? (
-                  <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="card-title text-2xl">Transaction Executed</h2>
-                      <div className="badge badge-success badge-lg">Success</div>
-                    </div>
-
-                    <div className="space-y-6">
-                      <div className="card bg-base-200 shadow-md">
-                        <div className="card-body">
-                          <h3 className="card-title text-lg">Transaction Hash</h3>
-                          <div className="flex flex-row gap-2 items-center pt-2">
-                            <p className="flex-1 font-mono text-s w-10/11 border rounded-md p-2">
-                              {transactionHash}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="card-actions justify-between">
-                        <button onClick={handleReset} className="btn btn-outline btn-secondary">
-                          Reset
-                        </button>
-                        <button onClick={handleReset} className="btn btn-primary btn-lg">
-                          Create New Transaction
-                        </button>
-                      </div>
-                    </div>
-                  </div>
                 ) : (
-                  <BatchTransactionForm onTransactionExecuted={handleTransactionExecuted} />
+                  <BatchTransactionForm />
                 )}
               </div>
             </div>

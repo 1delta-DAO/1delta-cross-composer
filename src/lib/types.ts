@@ -32,7 +32,3 @@ export interface ArbitraryCallOperation {
 }
 
 export type Operation = ERC20Operation | ArbitraryCallOperation
-
-export interface BatchTransactionFormProps {
-  onTransactionExecuted?: (hash: Hex) => void
-}

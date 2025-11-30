@@ -1,22 +1,17 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { useConnection, useChainId, useSwitchChain } from 'wagmi'
-import { type Address } from 'viem'
+import { type Address, type Hex } from 'viem'
 import { usePermitBatch } from '../sdk/hooks/usePermitBatch'
 import { useDebounce } from '../hooks/useDebounce'
 import { isValidAddress, isEmptyAddress } from '../utils/addressValidation'
 import { isValidDecimal, formatDecimalInput } from '../utils/inputValidation'
 import { fetchDecimals } from '../sdk/utils/tokenUtils'
 import { DEFAULT_DECIMALS, XCUSDT_ADDRESS, XCUSDC_ADDRESS, GLMR_ADDRESS } from '../lib/consts'
-import {
-  BatchTransactionFormProps,
-  Operation,
-  ERC20Operation,
-  ArbitraryCallOperation,
-} from '../lib/types'
+import { Operation, ERC20Operation, ArbitraryCallOperation } from '../lib/types'
 
 const MOONBEAM_CHAIN_ID = 1284
 
-export default function BatchTransactionForm({ onTransactionExecuted }: BatchTransactionFormProps) {
+export default function BatchTransactionForm() {
   const { address } = useConnection()
   const chainId = useChainId()
   const { switchChain } = useSwitchChain()
@@ -26,6 +21,7 @@ export default function BatchTransactionForm({ onTransactionExecuted }: BatchTra
 
   const [deadline, setDeadline] = useState(3600)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [transactionHash, setTransactionHash] = useState<Hex | null>(null)
 
   const [rawTokenAddresses, setRawTokenAddresses] = useState<Record<string, string>>({})
 
@@ -248,8 +244,8 @@ export default function BatchTransactionForm({ onTransactionExecuted }: BatchTra
           return
         }
 
-        if (result.hash && onTransactionExecuted) {
-          onTransactionExecuted(result.hash)
+        if (result.hash) {
+          setTransactionHash(result.hash)
         }
       } catch (err) {
         console.error('Transaction failed:', err)
@@ -257,10 +253,51 @@ export default function BatchTransactionForm({ onTransactionExecuted }: BatchTra
         setIsSubmitting(false)
       }
     },
-    [address, operations, deadline, createBatchCalls, executeSelfTransmit, onTransactionExecuted]
+    [address, operations, deadline, createBatchCalls, executeSelfTransmit]
   )
 
   const isMoonbeam = chainId === MOONBEAM_CHAIN_ID
+
+  const handleReset = () => {
+    setTransactionHash(null)
+    setOperations([])
+    setRawTokenAddresses({})
+    setTokenErrors({})
+    setInputErrors({})
+  }
+
+  if (transactionHash) {
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="card-title text-2xl">Transaction Executed</h2>
+          <div className="badge badge-success badge-lg">Success</div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="card bg-base-200 shadow-md">
+            <div className="card-body">
+              <h3 className="card-title text-lg">Transaction Hash</h3>
+              <div className="flex flex-row gap-2 items-center pt-2">
+                <p className="flex-1 font-mono text-s w-10/11 border rounded-md p-2">
+                  {transactionHash}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="card-actions justify-between">
+            <button onClick={handleReset} className="btn btn-outline btn-secondary">
+              Reset
+            </button>
+            <button onClick={handleReset} className="btn btn-primary btn-lg">
+              Create New Transaction
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
