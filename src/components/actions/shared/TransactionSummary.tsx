@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react'
 import type { RawCurrency, RawCurrencyAmount } from '../../../types/currency'
-import { formatDisplayAmount } from '../../swap/swapUtils'
+import { formatDisplayAmount } from '../../actionsTab/swapUtils'
 import { CurrencyHandler } from '../../../sdk/types'
 import { usePriceQuery } from '../../../hooks/prices/usePriceQuery'
 

@@ -1,14 +1,3 @@
-// Helper function to get aggregator logo URL
-export function getAggregatorLogo(aggregatorName: string): string {
-  const normalizedName = aggregatorName.toLowerCase().replace(/\s+/g, '-')
-  return `https://raw.githubusercontent.com/1delta-DAO/protocol-icons/refs/heads/main/aggregator/${normalizedName}.webp`
-}
-
-export function getBridgeLogo(bridgeName: string): string {
-  const normalizedName = bridgeName.toLowerCase().replace(/\s+/g, '-')
-  return `https://raw.githubusercontent.com/1delta-DAO/protocol-icons/refs/heads/main/bridge/${normalizedName}.webp`
-}
-
 export function filterNumeric(s: string): string {
   // Allow digits and a single dot
   s = s.replace(/[^0-9.]/g, '')

@@ -7,9 +7,9 @@ import { formatListingPriceLabel } from './utils'
 import { buildCalls } from './callBuilder'
 import type { OlderfallListing } from './api'
 import { useConnection } from 'wagmi'
-import { isValidAddress, isEmptyAddress } from '../../../../utils/addressValidation'
 import type { Address } from 'viem'
 import { getTokenFromCache, isTokenListsReady } from '../../../../lib/data/tokenListsCache'
+import { isEmptyAddress, isValidAddress } from '../../../../utils/validatorUtils'
 
 interface OlderfallPanelProps {
   setDestinationInfo?: ActionHandler

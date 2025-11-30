@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import type { Address } from 'viem'
-import { ChainSelector } from '../swap/ChainSelector'
+import { ChainSelector } from '../actionsTab/ChainSelector'
 import { TokenSelector } from '../tokenSelector'
 import type { RawCurrency } from '../../types/currency'
 import { getCurrency } from '../../lib/trade-helpers/utils'
