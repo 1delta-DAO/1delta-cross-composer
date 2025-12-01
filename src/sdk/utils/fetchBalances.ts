@@ -1,7 +1,6 @@
 import { Address, encodePacked, formatUnits, zeroAddress } from 'viem'
-import { BalanceFetcherAbi, MulticallABI } from '../../lib/abi'
-import { multicallViem } from '@1delta/lib-utils/dist/services/multicall/evm'
-import { getRpcSelectorEvmClient } from '@1delta/lib-utils'
+import { BalanceFetcherAbi } from '../../lib/abi'
+import { getRpcSelectorEvmClient, RpcAction } from '@1delta/lib-utils'
 import { chains as dataChains } from '@1delta/data-sdk'
 import { loadTokenLists, getTokenFromCache } from '../../lib/data/tokenListsCache'
 import type { RawCurrency } from '../../types/currency'
@@ -29,137 +28,70 @@ export function getAssetFromListsSync(
   return { isReady: !!token, data: token }
 }
 
-async function multicallRetry(
-  chainId: string,
-  calls: Call[],
-  abis: any[],
-  _retries?: number
-): Promise<any[]> {
-  const results = await multicallViem(chainId, abis, calls, 0, true, undefined, true)
-  return results
-}
-
 const BALANCE_FETCHER: Address = '0x60134ad7491101c7fcb343ed8c7599e449430766'
-export interface BalanceInfo {
-  balanceRaw: string
-  balance: string
-  balanceUsd: number
-}
-export interface TokenMeta {
-  name: string
-  symbol: string
-  decimals: number
-  address: string
-}
-export type TokenMetaMap = { [s: string]: TokenMeta }
-export type TokenData = { [assetAddress: string]: BalanceInfo }
-export interface BalanceFetchReturnOnChain {
+
+interface BalanceFetchReturnOnChain {
   timestamp: string | number
   blockNumber: string | number
-  nativeBalance: BalanceInfo
-  tokenData: TokenData
+  nativeBalance: {
+    balanceRaw: string
+    balance: string
+    balanceUsd: number
+  }
+  tokenData: {
+    [assetAddress: string]: {
+      balanceRaw: string
+      balance: string
+      balanceUsd: number
+    }
+  }
   account?: string | undefined
   isArgentWallet?: undefined | boolean
   chainId: string
-  tokensToAdd?: TokenMetaMap
+  tokensToAdd?: {
+    [s: string]: {
+      name: string
+      symbol: string
+      decimals: number
+      address: string
+    }
+  }
 }
-
-export declare interface GeneralCall {
-  address: string // Address of the contract
-  name: string // Function name on the contract (example: balanceOf)
-  params?: any[] // Function params
-}
-
-export type Call = GeneralCall
 
 export async function fetchEvmUserTokenDataEnhanced(
   chainId: string,
   account: string | Address,
   assets: string[] | Address[] = []
 ): Promise<BalanceFetchReturnOnChain | null> {
-  // Ensure token lists are loaded
   await loadTokenLists()
-
-  // zero address is used to fetch native balance
-  const assetsToQuery = [zeroAddress, ...assets]
-
-  const balanceFetcherCall: Call = {
-    address: BALANCE_FETCHER,
-    name: '1delta', // the selector is actually ignored for this function
-    params: [balanceFetcherEncoder([account], assetsToQuery)],
-  }
-
-  let argentCall: Call | undefined = undefined
-  let argentCallResult: any | undefined = undefined
+  const assetsToQuery =
+    assets.length > 0 && !assets.includes(zeroAddress) ? [zeroAddress, ...assets] : assets
 
   let balanceFetcherResult: any
-  if (argentCall) {
-    // Then we should use multicall
-    try {
-      const st = performance.now()
-
-      const multicallResult = await multicallRetry(
-        chainId,
-        [balanceFetcherCall, argentCall],
-        [...MulticallABI, ...BalanceFetcherAbi],
-        undefined
-      )
-      console.debug(
-        'multicall-enhanced: took',
-        performance.now() - st,
-        'for',
-        multicallResult.length,
-        'on',
-        chainId
-      )
-
-      balanceFetcherResult = multicallResult[0]
-      argentCallResult = multicallResult[1]
-      if (!balanceFetcherResult || balanceFetcherResult === '0x') {
-        console.warn('No balance fetcher result returned')
-        // this should never happen (worst case scenario, it returns some data, e.g. nativebalance), but we'll handle it just in case
-        return null
-      }
-    } catch (e) {
-      console.warn('failed multicall for balance fetcher and argent detector multicall', chainId, e)
-      return null // return null to prevent resetting balances
-    }
-  } else {
-    const st = performance.now()
-
-    try {
-      const provider = await getRpcSelectorEvmClient(chainId)
-      if (!provider) {
-        console.warn('Could not get RPC client for balance fetching')
-        return null
-      }
-      const result = await provider.simulateContract({
-        address: BALANCE_FETCHER,
-        abi: BalanceFetcherAbi,
-        functionName: '1delta',
-        args: [balanceFetcherEncoder([account], assetsToQuery) as `0x${string}`],
-      })
-
-      balanceFetcherResult = result?.result ?? '0x'
-
-      console.debug('balance fetcher: took', performance.now() - st, 'on', chainId)
-    } catch (e) {
-      console.warn('failed balance fetching', chainId, e)
-      return null // return null to prevent resetting balances
-    }
-  }
-
   let blockTimestamp: string | undefined
+
   try {
-    const provider = await getRpcSelectorEvmClient(chainId)
+    const provider = await getRpcSelectorEvmClient(chainId, RpcAction.BALANCE)
     if (!provider) {
-      throw new Error('Could not get RPC client')
+      console.warn('Could not get RPC client for balance fetching')
+      return null
     }
+    const result = await provider.simulateContract({
+      address: BALANCE_FETCHER,
+      abi: BalanceFetcherAbi,
+      functionName: '1delta',
+      args: [balanceFetcherEncoder([account], assetsToQuery) as `0x${string}`],
+    })
+
+    balanceFetcherResult = result?.result ?? '0x'
+
     const block = await provider.getBlock()
     blockTimestamp = block?.timestamp.toString()
+
+    console.debug(`${chainId} balances are fetched.`)
   } catch (e) {
-    console.error('Failed to get block timestamp', e)
-    blockTimestamp = String(Math.round(Date.now() / 1000))
+    console.warn('failed balance fetching', chainId, e)
+    return null // return null to prevent resetting balances
   }
 
   // Parse the balance data
@@ -168,16 +100,22 @@ export async function fetchEvmUserTokenDataEnhanced(
   const { balances, blockNumber } = parsedData
 
   if (balances.length === 0) {
-    console.log('No balances found in parsed data')
+    console.debug(`fetchBalances:: ${chainId} no balances found.`)
     return null
   }
 
-  const tokenData: { [assetAddress: string]: BalanceInfo } = {}
+  const tokenData: {
+    [assetAddress: string]: {
+      balanceRaw: string
+      balance: string
+      balanceUsd: number
+    }
+  } = {}
 
   const nativeBalance = balances[0].balances?.[zeroAddress]
 
   const nativeDecimals = dataChains()?.[chainId]?.nativeCurrency?.decimals || 18
-  const nativeData: BalanceInfo = nativeBalance
+  const nativeData = nativeBalance
     ? {
         balanceRaw: nativeBalance.balance.toString(),
         balance: formatUnits(nativeBalance.balance, nativeDecimals),
@@ -189,8 +127,9 @@ export async function fetchEvmUserTokenDataEnhanced(
         balanceUsd: 0,
       }
 
-  assets.forEach((address) => {
-    if (address !== zeroAddress) {
+  assets
+    .filter((address) => address !== zeroAddress)
+    .forEach((address) => {
       const data = balances[0]?.balances[address]
       if (data) {
         const asset = assetsToQuery[data.tokenIndex]
@@ -216,11 +155,10 @@ export async function fetchEvmUserTokenDataEnhanced(
           balanceUsd: 0,
         }
       }
-    }
-  })
+    })
 
   return {
-    timestamp: blockTimestamp ?? Math.floor(Date.now() / 1000), // :) should be handled better!
+    timestamp: blockTimestamp ?? Math.floor(Date.now() / 1000),
     blockNumber: blockNumber.toString(),
     nativeBalance: nativeData,
     tokenData,
