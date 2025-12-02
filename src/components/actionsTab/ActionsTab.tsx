@@ -19,12 +19,13 @@ import ExecuteButton from './ExecuteButton'
 import { ActionsPanel } from './ActionsPanel'
 import { formatDisplayAmount, pickPreferredToken } from './swapUtils'
 import type { ActionCall } from '../actions/shared/types'
-import { reverseQuote } from '../../lib/reverseQuote'
 import {
   generateDestinationCallsKey,
   generateCurrencyKey,
 } from '../../sdk/hooks/useTradeQuotes/stateHelpers'
 import { detectChainTransition } from '../../sdk/hooks/useTradeQuotes/inputValidation'
+import { useDestinationReverseQuote } from '../../sdk/hooks/useDestinationReverseQuote'
+import { useQuoteTrace } from '../../contexts/QuoteTraceContext'
 
 type Props = {
   onResetStateChange?: (showReset: boolean, resetCallback?: () => void) => void
@@ -41,7 +42,6 @@ export function ActionsTab({ onResetStateChange }: Props) {
   const [inputCurrency, setInputCurrency] = useState<RawCurrency | undefined>(undefined)
   const [actionCurrency, setActionCurrency] = useState<RawCurrency | undefined>(undefined)
   const [amount, setAmount] = useState('')
-  const [calculatedInputAmount, setCalculatedInputAmount] = useState<string>('')
   const [destinationInfo, setDestinationInfoState] = useState<
     { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string } | undefined
   >(undefined)
@@ -177,7 +177,6 @@ export function ActionsTab({ onResetStateChange }: Props) {
   const [txInProgress, setTxInProgress] = useState(false)
   const [destinationCalls, setDestinationCalls] = useState<ActionCall[]>([])
   const [actionResetKey, setActionResetKey] = useState(0)
-  const lastCalculatedPricesRef = useRef<{ priceIn: number; priceOut: number } | null>(null)
 
   const [selectedQuoteIndex, setSelectedQuoteIndex] = useState(0)
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true)
@@ -353,6 +352,8 @@ export function ActionsTab({ onResetStateChange }: Props) {
   const highSlippageLossWarning = validation.highSlippageLossWarning
   const currentBuffer = validation.currentBuffer
 
+  const quoteTrace = useQuoteTrace()
+
   const selectedTrade = quotes[selectedQuoteIndex]?.trade
   const [preservedTrade, setPreservedTrade] = useState<typeof selectedTrade | undefined>(undefined)
   const tradeToUse = preservedTrade || selectedTrade
@@ -403,7 +404,6 @@ export function ActionsTab({ onResetStateChange }: Props) {
     ) => {
       if (!currencyAmount) {
         setDestinationInfoState(undefined)
-        setCalculatedInputAmount('')
         setDestinationCalls([])
         setActionCurrency(undefined)
         return
@@ -415,7 +415,6 @@ export function ActionsTab({ onResetStateChange }: Props) {
       const amountHuman = CurrencyHandler.toExactNumber(currencyAmount)
       if (!amountHuman || amountHuman <= 0) {
         setDestinationInfoState(undefined)
-        setCalculatedInputAmount('')
         setDestinationCalls([])
         setActionCurrency(undefined)
         return
@@ -423,70 +422,36 @@ export function ActionsTab({ onResetStateChange }: Props) {
 
       setDestinationInfoState({ currencyAmount, actionLabel, actionId })
       setDestinationCalls(destinationCalls)
-      setCalculatedInputAmount('')
+
+      quoteTrace.addTrace({
+        quotes: [],
+        actionInfo: {
+          actionType: actionId || 'action',
+          actionLabel: actionLabel || 'Destination intent',
+          actionId,
+          destinationCalls,
+        },
+        requestInfo: {
+          srcCurrency: inputCurrency,
+          dstCurrency: currencyAmount.currency,
+          amount: currencyAmount.amount.toString(),
+          slippage,
+        },
+        success: true,
+      })
     },
-    []
+    [inputCurrency, slippage, quoteTrace]
   )
 
-  useEffect(() => {
-    if (!destinationInfo?.currencyAmount) {
-      setCalculatedInputAmount('')
-      lastCalculatedPricesRef.current = null
-      return
-    }
-
-    if (!inputCurrency) {
-      setCalculatedInputAmount('')
-      return
-    }
-
-    if (isLoadingPrices) {
-      return
-    }
-
-    const priceIn = inputPrice ?? 0
-    const priceOut = actionTokenPrice ?? 0
-
-    if (priceIn > 0 && priceOut > 0) {
-      const lastPrices = lastCalculatedPricesRef.current
-      const pricesChanged =
-        !lastPrices || lastPrices.priceIn !== priceIn || lastPrices.priceOut !== priceOut
-
-      const needsRecalculation =
-        pricesChanged || !calculatedInputAmount || calculatedInputAmount === ''
-
-      if (needsRecalculation) {
-        const actionCur = destinationInfo.currencyAmount.currency as RawCurrency
-        const decimalsOut = actionCur.decimals
-        try {
-          const amountIn = reverseQuote(
-            decimalsOut,
-            destinationInfo.currencyAmount.amount.toString(),
-            priceIn,
-            priceOut,
-            slippage
-          )
-          setCalculatedInputAmount(amountIn)
-          setAmount(amountIn)
-          lastCalculatedPricesRef.current = { priceIn, priceOut }
-        } catch (error) {
-          console.error('Error calculating reverse quote:', error)
-          setCalculatedInputAmount('')
-        }
-      }
-    } else {
-      setCalculatedInputAmount('')
-      lastCalculatedPricesRef.current = null
-    }
-  }, [
-    destinationInfo,
+  const { calculatedInputAmount } = useDestinationReverseQuote({
+    destinationAmount: destinationInfo?.currencyAmount,
     inputCurrency,
     inputPrice,
     actionTokenPrice,
-    isLoadingPrices,
-    calculatedInputAmount,
     slippage,
-  ])
+    isLoadingPrices,
+    onInputAmountChange: setAmount,
+  })
 
   return (
     <div>
@@ -557,6 +522,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
               }
             }}
             onTransactionStart={() => {
+              abortQuotes()
               if (selectedTrade) {
                 setPreservedTrade(selectedTrade)
               }

@@ -273,12 +273,10 @@ export function useTradeQuotes({
   }, [
     srcAmount,
     dstCurrency,
-    userAddress,
     slippage,
     refreshTrigger,
     shouldFetch,
     destinationCallsKey,
-    destinationCalls,
     receiverAddress,
     validateAndUpdateQuotes,
     clearRefreshTimeout,
