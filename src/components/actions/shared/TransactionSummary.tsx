@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect } from 'react'
 import type { RawCurrency, RawCurrencyAmount } from '../../../types/currency'
 import { formatDisplayAmount } from '../../actionsTab/swapUtils'
 import { CurrencyHandler } from '../../../sdk/types'
-import { usePriceQuery } from '../../../hooks/prices/usePriceQuery'
+import type { PricesRecord } from '../../../hooks/prices/usePriceQuery'
 
 interface TransactionSummaryProps {
   srcCurrency?: RawCurrency
@@ -13,6 +13,9 @@ interface TransactionSummaryProps {
   destinationActionLabel?: string
   route?: string
   chains?: Record<string, { data?: { name?: string } }>
+  pricesData?: PricesRecord
+  isLoadingPrices?: boolean
+  isFetchingPrices?: boolean
 }
 
 export function TransactionSummary({
@@ -24,6 +27,9 @@ export function TransactionSummary({
   destinationActionLabel,
   route,
   chains,
+  pricesData: pricesDataProp,
+  isLoadingPrices: isLoadingPricesProp,
+  isFetchingPrices: isFetchingPricesProp,
 }: TransactionSummaryProps) {
   const outputAmount = useMemo(() => {
     if (outputAmountProp) return outputAmountProp
@@ -44,21 +50,9 @@ export function TransactionSummary({
     return srcCurrency && dstCurrency && outputAmount && Number(outputAmount) > 0 && isAmountsReady
   }, [srcCurrency, dstCurrency, outputAmount, isAmountsReady])
 
-  const currenciesForPrice = useMemo(() => {
-    const currencies: RawCurrency[] = []
-    if (srcCurrency) currencies.push(srcCurrency)
-    if (dstCurrency) currencies.push(dstCurrency)
-    return currencies
-  }, [srcCurrency, dstCurrency])
-
-  const {
-    data: pricesData,
-    isLoading: isLoadingPrices,
-    isFetching: isFetchingPrices,
-  } = usePriceQuery({
-    currencies: currenciesForPrice,
-    enabled: currenciesForPrice.length > 0,
-  })
+  const pricesData = pricesDataProp
+  const isLoadingPrices = isLoadingPricesProp ?? false
+  const isFetchingPrices = isFetchingPricesProp ?? false
 
   const srcPrice = useMemo(() => {
     if (!pricesData || !srcCurrency) return undefined
@@ -82,7 +76,7 @@ export function TransactionSummary({
 
   useEffect(() => {
     setShowCalculatingTimeout(false)
-  }, [currenciesForPrice])
+  }, [srcCurrency, dstCurrency])
 
   useEffect(() => {
     if (isPricesLoading) {

@@ -105,25 +105,38 @@ export function ActionsTab({ onResetStateChange }: Props) {
     return currencies
   }, [inputBalances, inputChainId, inputAddressesWithNative, address])
 
-  const { data: inputPrices } = usePriceQuery({
-    currencies: inputPriceCurrencies,
-    enabled: inputPriceCurrencies.length > 0,
-  })
-
-  const currenciesForPriceFetch = useMemo(() => {
+  const allCurrenciesForPrice = useMemo(() => {
     const currencies: RawCurrency[] = []
-    if (inputCurrency) {
-      currencies.push(inputCurrency)
-    }
-    if (actionCurrency) {
-      currencies.push(actionCurrency)
-    }
-    return currencies
-  }, [inputCurrency, actionCurrency])
+    const seenKeys = new Set<string>()
 
-  const { data: pricesData, isLoading: isLoadingPrices } = usePriceQuery({
-    currencies: currenciesForPriceFetch,
-    enabled: currenciesForPriceFetch.length > 0,
+    const addCurrency = (currency?: RawCurrency) => {
+      if (!currency) return
+      const key = `${currency.chainId}-${currency.address.toLowerCase()}`
+      if (!seenKeys.has(key)) {
+        seenKeys.add(key)
+        currencies.push(currency)
+      }
+    }
+
+    addCurrency(inputCurrency)
+    addCurrency(actionCurrency)
+
+    if (inputPriceCurrencies.length > 0) {
+      for (const currency of inputPriceCurrencies) {
+        addCurrency(currency)
+      }
+    }
+
+    return currencies
+  }, [inputCurrency, actionCurrency, inputPriceCurrencies])
+
+  const {
+    data: pricesData,
+    isLoading: isLoadingPrices,
+    isFetching: isFetchingPrices,
+  } = usePriceQuery({
+    currencies: allCurrenciesForPrice,
+    enabled: allCurrenciesForPrice.length > 0,
   })
 
   const inputPrice = useMemo(() => {
@@ -390,48 +403,31 @@ export function ActionsTab({ onResetStateChange }: Props) {
         return
       }
 
-      let priceIn = inputPrice ?? 0
-      let priceOut = actionTokenPrice ?? 0
-
-      if (priceIn <= 0 || priceOut <= 0) {
-        setDestinationInfoState({ currencyAmount, actionLabel, actionId })
-        setDestinationCalls(destinationCalls)
-        setCalculatedInputAmount('')
-        return
-      }
-
-      const decimalsOut = actionCur.decimals
-      const amountIn = reverseQuote(
-        decimalsOut,
-        currencyAmount.amount.toString(),
-        priceIn,
-        priceOut,
-        slippage
-      )
-
-      setCalculatedInputAmount(amountIn)
       setDestinationInfoState({ currencyAmount, actionLabel, actionId })
       setDestinationCalls(destinationCalls)
-
-      setAmount(amountIn)
+      setCalculatedInputAmount('')
     },
-    [inputCurrency, inputPrice, actionTokenPrice, slippage]
+    []
   )
 
   useEffect(() => {
     if (!destinationInfo?.currencyAmount) {
+      setCalculatedInputAmount('')
       lastCalculatedPricesRef.current = null
       return
     }
 
     if (!inputCurrency) {
+      setCalculatedInputAmount('')
       return
     }
 
-    if (isLoadingPrices) return
+    if (isLoadingPrices) {
+      return
+    }
 
-    let priceIn = inputPrice ?? 0
-    let priceOut = actionTokenPrice ?? 0
+    const priceIn = inputPrice ?? 0
+    const priceOut = actionTokenPrice ?? 0
 
     if (priceIn > 0 && priceOut > 0) {
       const lastPrices = lastCalculatedPricesRef.current
@@ -456,10 +452,12 @@ export function ActionsTab({ onResetStateChange }: Props) {
           setAmount(amountIn)
           lastCalculatedPricesRef.current = { priceIn, priceOut }
         } catch (error) {
-          console.error('Error recalculating reverse quote:', error)
+          console.error('Error calculating reverse quote:', error)
+          setCalculatedInputAmount('')
         }
       }
     } else {
+      setCalculatedInputAmount('')
       lastCalculatedPricesRef.current = null
     }
   }, [
@@ -487,6 +485,9 @@ export function ActionsTab({ onResetStateChange }: Props) {
         onSrcCurrencyChange={setInputCurrency}
         calculatedInputAmount={calculatedInputAmount}
         destinationInfo={destinationInfo}
+        pricesData={pricesData}
+        isLoadingPrices={isLoadingPrices}
+        isFetchingPrices={isFetchingPrices}
       />
 
       {(tradeToUse || (destinationInfo && inputCurrency && actionCurrency)) && (

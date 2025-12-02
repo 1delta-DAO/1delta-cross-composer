@@ -4,6 +4,7 @@ import { ActionHandler } from '../actions/shared/types'
 import type { GenericTrade } from '@1delta/lib-utils'
 import { TransactionSummary } from '../actions/shared/TransactionSummary'
 import { useChainsRegistry } from '../../sdk/hooks/useChainsRegistry'
+import type { PricesRecord } from '../../hooks/prices/usePriceQuery'
 
 type ActionsPanelProps = {
   srcCurrency?: RawCurrency
@@ -18,6 +19,9 @@ type ActionsPanelProps = {
   calculatedInputAmount?: string
   destinationInfo?: { currencyAmount?: RawCurrencyAmount; actionLabel?: string }
   resetKey?: number
+  pricesData?: PricesRecord
+  isLoadingPrices?: boolean
+  isFetchingPrices?: boolean
 }
 
 export function ActionsPanel({
@@ -32,6 +36,9 @@ export function ActionsPanel({
   calculatedInputAmount,
   destinationInfo,
   resetKey,
+  pricesData,
+  isLoadingPrices,
+  isFetchingPrices,
 }: ActionsPanelProps) {
   const { data: chains } = useChainsRegistry()
 
@@ -57,6 +64,9 @@ export function ActionsPanel({
         currencyAmount={destinationInfo?.currencyAmount}
         destinationActionLabel={destinationInfo?.actionLabel}
         chains={chains}
+        pricesData={pricesData}
+        isLoadingPrices={isLoadingPrices}
+        isFetchingPrices={isFetchingPrices}
       />
     </>
   )
