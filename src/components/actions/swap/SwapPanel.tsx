@@ -7,11 +7,16 @@ import { parseUnits } from 'viem'
 import type { Address } from 'viem'
 import { Logo } from '../../common/Logo'
 import { getTokenFromCache } from '../../../lib/data/tokenListsCache'
+import type { GenericTrade } from '@1delta/lib-utils'
+import { SwapCard } from './SwapCard'
 
 interface SwapPanelProps {
   srcCurrency?: RawCurrency
   dstCurrency?: RawCurrency
   setDestinationInfo?: ActionHandler
+  quotes?: Array<{ label: string; trade: GenericTrade }>
+  selectedQuoteIndex?: number
+  setSelectedQuoteIndex?: (index: number) => void
   resetKey?: number
 }
 
@@ -19,6 +24,9 @@ export function SwapPanel({
   srcCurrency,
   dstCurrency: initialDstCurrency,
   setDestinationInfo,
+  quotes,
+  selectedQuoteIndex = 0,
+  setSelectedQuoteIndex,
   resetKey,
 }: SwapPanelProps) {
   const [selectedDstCurrency, setSelectedDstCurrency] = useState<RawCurrency | undefined>(
@@ -92,6 +100,33 @@ export function SwapPanel({
     setTokenModalOpen(!close)
   }
 
+  const handleQuoteSelect = (index: number) => {
+    if (!srcCurrency || !dstCurrency || !setDestinationInfo || !quotes || !setSelectedQuoteIndex)
+      return
+
+    setSelectedQuoteIndex(index)
+
+    if (!dstCurrency.chainId || !dstCurrency.address) {
+      return
+    }
+
+    const tokenMeta = getTokenFromCache(String(dstCurrency.chainId), dstCurrency.address)
+    const currency = tokenMeta || dstCurrency
+    if (!currency) {
+      return
+    }
+
+    if (outputAmount) {
+      try {
+        const outputAmountWei = parseUnits(outputAmount, currency.decimals)
+        const currencyAmount = CurrencyHandler.fromRawAmount(currency, outputAmountWei.toString())
+        setDestinationInfo(currencyAmount, undefined, [])
+      } catch {
+        setDestinationInfo?.(undefined, undefined, [])
+      }
+    }
+  }
+
   useEffect(() => {
     if (resetKey !== undefined && resetKey > 0) {
       setOutputAmount('')
@@ -135,6 +170,21 @@ export function SwapPanel({
             )}
           </button>
         </div>
+
+        {quotes && quotes.length > 0 && (
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {quotes.map((quote, index) => (
+              <SwapCard
+                key={`${quote.label}-${index}`}
+                aggregator={quote.label}
+                trade={quote.trade}
+                outputTokenSymbol={dstCurrency?.symbol || 'tokens'}
+                isSelected={selectedQuoteIndex === index}
+                onSelect={() => handleQuoteSelect(index)}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       <TokenSelectorModal
