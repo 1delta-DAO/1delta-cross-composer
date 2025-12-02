@@ -4,7 +4,7 @@ import { zeroAddress, parseUnits } from 'viem'
 import { useChainId, useConnection } from 'wagmi'
 import { useChainsRegistry } from '../../sdk/hooks/useChainsRegistry'
 import { useTokenLists } from '../../hooks/useTokenLists'
-import { useEvmBalances } from '../../hooks/balances/useEvmBalances'
+import { useBalanceQuery } from '../../hooks/balances/useBalanceQuery'
 import { usePriceQuery } from '../../hooks/prices/usePriceQuery'
 import { useDebounce } from '../../hooks/useDebounce'
 import { CurrencyHandler, SupportedChainId } from '../../sdk/types'
@@ -76,10 +76,28 @@ export function ActionsTab({ onResetStateChange }: Props) {
     return addrs
   }, [inputAddrs, inputChainId, address])
 
-  const { data: inputBalances } = useEvmBalances({
-    chainId: inputChainId,
-    userAddress: address,
-    tokenAddresses: inputAddressesWithNative,
+  const inputBalanceCurrencies = useMemo(() => {
+    if (!inputChainId || !address) return []
+    const currencies: RawCurrency[] = []
+    const seenAddresses = new Set<string>()
+
+    for (const addr of inputAddressesWithNative) {
+      const currency = getCurrency(inputChainId, addr)
+      if (currency) {
+        const key = currency.address.toLowerCase()
+        if (!seenAddresses.has(key)) {
+          seenAddresses.add(key)
+          currencies.push(currency)
+        }
+      }
+    }
+
+    return currencies
+  }, [inputAddressesWithNative, inputChainId, address])
+
+  const { data: inputBalances } = useBalanceQuery({
+    currencies: inputBalanceCurrencies,
+    enabled: inputBalanceCurrencies.length > 0 && Boolean(address),
   })
 
   const inputPriceCurrencies = useMemo(() => {
@@ -89,7 +107,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
     const seenAddresses = new Set<string>()
 
     for (const addr of inputAddressesWithNative) {
-      const bal = inputBalances[inputChainId][addr.toLowerCase()]
+      const bal = inputBalances[inputChainId]?.[addr.toLowerCase()]
       if (bal && Number(bal.value || 0) > 0) {
         const currency = getCurrency(inputChainId, addr)
         if (currency) {
@@ -524,18 +542,12 @@ export function ActionsTab({ onResetStateChange }: Props) {
                 abortQuotes()
                 if (inputCurrency?.chainId && address) {
                   queryClient.invalidateQueries({
-                    queryKey: ['balances', inputCurrency.chainId, address],
-                  })
-                  queryClient.invalidateQueries({
-                    queryKey: ['tokenBalance', inputCurrency.chainId, address],
+                    queryKey: ['balances', address],
                   })
                 }
                 if (actionCurrency?.chainId && address) {
                   queryClient.invalidateQueries({
-                    queryKey: ['balances', actionCurrency.chainId, address],
-                  })
-                  queryClient.invalidateQueries({
-                    queryKey: ['tokenBalance', actionCurrency.chainId, address],
+                    queryKey: ['balances', address],
                   })
                 }
                 setDestinationInfo(undefined, undefined, [])

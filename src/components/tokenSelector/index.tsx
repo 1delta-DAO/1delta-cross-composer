@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import type { Address } from 'viem'
 import { zeroAddress } from 'viem'
 import { useTokenLists } from '../../hooks/useTokenLists'
-import { useEvmBalances } from '../../hooks/balances/useEvmBalances'
+import { useBalanceQuery } from '../../hooks/balances/useBalanceQuery'
 import { usePriceQuery } from '../../hooks/prices/usePriceQuery'
 import { useChainsRegistry } from '../../sdk/hooks/useChainsRegistry'
 import { CurrencyHandler, SupportedChainId } from '../../sdk/types'
@@ -65,19 +65,28 @@ export function TokenSelector({
   const allAddrs = useMemo(() => Object.keys(tokensMap) as Address[], [tokensMap])
   const nativeCurrencySymbol = chains?.[chainId]?.data?.nativeCurrency?.symbol?.toUpperCase() || ''
 
-  // Include zero address for native token balance
-  const addressesWithNative = useMemo(() => {
-    const addrs = [...allAddrs]
-    if (!addrs.includes(zeroAddress as Address)) {
-      addrs.unshift(zeroAddress as Address)
-    }
-    return addrs
-  }, [allAddrs])
+  const balanceCurrencies = useMemo(() => {
+    if (!userAddress) return []
+    const currencies: RawCurrency[] = []
+    const seenAddresses = new Set<string>()
 
-  const { data: balances, isLoading: balancesLoading } = useEvmBalances({
-    chainId,
-    userAddress,
-    tokenAddresses: userAddress ? addressesWithNative : [],
+    for (const addr of allAddrs) {
+      const currency = getCurrency(chainId, addr)
+      if (currency) {
+        const key = currency.address.toLowerCase()
+        if (!seenAddresses.has(key)) {
+          seenAddresses.add(key)
+          currencies.push(currency)
+        }
+      }
+    }
+
+    return currencies
+  }, [allAddrs, chainId, userAddress])
+
+  const { data: balances, isLoading: balancesLoading } = useBalanceQuery({
+    currencies: balanceCurrencies,
+    enabled: balanceCurrencies.length > 0 && Boolean(userAddress),
   })
 
   const relevant = useMemo(() => {
@@ -183,7 +192,7 @@ export function TokenSelector({
     const seenAddresses = new Set<string>()
 
     if (balances?.[chainId] && userAddress) {
-      for (const addr of addressesWithNative) {
+      for (const addr of allAddrs) {
         const bal = balances[chainId][addr.toLowerCase()]
         if (bal && Number(bal.value || 0) > 0) {
           const currency = getCurrency(chainId, addr)
@@ -210,7 +219,7 @@ export function TokenSelector({
     }
 
     return currencies
-  }, [balances, chainId, addressesWithNative, userAddress, relevant])
+  }, [balances, chainId, allAddrs, userAddress, relevant])
 
   const { data: prices, isLoading: pricesLoading } = usePriceQuery({
     currencies: priceCurrencies,
