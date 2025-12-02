@@ -142,12 +142,6 @@ export function StellaStakingPanel({
             inputMode="decimal"
           />
         </div>
-
-        {calculatedInputAmount && srcCurrency && outputAmount && Number(outputAmount) > 0 && (
-          <div className="text-xs text-success">
-            ✓ Requires ~{Number(calculatedInputAmount).toFixed(6)} {srcCurrency.symbol || 'tokens'}
-          </div>
-        )}
       </div>
     </div>
   )
