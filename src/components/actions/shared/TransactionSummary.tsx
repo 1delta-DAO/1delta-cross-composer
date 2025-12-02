@@ -40,15 +40,10 @@ export function TransactionSummary({
     return undefined
   }, [outputAmountProp, currencyAmount])
 
-  const isAmountsReady = useMemo(() => {
-    const hasOutputAmount = outputAmount && Number(outputAmount) > 0
-    const hasInputAmount = inputAmount && Number(inputAmount) > 0
-    return hasOutputAmount && hasInputAmount
-  }, [outputAmount, inputAmount])
-
   const shouldShow = useMemo(() => {
-    return srcCurrency && dstCurrency && outputAmount && Number(outputAmount) > 0 && isAmountsReady
-  }, [srcCurrency, dstCurrency, outputAmount, isAmountsReady])
+    const hasOutputAmount = outputAmount && Number(outputAmount) > 0
+    return Boolean(srcCurrency && dstCurrency && hasOutputAmount)
+  }, [srcCurrency, dstCurrency, outputAmount])
 
   const pricesData = pricesDataProp
   const isLoadingPrices = isLoadingPricesProp ?? false
@@ -84,7 +79,6 @@ export function TransactionSummary({
       return
     }
 
-    const hasCurrencyAmount = currencyAmount !== undefined
     const hasInputAmount = inputAmount && Number(inputAmount) > 0
     const hasPrices = srcPrice !== undefined && dstPrice !== undefined
 
@@ -93,20 +87,19 @@ export function TransactionSummary({
       return
     }
 
-    if (hasCurrencyAmount && !hasInputAmount) {
-      setShowCalculatingTimeout(false)
+    if (!hasInputAmount) {
+      if (!hasPrices) {
+        const timer = setTimeout(() => {
+          setShowCalculatingTimeout(true)
+        }, 5000)
+        return () => clearTimeout(timer)
+      }
+      setShowCalculatingTimeout(true)
       return
     }
 
-    if (!hasInputAmount && !hasPrices) {
-      const timer = setTimeout(() => {
-        setShowCalculatingTimeout(true)
-      }, 5000)
-      return () => clearTimeout(timer)
-    } else {
-      setShowCalculatingTimeout(false)
-    }
-  }, [inputAmount, srcPrice, dstPrice, isPricesLoading, currencyAmount])
+    setShowCalculatingTimeout(false)
+  }, [inputAmount, srcPrice, dstPrice, isPricesLoading])
 
   const inputUsd = useMemo(() => {
     if (!inputAmount || !srcPrice) return undefined

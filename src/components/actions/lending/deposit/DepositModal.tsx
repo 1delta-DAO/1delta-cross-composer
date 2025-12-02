@@ -71,7 +71,8 @@ export function DepositActionModal({
       CurrencyHandler.fromRawAmount(underlying, parsedAmount),
       undefined,
       destinationCalls,
-      `${mTokenSymbol} shares`
+      `${mTokenSymbol} shares`,
+      'moonwell_deposit'
     )
 
     onClose()
@@ -91,7 +92,13 @@ export function DepositActionModal({
               Deposit into Moonwell and receive {mTokenSymbol} shares.
             </p>
           </div>
-          <button className="btn btn-sm btn-ghost btn-circle" onClick={onClose}>
+          <button
+            className="btn btn-sm btn-ghost btn-circle"
+            onClick={() => {
+              setDestinationInfo?.(undefined, undefined, [])
+              onClose()
+            }}
+          >
             ✕
           </button>
         </div>
@@ -149,7 +156,13 @@ export function DepositActionModal({
               representing your deposit.
             </div>
             <div className="flex gap-2">
-              <button className="btn btn-ghost btn-sm" onClick={onClose}>
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={() => {
+                  setDestinationInfo?.(undefined, undefined, [])
+                  onClose()
+                }}
+              >
                 Cancel
               </button>
               <button className="btn btn-primary btn-sm" onClick={handleConfirm} disabled={!amount}>
