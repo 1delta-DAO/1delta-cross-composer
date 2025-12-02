@@ -23,7 +23,7 @@ type ReadyListener = () => void
 const listeners = new Set<ReadyListener>()
 
 const getListUrl = (chainId: string) =>
-  `https://raw.githubusercontent.com/1delta-DAO/asset-lists/main/${chainId}.json`
+  `https://raw.githubusercontent.com/1delta-DAO/token-lists/main/${chainId}.json`
 
 async function fetchList(chainId: string): Promise<VersionedDeltaTokenList | null> {
   try {
