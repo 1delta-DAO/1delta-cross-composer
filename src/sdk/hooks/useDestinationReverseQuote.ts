@@ -67,7 +67,10 @@ export function useDestinationReverseQuote({
         !lastPrices || lastPrices.priceIn !== priceIn || lastPrices.priceOut !== priceOut
 
       const needsRecalculation =
-        pricesChanged || destinationAmountChanged || !calculatedInputAmount || calculatedInputAmount === ''
+        pricesChanged ||
+        destinationAmountChanged ||
+        !calculatedInputAmount ||
+        calculatedInputAmount === ''
 
       if (needsRecalculation) {
         const decimalsOut = destinationAmount.currency.decimals

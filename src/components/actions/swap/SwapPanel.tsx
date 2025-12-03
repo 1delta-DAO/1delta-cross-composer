@@ -100,7 +100,7 @@ export function SwapPanel({
       const outputAmountWei = parseUnits(outputAmount, currency.decimals)
       const currencyAmount = CurrencyHandler.fromRawAmount(currency, outputAmountWei.toString())
       const destinationKey = `${currency.chainId}-${currency.address}-${currencyAmount.amount.toString()}`
-      
+
       if (lastDestinationKeyRef.current !== destinationKey) {
         lastDestinationKeyRef.current = destinationKey
         setDestinationInfo(currencyAmount, undefined, [])
