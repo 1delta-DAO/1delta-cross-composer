@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import type { RawCurrency } from '../../../types/currency'
 import { CurrencyHandler } from '../../../sdk/types'
 import { ActionHandler } from '../shared/types'
@@ -37,6 +37,13 @@ export function BridgePanel({
   const [outputAmount, setOutputAmount] = useState('')
   const [tokenModalOpen, setTokenModalOpen] = useState(false)
   const [tokenModalQuery, setTokenModalQuery] = useState('')
+  const lastDestinationKeyRef = useRef<string | null>(null)
+  const lastResetKeyRef = useRef<number>(0)
+  const setDestinationInfoRef = useRef(setDestinationInfo)
+
+  useEffect(() => {
+    setDestinationInfoRef.current = setDestinationInfo
+  }, [setDestinationInfo])
 
   const dstCurrency = useMemo(
     () => selectedDstCurrency || initialDstCurrency,
@@ -45,14 +52,26 @@ export function BridgePanel({
   const debouncedOutputAmount = useDebounce(outputAmount, 1000)
 
   useEffect(() => {
+    if (initialDstCurrency && !selectedDstCurrency) {
+      setSelectedDstCurrency(initialDstCurrency)
+    }
+  }, [initialDstCurrency, selectedDstCurrency])
+
+  useEffect(() => {
     if (!srcCurrency || !dstCurrency || !setDestinationInfo || !debouncedOutputAmount) {
-      setDestinationInfo?.(undefined, undefined, [])
+      if (lastDestinationKeyRef.current !== null) {
+        lastDestinationKeyRef.current = null
+        setDestinationInfoRef.current?.(undefined, undefined, [])
+      }
       return
     }
 
     const amount = Number(debouncedOutputAmount)
     if (!amount || amount <= 0) {
-      setDestinationInfo?.(undefined, undefined, [])
+      if (lastDestinationKeyRef.current !== null) {
+        lastDestinationKeyRef.current = null
+        setDestinationInfoRef.current?.(undefined, undefined, [])
+      }
       return
     }
 
@@ -67,12 +86,20 @@ export function BridgePanel({
 
     const outputAmountWei = parseUnits(debouncedOutputAmount, dstCurrency.decimals)
     const currencyAmount = CurrencyHandler.fromRawAmount(dstTokenMeta, outputAmountWei.toString())
+    const destinationKey = `${currencyAmount.currency.chainId}-${currencyAmount.currency.address}-${currencyAmount.amount.toString()}`
 
-    setDestinationInfo(currencyAmount, undefined, [])
-  }, [srcCurrency, dstCurrency, debouncedOutputAmount, setDestinationInfo])
+    if (lastDestinationKeyRef.current !== destinationKey) {
+      lastDestinationKeyRef.current = destinationKey
+      setDestinationInfoRef.current?.(currencyAmount, undefined, [])
+    }
+  }, [srcCurrency, dstCurrency, debouncedOutputAmount])
 
   const handleOutputAmountChange = (value: string) => {
     setOutputAmount(value)
+    if (!value || Number(value) <= 0) {
+      lastDestinationKeyRef.current = null
+      setDestinationInfoRef.current?.(undefined, undefined, [])
+    }
   }
 
   const handleTokenSelect = useCallback((currency: RawCurrency) => {
@@ -101,18 +128,24 @@ export function BridgePanel({
     if (dstTokenMeta && outputAmount) {
       const outputAmountWei = parseUnits(outputAmount, dstCurrency.decimals)
       const currencyAmount = CurrencyHandler.fromRawAmount(dstTokenMeta, outputAmountWei.toString())
+      const destinationKey = `${currencyAmount.currency.chainId}-${currencyAmount.currency.address}-${currencyAmount.amount.toString()}`
 
-      setDestinationInfo(currencyAmount, undefined, [])
+      if (lastDestinationKeyRef.current !== destinationKey) {
+        lastDestinationKeyRef.current = destinationKey
+        setDestinationInfoRef.current?.(currencyAmount, undefined, [])
+      }
     }
   }
 
   useEffect(() => {
-    if (resetKey !== undefined && resetKey > 0) {
+    if (resetKey !== undefined && resetKey > 0 && resetKey !== lastResetKeyRef.current) {
+      lastResetKeyRef.current = resetKey
       setOutputAmount('')
       setSelectedDstCurrency(initialDstCurrency)
-      setDestinationInfo?.(undefined, undefined, [])
+      lastDestinationKeyRef.current = null
+      setDestinationInfoRef.current?.(undefined, undefined, [])
     }
-  }, [resetKey])
+  }, [resetKey, initialDstCurrency])
 
   if (!srcCurrency) {
     return null
