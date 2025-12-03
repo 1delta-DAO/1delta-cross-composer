@@ -356,6 +356,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
 
   const selectedTrade = quotes[selectedQuoteIndex]?.trade
   const [preservedTrade, setPreservedTrade] = useState<typeof selectedTrade | undefined>(undefined)
+  const [wasTransactionCancelled, setWasTransactionCancelled] = useState(false)
   const tradeToUse = preservedTrade || selectedTrade
 
   const quoteOut = useMemo(() => {
@@ -405,7 +406,12 @@ export function ActionsTab({ onResetStateChange }: Props) {
       if (!currencyAmount) {
         setDestinationInfoState(undefined)
         setDestinationCalls([])
+        const prevActionCurrency = actionCurrency
         setActionCurrency(undefined)
+        if (prevActionCurrency) {
+          setAmount('')
+          setWasTransactionCancelled(false)
+        }
         return
       }
 
@@ -453,6 +459,16 @@ export function ActionsTab({ onResetStateChange }: Props) {
     onInputAmountChange: setAmount,
   })
 
+  useEffect(() => {
+    if (!actionCurrency && !wasTransactionCancelled) {
+      clearQuotes()
+      setPreservedTrade(undefined)
+    }
+    if (wasTransactionCancelled && actionCurrency) {
+      setWasTransactionCancelled(false)
+    }
+  }, [actionCurrency, clearQuotes, wasTransactionCancelled])
+
   return (
     <div>
       <ActionsPanel
@@ -473,7 +489,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
         isFetchingPrices={isFetchingPrices}
       />
 
-      {(tradeToUse || (destinationInfo && inputCurrency && actionCurrency)) && (
+      {((tradeToUse && actionCurrency) || (destinationInfo && inputCurrency && actionCurrency)) && (
         <div className="mt-4 space-y-3">
           {highSlippageLossWarning && tradeToUse && (
             <div className="rounded-lg bg-warning/10 border border-warning p-3">
@@ -519,22 +535,26 @@ export function ActionsTab({ onResetStateChange }: Props) {
                 setActionResetKey((prev) => prev + 1)
                 setPreservedTrade(undefined)
                 setAmount('')
+                setWasTransactionCancelled(false)
               }
             }}
             onTransactionStart={() => {
-              abortQuotes()
               if (selectedTrade) {
                 setPreservedTrade(selectedTrade)
               }
               setTxInProgress(true)
+              setWasTransactionCancelled(false)
             }}
             onTransactionEnd={() => {
               setTxInProgress(false)
+              setWasTransactionCancelled(true)
+              setPreservedTrade(undefined)
             }}
             onReset={() => {
               setAmount('')
               setTxInProgress(false)
               setPreservedTrade(undefined)
+              setWasTransactionCancelled(false)
             }}
             onResetStateChange={onResetStateChange}
           />
