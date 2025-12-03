@@ -249,15 +249,19 @@ export function usePriceQuery(params: { currencies: RawCurrency[]; enabled?: boo
   const { currencies, enabled = true } = params
 
   const queryKey = useMemo(() => {
-    const keys: Set<string> = new Set()
+    const perCurrencyKeys: string[] = []
+
     for (const currency of currencies) {
-      if (currency.assetGroup) {
-        keys.add(currency.assetGroup)
-      } else {
-        keys.add(currency.address.toLowerCase())
-      }
+      if (!currency?.chainId || !currency?.address) continue
+
+      const baseKey = currency.assetGroup ? currency.assetGroup : currency.address.toLowerCase()
+
+      perCurrencyKeys.push(`${currency.chainId}:${baseKey}`)
     }
-    return ['prices', ...Array.from(keys).sort().join(',')]
+
+    perCurrencyKeys.sort()
+
+    return ['prices', ...perCurrencyKeys]
   }, [currencies])
 
   const query = useQuery({

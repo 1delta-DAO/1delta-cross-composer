@@ -14,16 +14,17 @@ const THEMES = [
   'moonbeam',
   'luxury',
 ] as const
+const DEFAULT_THEME = 'dark'
 
 export function ThemeSwitcher() {
-  const [theme, setTheme] = useState<string>('synthwave')
+  const [theme, setTheme] = useState<string>(DEFAULT_THEME)
 
   // Initialize from localStorage & apply once on mount
   useEffect(() => {
     if (typeof window === 'undefined') return
 
     const stored = window.localStorage.getItem('theme')
-    const initial = stored && THEMES.includes(stored as any) ? stored : 'synthwave'
+    const initial = stored && THEMES.includes(stored as any) ? stored : DEFAULT_THEME
 
     setTheme(initial)
     document.documentElement.setAttribute('data-theme', initial)

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { CurrencyHandler, SupportedChainId } from '../../../../sdk/types'
 import { ActionHandler } from '../../shared/types'
 import { buildCalls } from './callBuilder'
@@ -28,6 +28,12 @@ export function StellaStakingPanel({
   const { address } = useConnection()
 
   const [outputAmount, setOutputAmount] = useState('')
+  const lastDestinationKeyRef = useRef<string | null>(null)
+  const setDestinationInfoRef = useRef(setDestinationInfo)
+
+  useEffect(() => {
+    setDestinationInfoRef.current = setDestinationInfo
+  }, [setDestinationInfo])
 
   const chainId = SupportedChainId.MOONBEAM
   const debouncedOutputAmount = useDebounce(outputAmount, 1000)
@@ -91,12 +97,19 @@ export function StellaStakingPanel({
 
   useEffect(() => {
     const autoSelect = async () => {
-      if (!debouncedOutputAmount || !xcDOTToken || !address) return
+      if (!debouncedOutputAmount || !xcDOTToken || !address) {
+        if (lastDestinationKeyRef.current !== null) {
+          lastDestinationKeyRef.current = null
+          setDestinationInfoRef.current?.(undefined, undefined, [])
+        }
+        return
+      }
 
       const amount = Number(debouncedOutputAmount)
       if (!amount || amount <= 0) {
-        if (setDestinationInfo) {
-          setDestinationInfo(undefined, undefined, [])
+        if (lastDestinationKeyRef.current !== null) {
+          lastDestinationKeyRef.current = null
+          setDestinationInfoRef.current?.(undefined, undefined, [])
         }
         return
       }
@@ -105,28 +118,32 @@ export function StellaStakingPanel({
         userAddress: address as any,
       })
 
-      if (setDestinationInfo) {
-        const outputAmountWei = parseUnits(debouncedOutputAmount, xcDOTToken.decimals)
-        const currencyAmount = CurrencyHandler.fromRawAmount(xcDOTToken, outputAmountWei.toString())
+      const outputAmountWei = parseUnits(debouncedOutputAmount, xcDOTToken.decimals)
+      const currencyAmount = CurrencyHandler.fromRawAmount(xcDOTToken, outputAmountWei.toString())
+      const destinationKey = `${currencyAmount.currency.chainId}-${currencyAmount.currency.address}-${currencyAmount.amount.toString()}-${destinationCalls.length}`
 
-        setDestinationInfo(currencyAmount, undefined, destinationCalls, 'Staked DOT')
+      if (lastDestinationKeyRef.current !== destinationKey) {
+        lastDestinationKeyRef.current = destinationKey
+        setDestinationInfoRef.current(currencyAmount, undefined, destinationCalls, 'Staked DOT')
       }
     }
 
     autoSelect()
-  }, [debouncedOutputAmount, xcDOTToken, address, setDestinationInfo])
+  }, [debouncedOutputAmount, xcDOTToken, address])
 
   const handleAmountChange = (value: string) => {
     setOutputAmount(value)
     if (!value || Number(value) <= 0) {
-      setDestinationInfo?.(undefined, undefined, [])
+      lastDestinationKeyRef.current = null
+      setDestinationInfoRef.current?.(undefined, undefined, [])
     }
   }
 
   useEffect(() => {
     if (resetKey !== undefined && resetKey > 0) {
       setOutputAmount('')
-      setDestinationInfo?.(undefined, undefined, [])
+      lastDestinationKeyRef.current = null
+      setDestinationInfoRef.current?.(undefined, undefined, [])
     }
   }, [resetKey])
 
@@ -142,12 +159,6 @@ export function StellaStakingPanel({
             inputMode="decimal"
           />
         </div>
-
-        {calculatedInputAmount && srcCurrency && outputAmount && Number(outputAmount) > 0 && (
-          <div className="text-xs text-success">
-            ✓ Requires ~{Number(calculatedInputAmount).toFixed(6)} {srcCurrency.symbol || 'tokens'}
-          </div>
-        )}
       </div>
     </div>
   )

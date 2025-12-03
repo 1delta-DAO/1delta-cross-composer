@@ -2,18 +2,11 @@ import { SUPPORTED_CHAIN_IDS } from './data/chainIds'
 import type { RawCurrency } from '../types/currency'
 
 export type TokenListsRecord = Record<string, Record<string, RawCurrency>>
-interface VersionedDeltaTokenList {
-  name: string
-  version: {
-    major: number
-    minor: number
-    patch: number
-  }
-  timestamp: string
-  tags: Record<string, { name: string; description: string }>
-  logoURI: string
-  keywords: string[]
+export interface DeltaTokenList {
+  chainId: string
+  version: string
   list: Record<string, RawCurrency>
+  mainTokens: string[]
 }
 
 let cachedTokenLists: TokenListsRecord | null = null
@@ -25,7 +18,7 @@ const listeners = new Set<ReadyListener>()
 const getListUrl = (chainId: string) =>
   `https://raw.githubusercontent.com/1delta-DAO/token-lists/main/${chainId}.json`
 
-async function fetchList(chainId: string): Promise<VersionedDeltaTokenList | null> {
+async function fetchList(chainId: string): Promise<DeltaTokenList | null> {
   try {
     const url = getListUrl(chainId)
     const response = await fetch(url)
@@ -35,7 +28,7 @@ async function fetchList(chainId: string): Promise<VersionedDeltaTokenList | nul
       )
       return null
     }
-    const data = (await response.json()) as VersionedDeltaTokenList
+    const data = (await response.json()) as DeltaTokenList
     return data
   } catch (error) {
     console.warn(`Error fetching asset list for chain ${chainId}:`, error)

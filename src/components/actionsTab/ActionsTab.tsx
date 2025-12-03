@@ -19,12 +19,13 @@ import ExecuteButton from './ExecuteButton'
 import { ActionsPanel } from './ActionsPanel'
 import { formatDisplayAmount, pickPreferredToken } from './swapUtils'
 import type { ActionCall } from '../actions/shared/types'
-import { reverseQuote } from '../../lib/reverseQuote'
 import {
   generateDestinationCallsKey,
   generateCurrencyKey,
 } from '../../sdk/hooks/useTradeQuotes/stateHelpers'
 import { detectChainTransition } from '../../sdk/hooks/useTradeQuotes/inputValidation'
+import { useDestinationReverseQuote } from '../../sdk/hooks/useDestinationReverseQuote'
+import { useQuoteTrace } from '../../contexts/QuoteTraceContext'
 
 type Props = {
   onResetStateChange?: (showReset: boolean, resetCallback?: () => void) => void
@@ -41,7 +42,6 @@ export function ActionsTab({ onResetStateChange }: Props) {
   const [inputCurrency, setInputCurrency] = useState<RawCurrency | undefined>(undefined)
   const [actionCurrency, setActionCurrency] = useState<RawCurrency | undefined>(undefined)
   const [amount, setAmount] = useState('')
-  const [calculatedInputAmount, setCalculatedInputAmount] = useState<string>('')
   const [destinationInfo, setDestinationInfoState] = useState<
     { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string } | undefined
   >(undefined)
@@ -123,25 +123,38 @@ export function ActionsTab({ onResetStateChange }: Props) {
     return currencies
   }, [inputBalances, inputChainId, inputAddressesWithNative, address])
 
-  const { data: inputPrices } = usePriceQuery({
-    currencies: inputPriceCurrencies,
-    enabled: inputPriceCurrencies.length > 0,
-  })
-
-  const currenciesForPriceFetch = useMemo(() => {
+  const allCurrenciesForPrice = useMemo(() => {
     const currencies: RawCurrency[] = []
-    if (inputCurrency) {
-      currencies.push(inputCurrency)
-    }
-    if (actionCurrency) {
-      currencies.push(actionCurrency)
-    }
-    return currencies
-  }, [inputCurrency, actionCurrency])
+    const seenKeys = new Set<string>()
 
-  const { data: pricesData, isLoading: isLoadingPrices } = usePriceQuery({
-    currencies: currenciesForPriceFetch,
-    enabled: currenciesForPriceFetch.length > 0,
+    const addCurrency = (currency?: RawCurrency) => {
+      if (!currency) return
+      const key = `${currency.chainId}-${currency.address.toLowerCase()}`
+      if (!seenKeys.has(key)) {
+        seenKeys.add(key)
+        currencies.push(currency)
+      }
+    }
+
+    addCurrency(inputCurrency)
+    addCurrency(actionCurrency)
+
+    if (inputPriceCurrencies.length > 0) {
+      for (const currency of inputPriceCurrencies) {
+        addCurrency(currency)
+      }
+    }
+
+    return currencies
+  }, [inputCurrency, actionCurrency, inputPriceCurrencies])
+
+  const {
+    data: pricesData,
+    isLoading: isLoadingPrices,
+    isFetching: isFetchingPrices,
+  } = usePriceQuery({
+    currencies: allCurrenciesForPrice,
+    enabled: allCurrenciesForPrice.length > 0,
   })
 
   const inputPrice = useMemo(() => {
@@ -164,7 +177,6 @@ export function ActionsTab({ onResetStateChange }: Props) {
   const [txInProgress, setTxInProgress] = useState(false)
   const [destinationCalls, setDestinationCalls] = useState<ActionCall[]>([])
   const [actionResetKey, setActionResetKey] = useState(0)
-  const lastCalculatedPricesRef = useRef<{ priceIn: number; priceOut: number } | null>(null)
 
   const [selectedQuoteIndex, setSelectedQuoteIndex] = useState(0)
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true)
@@ -340,8 +352,11 @@ export function ActionsTab({ onResetStateChange }: Props) {
   const highSlippageLossWarning = validation.highSlippageLossWarning
   const currentBuffer = validation.currentBuffer
 
+  const quoteTrace = useQuoteTrace()
+
   const selectedTrade = quotes[selectedQuoteIndex]?.trade
   const [preservedTrade, setPreservedTrade] = useState<typeof selectedTrade | undefined>(undefined)
+  const [wasTransactionCancelled, setWasTransactionCancelled] = useState(false)
   const tradeToUse = preservedTrade || selectedTrade
 
   const quoteOut = useMemo(() => {
@@ -390,9 +405,13 @@ export function ActionsTab({ onResetStateChange }: Props) {
     ) => {
       if (!currencyAmount) {
         setDestinationInfoState(undefined)
-        setCalculatedInputAmount('')
         setDestinationCalls([])
+        const prevActionCurrency = actionCurrency
         setActionCurrency(undefined)
+        if (prevActionCurrency) {
+          setAmount('')
+          setWasTransactionCancelled(false)
+        }
         return
       }
 
@@ -402,93 +421,53 @@ export function ActionsTab({ onResetStateChange }: Props) {
       const amountHuman = CurrencyHandler.toExactNumber(currencyAmount)
       if (!amountHuman || amountHuman <= 0) {
         setDestinationInfoState(undefined)
-        setCalculatedInputAmount('')
         setDestinationCalls([])
         setActionCurrency(undefined)
         return
       }
 
-      let priceIn = inputPrice ?? 0
-      let priceOut = actionTokenPrice ?? 0
-
-      if (priceIn <= 0 || priceOut <= 0) {
-        setDestinationInfoState({ currencyAmount, actionLabel, actionId })
-        setDestinationCalls(destinationCalls)
-        setCalculatedInputAmount('')
-        return
-      }
-
-      const decimalsOut = actionCur.decimals
-      const amountIn = reverseQuote(
-        decimalsOut,
-        currencyAmount.amount.toString(),
-        priceIn,
-        priceOut,
-        slippage
-      )
-
-      setCalculatedInputAmount(amountIn)
       setDestinationInfoState({ currencyAmount, actionLabel, actionId })
       setDestinationCalls(destinationCalls)
 
-      setAmount(amountIn)
+      quoteTrace.addTrace({
+        quotes: [],
+        actionInfo: {
+          actionType: actionId || 'action',
+          actionLabel: actionLabel || 'Destination intent',
+          actionId,
+          destinationCalls,
+        },
+        requestInfo: {
+          srcCurrency: inputCurrency,
+          dstCurrency: currencyAmount.currency,
+          amount: currencyAmount.amount.toString(),
+          slippage,
+        },
+        success: true,
+      })
     },
-    [inputCurrency, inputPrice, actionTokenPrice, slippage]
+    [inputCurrency, slippage, quoteTrace]
   )
 
-  useEffect(() => {
-    if (!destinationInfo?.currencyAmount) {
-      lastCalculatedPricesRef.current = null
-      return
-    }
-
-    if (!inputCurrency) {
-      return
-    }
-
-    if (isLoadingPrices) return
-
-    let priceIn = inputPrice ?? 0
-    let priceOut = actionTokenPrice ?? 0
-
-    if (priceIn > 0 && priceOut > 0) {
-      const lastPrices = lastCalculatedPricesRef.current
-      const pricesChanged =
-        !lastPrices || lastPrices.priceIn !== priceIn || lastPrices.priceOut !== priceOut
-
-      const needsRecalculation =
-        pricesChanged || !calculatedInputAmount || calculatedInputAmount === ''
-
-      if (needsRecalculation) {
-        const actionCur = destinationInfo.currencyAmount.currency as RawCurrency
-        const decimalsOut = actionCur.decimals
-        try {
-          const amountIn = reverseQuote(
-            decimalsOut,
-            destinationInfo.currencyAmount.amount.toString(),
-            priceIn,
-            priceOut,
-            slippage
-          )
-          setCalculatedInputAmount(amountIn)
-          setAmount(amountIn)
-          lastCalculatedPricesRef.current = { priceIn, priceOut }
-        } catch (error) {
-          console.error('Error recalculating reverse quote:', error)
-        }
-      }
-    } else {
-      lastCalculatedPricesRef.current = null
-    }
-  }, [
-    destinationInfo,
+  const { calculatedInputAmount } = useDestinationReverseQuote({
+    destinationAmount: destinationInfo?.currencyAmount,
     inputCurrency,
     inputPrice,
     actionTokenPrice,
-    isLoadingPrices,
-    calculatedInputAmount,
     slippage,
-  ])
+    isLoadingPrices,
+    onInputAmountChange: setAmount,
+  })
+
+  useEffect(() => {
+    if (!actionCurrency && !wasTransactionCancelled) {
+      clearQuotes()
+      setPreservedTrade(undefined)
+    }
+    if (wasTransactionCancelled && actionCurrency) {
+      setWasTransactionCancelled(false)
+    }
+  }, [actionCurrency, clearQuotes, wasTransactionCancelled])
 
   return (
     <div>
@@ -505,9 +484,12 @@ export function ActionsTab({ onResetStateChange }: Props) {
         onSrcCurrencyChange={setInputCurrency}
         calculatedInputAmount={calculatedInputAmount}
         destinationInfo={destinationInfo}
+        pricesData={pricesData}
+        isLoadingPrices={isLoadingPrices}
+        isFetchingPrices={isFetchingPrices}
       />
 
-      {(tradeToUse || (destinationInfo && inputCurrency && actionCurrency)) && (
+      {((tradeToUse && actionCurrency) || (destinationInfo && inputCurrency && actionCurrency)) && (
         <div className="mt-4 space-y-3">
           {highSlippageLossWarning && tradeToUse && (
             <div className="rounded-lg bg-warning/10 border border-warning p-3">
@@ -553,6 +535,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
                 setActionResetKey((prev) => prev + 1)
                 setPreservedTrade(undefined)
                 setAmount('')
+                setWasTransactionCancelled(false)
               }
             }}
             onTransactionStart={() => {
@@ -560,14 +543,18 @@ export function ActionsTab({ onResetStateChange }: Props) {
                 setPreservedTrade(selectedTrade)
               }
               setTxInProgress(true)
+              setWasTransactionCancelled(false)
             }}
             onTransactionEnd={() => {
               setTxInProgress(false)
+              setWasTransactionCancelled(true)
+              setPreservedTrade(undefined)
             }}
             onReset={() => {
               setAmount('')
               setTxInProgress(false)
               setPreservedTrade(undefined)
+              setWasTransactionCancelled(false)
             }}
             onResetStateChange={onResetStateChange}
           />

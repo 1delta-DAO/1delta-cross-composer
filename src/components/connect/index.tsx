@@ -55,7 +55,7 @@ export function WalletConnect() {
               type="button"
               className="btn btn-primary btn-sm flex items-center gap-2"
             >
-              {account?.displayBalance && (
+              {account && account.displayBalance && Number.isFinite(account.displayBalance) && (
                 <span className="text-xs font-mono">{account.displayBalance}</span>
               )}
               <span className="text-xs font-mono">{account?.displayName}</span>

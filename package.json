@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@1delta/bridge-configs": "^0.1.6",
-    "@1delta/calldata-sdk": "^0.0.131",
+    "@1delta/calldata-sdk": "^0.0.132",
     "@1delta/calldatalib": "0.0.46",
     "@1delta/chain-registry": "^0.0.3",
     "@1delta/data-sdk": "^0.0.10",
@@ -30,8 +30,8 @@
     "react-dom": "^19.2.0",
     "react-window": "2.2.3",
     "tailwindcss": "^4.1.17",
-    "viem": "^2.40.3",
-    "vite": "^7.2.4",
+    "viem": "^2.41.2",
+    "vite": "^7.2.6",
     "wagmi": "^3.0.2"
   },
   "devDependencies": {
@@ -39,7 +39,7 @@
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "daisyui": "^5.5.5",
-    "prettier": "^3.7.3",
+    "prettier": "^3.7.4",
     "tsx": "^4.21.0",
     "typescript": "5.9.3"
   },

@@ -17,6 +17,9 @@ export function registerSwapAction(): void {
       setDestinationInfo: context.setDestinationInfo,
       srcCurrency: context.srcCurrency,
       dstCurrency: context.dstCurrency,
+      quotes: context.quotes,
+      selectedQuoteIndex: context.selectedQuoteIndex,
+      setSelectedQuoteIndex: context.setSelectedQuoteIndex,
     }),
   }
 

@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect } from 'react'
 import type { RawCurrency, RawCurrencyAmount } from '../../../types/currency'
 import { formatDisplayAmount } from '../../actionsTab/swapUtils'
 import { CurrencyHandler } from '../../../sdk/types'
-import { usePriceQuery } from '../../../hooks/prices/usePriceQuery'
+import type { PricesRecord } from '../../../hooks/prices/usePriceQuery'
 
 interface TransactionSummaryProps {
   srcCurrency?: RawCurrency
@@ -13,6 +13,9 @@ interface TransactionSummaryProps {
   destinationActionLabel?: string
   route?: string
   chains?: Record<string, { data?: { name?: string } }>
+  pricesData?: PricesRecord
+  isLoadingPrices?: boolean
+  isFetchingPrices?: boolean
 }
 
 export function TransactionSummary({
@@ -24,6 +27,9 @@ export function TransactionSummary({
   destinationActionLabel,
   route,
   chains,
+  pricesData: pricesDataProp,
+  isLoadingPrices: isLoadingPricesProp,
+  isFetchingPrices: isFetchingPricesProp,
 }: TransactionSummaryProps) {
   const outputAmount = useMemo(() => {
     if (outputAmountProp) return outputAmountProp
@@ -35,20 +41,13 @@ export function TransactionSummary({
   }, [outputAmountProp, currencyAmount])
 
   const shouldShow = useMemo(() => {
-    return srcCurrency && dstCurrency && outputAmount && Number(outputAmount) > 0
+    const hasOutputAmount = outputAmount && Number(outputAmount) > 0
+    return Boolean(srcCurrency && dstCurrency && hasOutputAmount)
   }, [srcCurrency, dstCurrency, outputAmount])
 
-  const currenciesForPrice = useMemo(() => {
-    const currencies: RawCurrency[] = []
-    if (srcCurrency) currencies.push(srcCurrency)
-    if (dstCurrency) currencies.push(dstCurrency)
-    return currencies
-  }, [srcCurrency, dstCurrency])
-
-  const { data: pricesData } = usePriceQuery({
-    currencies: currenciesForPrice,
-    enabled: currenciesForPrice.length > 0,
-  })
+  const pricesData = pricesDataProp
+  const isLoadingPrices = isLoadingPricesProp ?? false
+  const isFetchingPrices = isFetchingPricesProp ?? false
 
   const srcPrice = useMemo(() => {
     if (!pricesData || !srcCurrency) return undefined
@@ -68,16 +67,39 @@ export function TransactionSummary({
 
   const [showCalculatingTimeout, setShowCalculatingTimeout] = useState(false)
 
+  const isPricesLoading = isLoadingPrices || isFetchingPrices
+
   useEffect(() => {
-    if (!inputAmount || !srcPrice) {
-      const timer = setTimeout(() => {
-        setShowCalculatingTimeout(true)
-      }, 5000)
-      return () => clearTimeout(timer)
-    } else {
+    setShowCalculatingTimeout(false)
+  }, [srcCurrency, dstCurrency])
+
+  useEffect(() => {
+    if (isPricesLoading) {
       setShowCalculatingTimeout(false)
+      return
     }
-  }, [inputAmount, srcPrice])
+
+    const hasInputAmount = inputAmount && Number(inputAmount) > 0
+    const hasPrices = srcPrice !== undefined && dstPrice !== undefined
+
+    if (hasInputAmount && hasPrices) {
+      setShowCalculatingTimeout(false)
+      return
+    }
+
+    if (!hasInputAmount) {
+      if (!hasPrices) {
+        const timer = setTimeout(() => {
+          setShowCalculatingTimeout(true)
+        }, 5000)
+        return () => clearTimeout(timer)
+      }
+      setShowCalculatingTimeout(true)
+      return
+    }
+
+    setShowCalculatingTimeout(false)
+  }, [inputAmount, srcPrice, dstPrice, isPricesLoading])
 
   const inputUsd = useMemo(() => {
     if (!inputAmount || !srcPrice) return undefined
