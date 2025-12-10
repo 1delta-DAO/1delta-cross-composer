@@ -20,6 +20,7 @@ import { useTxHistory } from '../../contexts/TxHistoryContext'
 import type { RawCurrency } from '../../types/currency'
 import { getBridgeStatus } from '@1delta/trade-sdk'
 import { getViemProvider } from '@1delta/lib-utils'
+import { getTransactionData } from './utils/getTransactionData'
 
 type StepStatus = 'idle' | 'active' | 'done' | 'error'
 
@@ -238,7 +239,10 @@ export default function ExecuteButton(props: ExecuteButtonProps) {
 
   const srcChainId = useMemo(() => srcCurrency?.chainId, [srcCurrency])
   const dstChainId = useMemo(() => dstCurrency?.chainId, [dstCurrency])
-  const srcToken = useMemo(() => srcCurrency?.address as Address | undefined, [srcCurrency])
+  const srcTokenAddress = useMemo(
+    () => srcCurrency?.address?.toLowerCase() as Address | undefined,
+    [srcCurrency]
+  )
 
   useEffect(() => {
     if (step === 'error' && !srcHash) {
@@ -254,73 +258,26 @@ export default function ExecuteButton(props: ExecuteButtonProps) {
   const skipApprove = trade ? (trade as any).skipApprove || false : false
 
   const { data: currentAllowance } = useReadContract({
-    address:
-      srcToken && srcToken.toLowerCase() !== zeroAddress.toLowerCase() ? srcToken : undefined,
+    address: srcTokenAddress && srcTokenAddress !== zeroAddress ? srcTokenAddress : undefined,
     abi: erc20Abi,
     functionName: 'allowance',
     args: address && spender ? [address, spender] : undefined,
     query: {
       enabled: Boolean(
-        srcToken &&
-        address &&
-        spender &&
-        srcToken.toLowerCase() !== zeroAddress.toLowerCase() &&
-        !skipApprove
+        srcTokenAddress && address && spender && srcTokenAddress !== zeroAddress && !skipApprove
       ),
     },
   })
 
   const needsApproval = useMemo(() => {
-    if (
-      !srcToken ||
-      srcToken.toLowerCase() === zeroAddress.toLowerCase() ||
-      !spender ||
-      skipApprove
-    ) {
+    if (!srcTokenAddress || srcTokenAddress === zeroAddress || !spender || skipApprove) {
       return false
     }
     if (!amountWei) return false
     if (currentAllowance === undefined) return true
     const requiredAmount = BigInt(amountWei)
     return currentAllowance < requiredAmount
-  }, [srcToken, spender, amountWei, currentAllowance, skipApprove])
-
-  const getTransactionData = useCallback(async () => {
-    if (!trade) return null
-
-    if ('assemble' in trade && typeof (trade as any).assemble === 'function') {
-      const assembled = await (trade as any).assemble()
-      const assembledItems = Array.isArray(assembled) ? assembled : [assembled]
-
-      for (const item of assembledItems) {
-        if (item && 'EVM' in item && (item as any).EVM) {
-          return (item as any).EVM
-        }
-
-        if (item && (item as any).transaction) {
-          const tx = (item as any).transaction
-          const calldata = (tx as any).calldata ?? (tx as any).data
-          if (tx && calldata && (tx as any).to) {
-            return {
-              to: (tx as any).to,
-              calldata,
-              value: (tx as any).value ?? 0n,
-            }
-          }
-        }
-
-        if (item && (item as any).to && ((item as any).calldata || (item as any).data)) {
-          const calldata = (item as any).calldata ?? (item as any).data
-          return {
-            to: (item as any).to,
-            calldata,
-            value: (item as any).value ?? 0n,
-          }
-        }
-      }
-    }
-    throw new Error('No assemble function found')
-  }, [trade])
+  }, [srcTokenAddress, spender, amountWei, currentAllowance, skipApprove])
 
   /** Reset callback */
   const resetCallback = useCallback(() => {
@@ -352,10 +309,10 @@ export default function ExecuteButton(props: ExecuteButtonProps) {
       switchChain({ chainId: Number(srcChainId) })
 
       /** --- APPROVE --- */
-      if (needsApproval && srcToken && amountWei && spender) {
+      if (needsApproval && srcTokenAddress && amountWei && spender) {
         setStep('approving')
         const approvalHash = await writeContractAsync({
-          address: srcToken,
+          address: srcTokenAddress,
           abi: erc20Abi as any,
           functionName: 'approve',
           args: [spender as Address, BigInt(amountWei)],
@@ -368,7 +325,7 @@ export default function ExecuteButton(props: ExecuteButtonProps) {
 
       /** --- SIGN & BROADCAST --- */
       setStep('signing')
-      const txData = await getTransactionData()
+      const txData = await getTransactionData(trade)
       if (!txData?.to || !txData.calldata) {
         throw new Error('Failed to get transaction data from trade')
       }
@@ -467,7 +424,7 @@ export default function ExecuteButton(props: ExecuteButtonProps) {
     getTransactionData,
     needsApproval,
     spender,
-    srcToken,
+    srcTokenAddress,
     amountWei,
     writeContractAsync,
     sendTransactionAsync,
