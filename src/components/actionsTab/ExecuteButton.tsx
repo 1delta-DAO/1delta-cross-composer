@@ -18,6 +18,8 @@ import { useToast } from '../common/ToastHost'
 import { WalletConnect } from '../connect'
 import { useTxHistory } from '../../contexts/TxHistoryContext'
 import type { RawCurrency } from '../../types/currency'
+import { getBridgeStatus } from '@1delta/trade-sdk'
+import { getViemProvider } from '@1delta/lib-utils'
 
 type StepStatus = 'idle' | 'active' | 'done' | 'error'
 
@@ -40,41 +42,74 @@ function Step({ label, status }: { label: string; status: StepStatus }) {
   )
 }
 
-async function trackBridgeCompletion(
-  trade: GenericTrade,
-  srcChainId: string,
-  dstChainId: string,
+/**
+ * Provide a current status from a trade
+ * @param fromHash tx hash on source chain
+ * @param trade trade object
+ * @returns status object
+ */
+async function getStatusFromTrade(fromHash: string, trade: GenericTrade) {
+  // same chain case
+  if (trade.inputAmount.currency.chainId === trade.outputAmount.currency.chainId) {
+    const provider = await getViemProvider({ chainId: trade.inputAmount.currency.chainId })
+    const receipt = await provider
+      ?.getTransactionReceipt({ hash: fromHash as any })
+      .catch(() => null)
+
+    if (!receipt) {
+      return {
+        code: null,
+        fromHash: fromHash,
+        toHash: fromHash,
+        status: 'PENDING',
+      }
+    }
+    if (receipt.status === 'success') {
+      return {
+        status: 'COMPLETED',
+        code: null,
+        fromHash: fromHash,
+        toHash: fromHash,
+      }
+    }
+    return {
+      status: 'REVERTED',
+      code: '99',
+      message: 'Transaction reverted.',
+      fromHash: fromHash,
+      toHash: fromHash,
+    }
+  } else {
+    // bridge case
+    return await getBridgeStatus(
+      trade.aggregator as any,
+      {
+        fromChainId: trade.inputAmount.currency.chainId,
+        toChainId: trade.outputAmount.currency.chainId,
+        fromHash,
+      } as any,
+      trade.crossChainParams
+    )
+  }
+}
+
+async function trackTradeCompletion(
   srcHash: string,
+  trade: GenericTrade,
   onDone: (hashes: { src?: string; dst?: string; completed?: boolean }) => void
 ) {
-  if (!trade.crossChainParams) {
+  if (!trade) {
     onDone({ src: srcHash })
     return
   }
 
   try {
-    const { getBridgeStatus } = await import('@1delta/trade-sdk')
-    const { Bridge } = await import('@1delta/bridge-configs')
-
-    const bridgeName =
-      Object.values(Bridge).find((b) => b.toString() === trade.aggregator.toString()) ||
-      (trade.aggregator as any)
-
     const maxAttempts = 60
     const delayMs = 5000
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
-        const status = await getBridgeStatus(
-          bridgeName as any,
-          {
-            fromChainId: srcChainId,
-            toChainId: dstChainId,
-            fromHash: srcHash,
-          } as any,
-          trade.crossChainParams
-        )
-
+        const status = await getStatusFromTrade(srcHash, trade)
         const statusAny = status as any
         const statusInfo = statusAny?.statusInfo
         const bridgeStatus = (statusInfo?.status || statusAny?.status) as string | undefined
@@ -279,29 +314,7 @@ export default function ExecuteButton({
         }
       }
     }
-
-    if ('transaction' in trade && (trade as any).transaction) {
-      const tx = (trade as any).transaction
-      const calldata = (tx as any).calldata ?? (tx as any).data
-      if (tx && calldata && (tx as any).to) {
-        return {
-          to: (tx as any).to,
-          calldata,
-          value: (tx as any).value ?? 0n,
-        }
-      }
-    }
-
-    if ((trade as any).target && ((trade as any).calldata || (trade as any).data)) {
-      const calldata = (trade as any).calldata ?? (trade as any).data
-      return {
-        to: (trade as any).target,
-        calldata,
-        value: (trade as any).value ?? 0n,
-      }
-    }
-
-    return null
+    throw new Error('No assemble function found')
   }, [trade])
 
   const execute = useCallback(async () => {
@@ -336,11 +349,6 @@ export default function ExecuteButton({
       if (!txData || !txData.calldata || !txData.to) {
         throw new Error('Failed to get transaction data from trade')
       }
-
-      const tradeDestinationCalls =
-        (trade as any).additionalCalls ||
-        (trade as any).destinationCalls ||
-        (trade as any).crossChainParams?.additionalCalls
 
       let hash: Address
       setStep('broadcast')
@@ -394,7 +402,7 @@ export default function ExecuteButton({
             if (isBridge && trade?.crossChainParams) {
               setIsBridgeTracking(true)
               setBridgeTrackingStopped(false)
-              trackBridgeCompletion(trade, srcChainId!, dstChainId!, hash, (hashes) => {
+              trackTradeCompletion(hash, trade, (hashes) => {
                 setIsBridgeTracking(false)
                 setBridgeTrackingStopped(true)
                 if (hashes.dst) {
@@ -433,7 +441,7 @@ export default function ExecuteButton({
         if (isBridge && trade?.crossChainParams) {
           setIsBridgeTracking(true)
           setBridgeTrackingStopped(false)
-          trackBridgeCompletion(trade, srcChainId!, dstChainId!, hash, (hashes) => {
+          trackTradeCompletion(hash, trade, (hashes) => {
             setIsBridgeTracking(false)
             setBridgeTrackingStopped(true)
             if (hashes.dst) {
