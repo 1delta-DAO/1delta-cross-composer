@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import type { Address, Hex } from 'viem'
+import type { Address } from 'viem'
 import { zeroAddress } from 'viem'
 import {
   useSendTransaction,
@@ -177,39 +177,64 @@ type ExecuteButtonProps = {
   actionCalls?: ActionCall[]
   quoting?: boolean
 }
+type TradeState = {
+  srcHash?: string
+  dstHash?: string
+  confirmed: boolean
+  bridgeComplete: boolean
+  bridgeTracking: boolean
+  bridgeTrackingStopped: boolean
+}
 
-export default function ExecuteButton({
-  trade,
-  srcCurrency,
-  dstCurrency,
-  amountWei,
-  onDone,
-  chains,
-  onReset,
-  onResetStateChange,
-  onTransactionStart,
-  onTransactionEnd,
-  actionCalls: destinationCalls,
-  quoting,
-}: ExecuteButtonProps) {
-  const { address } = useConnection()
-  const { isConnected } = useConnection()
+const initialTradeState: TradeState = {
+  srcHash: undefined,
+  dstHash: undefined,
+  confirmed: false,
+  bridgeComplete: false,
+  bridgeTracking: false,
+  bridgeTrackingStopped: false,
+}
+
+export default function ExecuteButton(props: ExecuteButtonProps) {
+  const {
+    trade,
+    srcCurrency,
+    dstCurrency,
+    amountWei,
+    onDone,
+    chains,
+    onReset,
+    onResetStateChange,
+    onTransactionStart,
+    onTransactionEnd,
+    actionCalls: destinationCalls,
+    quoting,
+  } = props
+
+  const { address, isConnected } = useConnection()
   const { switchChain } = useSwitchChain()
-  const [step, setStep] = useState<
-    'idle' | 'approving' | 'signing' | 'broadcast' | 'confirmed' | 'error'
-  >('idle')
-  const [srcHash, setSrcHash] = useState<string | undefined>()
-  const [dstHash, setDstHash] = useState<string | undefined>()
-  const [isConfirmed, setIsConfirmed] = useState(false)
-  const [isBridgeComplete, setIsBridgeComplete] = useState(false)
-  const [isBridgeTracking, setIsBridgeTracking] = useState(false)
-  const [bridgeTrackingStopped, setBridgeTrackingStopped] = useState(false)
   const { sendTransactionAsync, isPending } = useSendTransaction()
   const { writeContractAsync } = useWriteContract()
   const publicClient = usePublicClient()
   const toast = useToast()
   const { createEntry, updateEntry } = useTxHistory()
+
   const historyIdRef = useRef<string | null>(null)
+
+  // 🔹 Keep UI step separate
+  const [step, setStep] = useState<
+    'idle' | 'approving' | 'signing' | 'broadcast' | 'confirmed' | 'error'
+  >('idle')
+
+  // 🔹 All trade-related state in one place
+  const [tradeState, setTradeState] = useState<TradeState>(initialTradeState)
+
+  const { srcHash, dstHash, confirmed, bridgeComplete, bridgeTracking, bridgeTrackingStopped } =
+    tradeState
+
+  /** Helper to update the trade state */
+  const updateTradeState = (patch: Partial<TradeState>) =>
+    setTradeState((prev) => ({ ...prev, ...patch }))
 
   const srcChainId = useMemo(() => srcCurrency?.chainId, [srcCurrency])
   const dstChainId = useMemo(() => dstCurrency?.chainId, [dstCurrency])
@@ -260,26 +285,6 @@ export default function ExecuteButton({
     return currentAllowance < requiredAmount
   }, [srcToken, spender, amountWei, currentAllowance, skipApprove])
 
-  const resetCallback = useCallback(() => {
-    setStep('idle')
-    setSrcHash(undefined)
-    setDstHash(undefined)
-    setIsConfirmed(false)
-    setIsBridgeComplete(false)
-    setIsBridgeTracking(false)
-    setBridgeTrackingStopped(false)
-    onReset?.()
-  }, [onReset])
-
-  useEffect(() => {
-    const showReset = Boolean(isConfirmed && srcHash)
-    if (onResetStateChange) {
-      requestAnimationFrame(() => {
-        onResetStateChange(showReset, showReset && onReset ? resetCallback : undefined)
-      })
-    }
-  }, [isConfirmed, srcHash, onReset, onResetStateChange, resetCallback])
-
   const getTransactionData = useCallback(async () => {
     if (!trade) return null
 
@@ -317,6 +322,24 @@ export default function ExecuteButton({
     throw new Error('No assemble function found')
   }, [trade])
 
+  /** Reset callback */
+  const resetCallback = useCallback(() => {
+    setStep('idle')
+    setTradeState(initialTradeState)
+    onReset?.()
+  }, [onReset])
+
+  useEffect(() => {
+    const showReset = Boolean(confirmed && srcHash)
+    if (onResetStateChange) {
+      requestAnimationFrame(() => {
+        onResetStateChange(showReset, showReset ? resetCallback : undefined)
+      })
+    }
+  }, [confirmed, srcHash, onResetStateChange])
+
+  /** Compute approvals and other helpers omitted for brevity... */
+
   const execute = useCallback(async () => {
     if (!address || !srcChainId || !trade) {
       toast.showError('Missing required parameters')
@@ -326,38 +349,39 @@ export default function ExecuteButton({
     onTransactionStart?.()
 
     try {
-      const srcChainIdNum = Number(srcChainId)
-      switchChain({ chainId: srcChainIdNum })
+      switchChain({ chainId: Number(srcChainId) })
 
-      let approvalHash: Address | undefined
-
+      /** --- APPROVE --- */
       if (needsApproval && srcToken && amountWei && spender) {
         setStep('approving')
-        approvalHash = await writeContractAsync({
+        const approvalHash = await writeContractAsync({
           address: srcToken,
           abi: erc20Abi as any,
           functionName: 'approve',
           args: [spender as Address, BigInt(amountWei)],
         })
+
         if (publicClient) {
           await publicClient.waitForTransactionReceipt({ hash: approvalHash as any })
         }
       }
 
+      /** --- SIGN & BROADCAST --- */
       setStep('signing')
       const txData = await getTransactionData()
-      if (!txData || !txData.calldata || !txData.to) {
+      if (!txData?.to || !txData.calldata) {
         throw new Error('Failed to get transaction data from trade')
       }
 
-      let hash: Address
       setStep('broadcast')
-      hash = await sendTransactionAsync({
+
+      const hash = await sendTransactionAsync({
         to: txData.to as Address,
-        data: txData.calldata as Hex,
-        value: txData.value ? BigInt(txData.value.toString()) : BigInt(0),
+        data: txData.calldata,
+        value: txData.value ? BigInt(txData.value.toString()) : 0n,
       })
-      setSrcHash(hash)
+
+      updateTradeState({ srcHash: hash })
       setStep('confirmed')
 
       const type =
@@ -387,119 +411,71 @@ export default function ExecuteButton({
         })
       }
 
-      if (publicClient) {
-        publicClient
-          .waitForTransactionReceipt({ hash: hash as any })
-          .then(async () => {
-            setIsConfirmed(true)
+      /** --- WAIT FOR RECEIPT --- */
+      if (!publicClient) throw new Error('No public client')
 
-            if (historyIdRef.current && !isBridge) {
+      publicClient
+        .waitForTransactionReceipt({ hash })
+        .then(() => {
+          updateTradeState({ confirmed: true })
+
+          /** On bridge start */
+
+          if (!isBridge) {
+            if (historyIdRef.current)
               updateEntry(historyIdRef.current, {
                 status: 'completed',
               })
-            }
+          } else if (trade.crossChainParams) {
+            updateTradeState({ bridgeTracking: true, bridgeTrackingStopped: false })
 
-            if (isBridge && trade?.crossChainParams) {
-              setIsBridgeTracking(true)
-              setBridgeTrackingStopped(false)
-              trackTradeCompletion(hash, trade, (hashes) => {
-                setIsBridgeTracking(false)
-                setBridgeTrackingStopped(true)
-                if (hashes.dst) {
-                  setDstHash(hashes.dst)
-                }
-                if (hashes.dst || hashes.completed) {
-                  setIsBridgeComplete(true)
-                }
-                if (historyIdRef.current) {
-                  updateEntry(historyIdRef.current, {
-                    dstHash: hashes.dst || undefined,
-                    status: hashes.dst || hashes.completed ? 'completed' : 'failed',
-                  })
-                }
-                onTransactionEnd?.()
-                onDone(hashes)
+            trackTradeCompletion(hash, trade, (hashes) => {
+              updateTradeState({
+                bridgeTracking: false,
+                bridgeTrackingStopped: true,
+                dstHash: hashes.dst,
+                bridgeComplete: Boolean(hashes.dst || hashes.completed),
               })
-            } else {
+              if (historyIdRef.current) {
+                updateEntry(historyIdRef.current, {
+                  dstHash: hashes.dst || undefined,
+                  status: hashes.dst || hashes.completed ? 'completed' : 'failed',
+                })
+              }
               onTransactionEnd?.()
-              onDone({ src: hash })
-            }
-          })
-          .catch((err) => {
-            console.error('Error waiting for transaction receipt:', err)
+              onDone(hashes)
+            })
+          } else {
             onTransactionEnd?.()
-          })
-      } else {
-        onDone({ src: hash })
-
-        if (historyIdRef.current && !isBridge) {
-          updateEntry(historyIdRef.current, {
-            status: 'completed',
-          })
-        }
-
-        if (isBridge && trade?.crossChainParams) {
-          setIsBridgeTracking(true)
-          setBridgeTrackingStopped(false)
-          trackTradeCompletion(hash, trade, (hashes) => {
-            setIsBridgeTracking(false)
-            setBridgeTrackingStopped(true)
-            if (hashes.dst) {
-              setDstHash(hashes.dst)
-            }
-            if (hashes.dst || hashes.completed) {
-              setIsBridgeComplete(true)
-            }
-            if (historyIdRef.current) {
-              updateEntry(historyIdRef.current, {
-                dstHash: hashes.dst || undefined,
-                status: hashes.dst || hashes.completed ? 'completed' : 'failed',
-              })
-            }
-            onTransactionEnd?.()
-            onDone(hashes)
-          })
-        } else {
-          onTransactionEnd?.()
-          onDone({ src: hash })
-        }
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Transaction failed'
-      toast.showError(errorMessage)
-      if (historyIdRef.current) {
-        updateEntry(historyIdRef.current, {
-          status: 'failed',
+            onDone({ src: hash })
+          }
         })
-      }
+        .catch((err) => console.error('Error waiting for transaction receipt:', err))
+    } catch (err) {
+      toast.showError(err instanceof Error ? err.message : 'Transaction failed')
+
+      updateEntry(historyIdRef.current!, { status: 'failed' })
       onTransactionEnd?.()
       setStep('idle')
+
       console.error('Execution error:', err)
     }
   }, [
-    needsApproval,
-    srcToken,
-    amountWei,
-    spender,
     address,
     srcChainId,
-    dstChainId,
-    destinationCalls,
-    destinationCalls,
-    writeContractAsync,
+    trade,
     getTransactionData,
+    needsApproval,
+    spender,
+    srcToken,
+    amountWei,
+    writeContractAsync,
     sendTransactionAsync,
     publicClient,
     onDone,
     onTransactionStart,
     onTransactionEnd,
-    isBridge,
-    trade,
     createEntry,
-    updateEntry,
-    srcChainId,
-    switchChain,
-    toast,
   ])
 
   const shouldShow = (name: 'approving' | 'signing' | 'broadcast' | 'confirmed') => {
@@ -593,7 +569,7 @@ export default function ExecuteButton({
             >
               {srcHash.slice(0, 4)}...{srcHash.slice(-4)}
             </a>
-            {isConfirmed ? (
+            {confirmed ? (
               <span className="text-success">✓</span>
             ) : (
               <span className="loading loading-spinner loading-xs"></span>
