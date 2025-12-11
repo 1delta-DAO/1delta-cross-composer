@@ -52,7 +52,6 @@ export function useHandleEvent(params: HandleEventParams) {
   const handleEvent = useCallback(
     (evt: ExecutionEvent) => {
       setExecState((s) => ({ ...s, lastEventType: evt.type, lastEvent: evt }))
-
       switch (evt.type) {
         case 'tx:sent': {
           const txHash = evt.src
@@ -99,13 +98,13 @@ export function useHandleEvent(params: HandleEventParams) {
           break
         }
 
-        case 'bridge:update': {
+        case 'update': {
           const { dst: dh, completed } = evt
 
           setExecState((s) => ({
             ...s,
-            dstHash: dh || s.dstHash,
-            confirmed: completed || s.confirmed,
+            dstHash: dh ?? s.dstHash,
+            confirmed: completed ?? s.confirmed,
           }))
           break
         }

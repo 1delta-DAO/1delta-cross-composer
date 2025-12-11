@@ -12,7 +12,7 @@
     "fetch-assets": "npx tsx src/lib/assetLists.ts"
   },
   "dependencies": {
-    "@1delta/bridge-configs": "^0.1.6",
+    "@1delta/bridge-configs": "^0.1.8",
     "@1delta/bridge-core": "^0.1.3",
     "@1delta/calldata-sdk": "^0.0.132",
     "@1delta/calldatalib": "0.0.46",
@@ -36,7 +36,7 @@
     "wagmi": "^3.1.0"
   },
   "devDependencies": {
-    "@types/node": "^24.10.2",
+    "@types/node": "^25.0.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "daisyui": "^5.5.11",
@@ -45,6 +45,8 @@
     "typescript": "5.9.3"
   },
   "pnpm": {
-    "overrides": {}
+    "overrides": {
+      "@1delta/bridge-configs": "^0.1.8"
+    }
   }
 }

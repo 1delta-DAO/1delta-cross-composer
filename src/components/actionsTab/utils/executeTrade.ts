@@ -76,35 +76,9 @@ export function executeTrade(args: {
       // 3. BRIDGE TRACKING
       // -----------------------------------------------------
       if (isBridge(args.trade)) {
-        emit({ type: 'bridge:tracking', srcHash: txHash })
+        emit({ type: 'tracking', srcHash: txHash })
 
-        await trackTradeCompletion(txHash, args.trade, (update) => {
-          // Aligning to original events:
-          // update = { src?: string, dst?: string, completed?: boolean }
-
-          if (update.dst) {
-            emit({
-              type: 'bridge:update',
-              srcHash: txHash,
-              dstHash: update.dst,
-              completed: update.completed ?? false,
-            })
-          } else {
-            emit({
-              type: 'bridge:update',
-              srcHash: txHash,
-              completed: update.completed ?? false,
-            })
-          }
-
-          if (update.completed) {
-            emit({
-              type: 'done',
-              srcHash: update.src ?? txHash,
-              dstHash: update.dst,
-            })
-          }
-        })
+        await trackTradeCompletion(txHash, args.trade, emit)
 
         return { srcHash: txHash, completed: true }
       }

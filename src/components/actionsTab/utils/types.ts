@@ -5,18 +5,17 @@ export type ExecutionEventType =
   | 'tx:signing'
   | 'tx:sent'
   | 'tx:confirmed'
-  | 'bridge:tracking'
-  | 'bridge:update'
-  | 'bridge:completed'
+  | 'tracking'
+  | 'update'
   | 'done'
   | 'error'
-  | 'bridge:error'
   | 'timeout'
 
 export interface ExecutionEvent {
   type: ExecutionEventType
   src?: string
   dst?: string
+  completed?: boolean
   [key: string]: any
 }
 
