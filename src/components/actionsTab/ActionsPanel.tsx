@@ -45,6 +45,7 @@ export function ActionsPanel({
   return (
     <>
       <ActionSelector
+        pricesData={pricesData}
         resetKey={resetKey}
         srcCurrency={srcCurrency}
         dstCurrency={dstCurrency}

@@ -1,9 +1,7 @@
 import { useMemo } from 'react'
 import type { ActionDefinition, ActionCategory, ActionType } from './actionDefinitions'
 import { CATEGORIES } from './actionDefinitions'
-import type { RawCurrency } from '../../../types/currency'
 import { useContainerWidth } from '../../../hooks/useContainerWidth'
-import { InputTokenSelector } from './InputTokenSelector'
 import { useChainsRegistry } from '../../../sdk/hooks/useChainsRegistry'
 
 interface ActionIconGridProps {
@@ -15,8 +13,6 @@ interface ActionIconGridProps {
   isExpanded: boolean
   onToggleExpand: () => void
   onReset: () => void
-  srcCurrency?: RawCurrency
-  onSrcCurrencyChange?: (currency: RawCurrency) => void
   isActionReady?: Record<string, boolean>
   isActionLoading?: Record<string, boolean>
 }
@@ -30,13 +26,10 @@ export function ActionIconGrid({
   isExpanded,
   onToggleExpand,
   onReset,
-  srcCurrency,
-  onSrcCurrencyChange,
   isActionReady,
   isActionLoading,
 }: ActionIconGridProps) {
   const { containerRef, width } = useContainerWidth()
-  const { data: chains } = useChainsRegistry()
 
   const filteredActions = useMemo(() => {
     if (selectedCategory === 'all') {
@@ -116,13 +109,7 @@ export function ActionIconGrid({
               <span className="font-medium">Actions</span>
             </button>
             <div className="flex-1"></div>
-            {onSrcCurrencyChange && (
-              <InputTokenSelector
-                srcCurrency={srcCurrency}
-                onCurrencyChange={onSrcCurrencyChange}
-                chains={chains}
-              />
-            )}
+
             <button
               type="button"
               className="btn btn-sm btn-ghost btn-circle"
