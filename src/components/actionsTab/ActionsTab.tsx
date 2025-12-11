@@ -515,7 +515,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
             srcCurrency={inputCurrency}
             dstCurrency={actionCurrency}
             amountWei={amountWei}
-            actionCalls={destinationCalls}
+            hasActionCalls={destinationCalls?.length > 0}
             chains={chains}
             quoting={quoting && !tradeToUse}
             onDone={(hashes) => {

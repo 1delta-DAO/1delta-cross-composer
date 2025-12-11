@@ -1,0 +1,181 @@
+import { Dispatch, SetStateAction, useCallback, useEffect, useRef } from 'react'
+import { ExecutionEvent } from '../utils/types'
+import { useTxHistory } from '../../../contexts/TxHistoryContext'
+import { useToast } from '../../common/ToastHost'
+
+export interface TradeState {
+  lastEventType: string | null
+  lastEvent: ExecutionEvent | null
+  srcHash: string | undefined
+  dstHash: string | undefined
+  confirmed: boolean
+  isExecuting: boolean
+}
+
+interface HandleEventParams {
+  isBridge: boolean
+  hasActionCalls: boolean
+  srcChainId?: string
+  dstChainId?: string
+  onTransactionEnd?: () => void
+  onReset?: () => void
+  onDone: (hashes: { src?: string; dst?: string; completed?: boolean }) => void
+  onResetStateChange?: (showReset: boolean, resetCallback?: () => void) => void
+  setExecState: Dispatch<SetStateAction<TradeState>>
+  execState: TradeState
+}
+
+/**
+ * Map SDK events to UI events
+ * An integrator has to map the sdk event so the statuses to be shown in the UI.
+ */
+export function useHandleEvent(params: HandleEventParams) {
+  const {
+    isBridge,
+    hasActionCalls,
+    srcChainId,
+    dstChainId,
+    onDone,
+    onTransactionEnd,
+    onReset,
+    onResetStateChange,
+    setExecState,
+    execState,
+  } = params
+
+  const { createEntry, updateEntry } = useTxHistory()
+  const historyIdRef = useRef<string | null>(null)
+
+  const toast = useToast()
+
+  // Main event handler
+  const handleEvent = useCallback(
+    (evt: ExecutionEvent) => {
+      setExecState((s) => ({ ...s, lastEventType: evt.type, lastEvent: evt }))
+
+      switch (evt.type) {
+        case 'tx:sent': {
+          const txHash = (evt as any).txHash
+
+          setExecState((s) => ({
+            ...s,
+            srcHash: txHash,
+          }))
+
+          const entryType =
+            isBridge && hasActionCalls ? 'bridge_with_actions' : isBridge ? 'bridge' : 'swap'
+
+          if (!historyIdRef.current) {
+            historyIdRef.current = createEntry({
+              type: entryType as any,
+              srcChainId,
+              dstChainId,
+              srcHash: txHash,
+              status: 'pending',
+              dstHash: undefined,
+              hasDestinationActions: Boolean(hasActionCalls),
+            })
+          } else {
+            updateEntry(historyIdRef.current, {
+              srcHash: txHash,
+              status: 'pending',
+            })
+          }
+          break
+        }
+
+        case 'tx:confirmed': {
+          const hash = (evt as any).txHash
+
+          setExecState((s) => ({ ...s, confirmed: true }))
+
+          if (!isBridge) {
+            if (historyIdRef.current) {
+              updateEntry(historyIdRef.current, { status: 'completed' })
+            }
+            onTransactionEnd?.()
+            onDone({ src: hash })
+          }
+          break
+        }
+
+        case 'bridge:update': {
+          const { dstHash: dh, completed } = evt as any
+
+          setExecState((s) => ({
+            ...s,
+            dstHash: dh || s.dstHash,
+            confirmed: completed || s.confirmed,
+          }))
+          break
+        }
+
+        case 'done': {
+          const { srcHash: sh, dstHash: dh, completed } = evt as any
+
+          setExecState((s) => ({
+            ...s,
+            srcHash: sh ?? s.srcHash,
+            dstHash: dh ?? s.dstHash,
+            confirmed: Boolean(dh || completed),
+          }))
+
+          if (historyIdRef.current) {
+            updateEntry(historyIdRef.current, {
+              dstHash: dh || undefined,
+              status: dh || completed ? 'completed' : 'failed',
+            })
+          }
+
+          onTransactionEnd?.()
+          onDone({ src: sh, dst: dh, completed: Boolean(dh || completed) })
+
+          setExecState((s) => ({ ...s, isExecuting: false }))
+          break
+        }
+
+        case 'error': {
+          toast.showError((evt as any).error?.message || 'Transaction failed')
+
+          if (historyIdRef.current) {
+            updateEntry(historyIdRef.current, { status: 'failed' })
+          }
+
+          onTransactionEnd?.()
+          setExecState((s) => ({ ...s, isExecuting: false }))
+          break
+        }
+      }
+    },
+    [
+      createEntry,
+      updateEntry,
+      isBridge,
+      hasActionCalls,
+      srcChainId,
+      dstChainId,
+      onDone,
+      onTransactionEnd,
+      toast,
+    ]
+  )
+
+  // Notify parent about reset availability
+  useEffect(() => {
+    const resetCallback = () => {
+      setExecState({
+        lastEventType: null,
+        lastEvent: null,
+        srcHash: undefined,
+        dstHash: undefined,
+        confirmed: false,
+        isExecuting: false,
+      })
+      onReset?.()
+    }
+    const showReset = Boolean(execState.confirmed && execState.srcHash)
+    onResetStateChange?.(showReset, showReset ? resetCallback : undefined)
+  }, [execState.confirmed, execState.srcHash, onResetStateChange, onReset])
+
+  return handleEvent
+}

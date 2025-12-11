@@ -1,11 +1,16 @@
 import { GenericTrade } from '@1delta/lib-utils'
+import { Address, Hex } from 'viem'
 
 /**
  * Build txn from trade
  * We need to move this to the SDK
  * @param trade sdk object that generates calldata via `assemble`
  */
-export async function getTransactionData(trade: GenericTrade) {
+export async function getTransactionData(trade: GenericTrade): Promise<{
+  to: Address
+  data: Hex
+  value: bigint
+} | null> {
   if (!trade) return null
 
   if ('assemble' in trade && typeof (trade as any).assemble === 'function') {
@@ -14,7 +19,13 @@ export async function getTransactionData(trade: GenericTrade) {
 
     for (const item of assembledItems) {
       if (item && 'EVM' in item && (item as any).EVM) {
-        return (item as any).EVM
+        const tx = (item as any).EVM
+        const calldata = (tx as any).calldata ?? (tx as any).data
+        return {
+          to: (tx as any).to,
+          data: calldata,
+          value: (tx as any).value ?? 0n,
+        }
       }
 
       if (item && (item as any).transaction) {
@@ -23,7 +34,7 @@ export async function getTransactionData(trade: GenericTrade) {
         if (tx && calldata && (tx as any).to) {
           return {
             to: (tx as any).to,
-            calldata,
+            data: calldata,
             value: (tx as any).value ?? 0n,
           }
         }
@@ -33,7 +44,7 @@ export async function getTransactionData(trade: GenericTrade) {
         const calldata = (item as any).calldata ?? (item as any).data
         return {
           to: (item as any).to,
-          calldata,
+          data: calldata,
           value: (item as any).value ?? 0n,
         }
       }
