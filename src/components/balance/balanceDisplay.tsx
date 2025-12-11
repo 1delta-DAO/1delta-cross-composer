@@ -16,7 +16,7 @@ export default function BalanceDisplay({ srcCurrency, onSrcCurrencyChange, price
     currencies: srcCurrency ? [srcCurrency, getWNative(srcCurrency.chainId)] : [],
     enabled: srcCurrency && Boolean(address),
   })
-  console.log('inputBalances', inputBalances, isLoading)
+
   const chainId = srcCurrency?.chainId ?? ''
   const tokenAddr = srcCurrency?.address ?? ''
   const balObj = inputBalances?.[chainId]?.[tokenAddr]

@@ -16,10 +16,12 @@ const RPC_OVERRIDES = {
 
 export const evmTransportsWagmi = Object.assign(
   {},
-  ...evmChainWagmi.map(({ id }) => {
+  ...evmChainWagmi.map(({ id, rpcUrls }) => {
     return {
-      // @ts-ignore
-      [id]: http(RPC_OVERRIDES[String(id)]),
+      [id]: http(
+        // @ts-ignore
+        RPC_OVERRIDES[String(id)] ?? rpcUrls.default.http[0]
+      ),
     }
   })
 )

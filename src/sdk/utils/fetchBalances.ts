@@ -76,7 +76,7 @@ export async function fetchEvmUserTokenDataEnhanced(
       console.warn('Could not get RPC client for balance fetching')
       return null
     }
-    console.log('args', balanceFetcherEncoder([account], assetsToQuery), assets, assetsToQuery)
+
     const result = await provider.simulateContract({
       address: BALANCE_FETCHER,
       abi: BalanceFetcherAbi,

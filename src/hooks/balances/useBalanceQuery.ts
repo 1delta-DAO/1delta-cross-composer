@@ -107,8 +107,6 @@ export function useBalanceQuery(params: { currencies: RawCurrency[]; enabled?: b
   const { currencies, enabled = true } = params
   const { address: userAddress } = useConnection()
 
-  console.log('currencies', currencies)
-
   const queryKey = useMemo(() => {
     const keys: Set<string> = new Set()
     for (const currency of currencies) {
