@@ -11,6 +11,8 @@ interface TransactionSummaryProps {
   outputAmount?: string
   currencyAmount?: RawCurrencyAmount
   destinationActionLabel?: string
+  inputActionLabel?: string
+  isReverseFlow?: boolean
   route?: string
   chains?: Record<string, { data?: { name?: string } }>
   pricesData?: PricesRecord
@@ -25,6 +27,8 @@ export function TransactionSummary({
   outputAmount: outputAmountProp,
   currencyAmount,
   destinationActionLabel,
+  inputActionLabel,
+  isReverseFlow = false,
   route,
   chains,
   pricesData: pricesDataProp,
@@ -160,10 +164,15 @@ export function TransactionSummary({
 
           <div>
             <div className="flex justify-between items-center mb-1">
-              <span className="text-sm opacity-70">You'll receive:</span>
+              <span className="text-sm opacity-70">
+                {isReverseFlow ? `You'll receive:` : `You'll receive:`}
+              </span>
               <span className="font-medium">
+                {isReverseFlow && inputActionLabel && (
+                  <span className="mr-1 opacity-80">{inputActionLabel} →</span>
+                )}
                 {formattedOutput} {dstCurrency?.symbol}
-                {destinationActionLabel && (
+                {!isReverseFlow && destinationActionLabel && (
                   <span className="ml-1 opacity-80">→ {destinationActionLabel}</span>
                 )}
               </span>

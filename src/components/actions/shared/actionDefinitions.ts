@@ -6,8 +6,14 @@ import type { ActionHandler } from './types'
 
 export type ActionType = string
 export type ActionCategory = 'all' | 'defi' | 'lending' | 'gaming' | 'yield'
+export type ActionDirection = 'input' | 'destination'
 
 export interface ActionLoaderContext {
+  srcCurrency?: RawCurrency
+  dstCurrency?: RawCurrency
+}
+
+export interface InputActionLoaderContext {
   srcCurrency?: RawCurrency
   dstCurrency?: RawCurrency
 }
@@ -26,8 +32,24 @@ export interface ActionPanelContext {
   isRequoting?: boolean
 }
 
+export interface InputActionPanelContext {
+  setInputInfo?: ActionHandler
+  srcCurrency?: RawCurrency
+  dstCurrency?: RawCurrency
+  slippage?: number
+  actionData?: any
+  quotes?: Array<{ label: string; trade: GenericTrade }>
+  selectedQuoteIndex?: number
+  setSelectedQuoteIndex?: (index: number) => void
+  inputInfo?: { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string }
+  isRequoting?: boolean
+}
+
 export type DataLoader = (context: ActionLoaderContext) => Promise<any>
-export type PanelPropsBuilder = (context: ActionPanelContext) => Record<string, any>
+export type InputDataLoader = (context: InputActionLoaderContext) => Promise<any>
+export type PanelPropsBuilder = (
+  context: ActionPanelContext | InputActionPanelContext
+) => Record<string, any>
 
 export interface ActionDefinition {
   id: ActionType
@@ -37,9 +59,10 @@ export interface ActionDefinition {
   panel: ComponentType<any>
   priority: number
   actionType: ActionType
+  actionDirection?: ActionDirection
   requiresSrcCurrency?: boolean
   requiresMarkets?: boolean
-  dataLoader?: DataLoader
+  dataLoader?: DataLoader | InputDataLoader
   buildPanelProps?: PanelPropsBuilder
 }
 
@@ -56,13 +79,20 @@ export const CATEGORIES: { id: ActionCategory; label: string }[] = [
 // Get actions filtered by category
 export function getActionsByCategory(
   category: ActionCategory,
-  srcCurrency?: RawCurrency
+  srcCurrency?: RawCurrency,
+  direction?: ActionDirection
 ): ActionDefinition[] {
   const actions = getRegisteredActions()
-  if (category === 'all') {
-    return actions.filter((action) => !action.requiresSrcCurrency || srcCurrency)
+  let filtered = actions
+
+  if (direction) {
+    filtered = filtered.filter((action) => (action.actionDirection || 'destination') === direction)
   }
-  return actions.filter(
+
+  if (category === 'all') {
+    return filtered.filter((action) => !action.requiresSrcCurrency || srcCurrency)
+  }
+  return filtered.filter(
     (action) => action.category === category && (!action.requiresSrcCurrency || srcCurrency)
   )
 }

@@ -4,6 +4,7 @@ import { CATEGORIES } from './actionDefinitions'
 import type { RawCurrency } from '../../../types/currency'
 import { useContainerWidth } from '../../../hooks/useContainerWidth'
 import { InputTokenSelector } from './InputTokenSelector'
+import { DestinationTokenSelector } from './DestinationTokenSelector'
 import { useChainsRegistry } from '../../../sdk/hooks/useChainsRegistry'
 
 interface ActionIconGridProps {
@@ -17,8 +18,11 @@ interface ActionIconGridProps {
   onReset: () => void
   srcCurrency?: RawCurrency
   onSrcCurrencyChange?: (currency: RawCurrency) => void
+  dstCurrency?: RawCurrency
+  onDstCurrencyChange?: (currency: RawCurrency) => void
   isActionReady?: Record<string, boolean>
   isActionLoading?: Record<string, boolean>
+  isReverseFlow?: boolean
 }
 
 export function ActionIconGrid({
@@ -32,8 +36,11 @@ export function ActionIconGrid({
   onReset,
   srcCurrency,
   onSrcCurrencyChange,
+  dstCurrency,
+  onDstCurrencyChange,
   isActionReady,
   isActionLoading,
+  isReverseFlow = false,
 }: ActionIconGridProps) {
   const { containerRef, width } = useContainerWidth()
   const { data: chains } = useChainsRegistry()
@@ -116,7 +123,15 @@ export function ActionIconGrid({
               <span className="font-medium">Actions</span>
             </button>
             <div className="flex-1"></div>
-            {onSrcCurrencyChange && (
+            {onDstCurrencyChange && !isReverseFlow && (
+              <DestinationTokenSelector
+                dstCurrency={dstCurrency}
+                onCurrencyChange={onDstCurrencyChange}
+                chains={chains}
+                isReverseFlow={isReverseFlow}
+              />
+            )}
+            {onSrcCurrencyChange && !onDstCurrencyChange && (
               <InputTokenSelector
                 srcCurrency={srcCurrency}
                 onCurrencyChange={onSrcCurrencyChange}
