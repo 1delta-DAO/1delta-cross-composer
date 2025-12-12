@@ -25,8 +25,10 @@ export async function initAll() {
   })
 
   try {
+    const isProd = import.meta.env?.VITE_ENVIRONMENT === 'production' || true
+
     await initTradeSdk({
-      isProductionEnv: false,
+      isProductionEnv: isProd,
       loadChainData: true,
       loadSquidData: true,
       load1deltaConfigs: true,
