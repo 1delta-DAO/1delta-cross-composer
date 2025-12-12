@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from 'react'
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import type { Address } from 'viem'
 import { usePublicClient, useConnection, useWalletClient } from 'wagmi'
 import type { GenericTrade } from '../../sdk/types'
@@ -87,6 +87,15 @@ export default function ExecuteButton(props: ExecuteButtonProps) {
   const [execState, setExecState] = useState<TradeState>(initialState)
 
   const { lastEventType, srcHash, dstHash, confirmed, isExecuting } = execState
+
+  const prevTradeRef = useRef(trade)
+
+  useEffect(() => {
+    if (trade && trade !== prevTradeRef.current && !execState.isExecuting) {
+      setExecState(initialState)
+    }
+    prevTradeRef.current = trade
+  }, [trade, execState.lastEventType, execState.isExecuting, execState.srcHash])
 
   // Utility derived values
   const srcChainId = srcCurrency?.chainId
