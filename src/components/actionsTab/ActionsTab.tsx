@@ -405,7 +405,6 @@ export function ActionsTab({ onResetStateChange }: Props) {
       actionId?: string,
       actionData?: any
     ) => {
-      console.log('actionData-click', actionData)
       if (!currencyAmount) {
         setDestinationInfoState(undefined)
         setDestinationCalls([])

@@ -39,6 +39,5 @@ export const useDestinationInfo = () => {
 }
 
 export function useActionData() {
-  console.log(' useDestinationInfo()', useDestinationInfo())
   return useDestinationInfo().destinationInfo?.actionData
 }

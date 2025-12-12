@@ -61,19 +61,6 @@ export function StellaStakingPanel({ setDestinationInfo, resetKey }: StellaStaki
 
       if (lastDestinationKeyRef.current !== destinationKey) {
         lastDestinationKeyRef.current = destinationKey
-        console.log('test', setDestinationInfoRef.current)
-        console.log(
-          'params',
-          currencyAmount,
-          undefined,
-          destinationCalls,
-          'Staked DOT',
-          undefined,
-          {
-            stakingToken: xcDOTToken,
-            lst: getTokenFromCache(String(chainId), STELLA_STDOT_ADDRESS),
-          }
-        )
         setDestinationInfoRef.current?.(
           currencyAmount,
           undefined,
