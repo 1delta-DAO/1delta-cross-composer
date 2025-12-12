@@ -44,14 +44,11 @@ export interface ActionDefinition {
 
   /** optional checkout summary */
   customSummary?: ComponentType<{
-    actionData: any
-    common: {
-      formattedOutput: string
-      dstCurrency?: RawCurrency
-      dstChainName?: string
-      outputUsd?: number
-      destinationActionLabel?: string
-    }
+    formattedOutput: string
+    dstCurrency?: RawCurrency
+    dstChainName?: string
+    outputUsd?: number
+    destinationActionLabel?: string
   }>
 }
 

@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react'
 import { CurrencyHandler, SupportedChainId } from '../../../../sdk/types'
 import { ActionHandler } from '../../shared/types'
 import { buildCalls } from './callBuilder'
-import { XCDOT_ADDRESS } from '../../../../lib/consts'
+import { STELLA_STDOT_ADDRESS, XCDOT_ADDRESS } from './consts'
 import { parseUnits } from 'viem'
 import { useDebounce } from '../../../../hooks/useDebounce'
 import { useConnection } from 'wagmi'
@@ -61,7 +61,30 @@ export function StellaStakingPanel({ setDestinationInfo, resetKey }: StellaStaki
 
       if (lastDestinationKeyRef.current !== destinationKey) {
         lastDestinationKeyRef.current = destinationKey
-        setDestinationInfoRef.current?.(currencyAmount, undefined, destinationCalls, 'Staked DOT')
+        console.log('test', setDestinationInfoRef.current)
+        console.log(
+          'params',
+          currencyAmount,
+          undefined,
+          destinationCalls,
+          'Staked DOT',
+          undefined,
+          {
+            stakingToken: xcDOTToken,
+            lst: getTokenFromCache(String(chainId), STELLA_STDOT_ADDRESS),
+          }
+        )
+        setDestinationInfoRef.current?.(
+          currencyAmount,
+          undefined,
+          destinationCalls,
+          'Staked DOT',
+          undefined,
+          {
+            stakingToken: xcDOTToken,
+            lst: getTokenFromCache(String(chainId), STELLA_STDOT_ADDRESS),
+          }
+        )
       }
     }
 

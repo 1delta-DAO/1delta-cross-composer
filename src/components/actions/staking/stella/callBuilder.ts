@@ -1,7 +1,7 @@
-import { encodeFunctionData, erc20Abi, maxUint256, type Abi, type Address } from 'viem'
+import { encodeFunctionData, erc20Abi, maxUint256, type Address } from 'viem'
 import { DeltaCallType } from '@1delta/lib-utils'
 import type { ActionCall } from '../../shared/types'
-import { XCDOT_ADDRESS, STELLA_STDOT_ADDRESS } from '../../../../lib/consts'
+import { XCDOT_ADDRESS, STELLA_STDOT_ADDRESS } from './consts'
 import type { ActionCallBuilder } from '../../shared/types'
 import { STELLA_STAKING_ABI } from './abi'
 

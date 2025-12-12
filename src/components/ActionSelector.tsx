@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef, useCallback, Dispatch, SetStateAction } from 'react'
+import { useMemo, useEffect, useRef, Dispatch, SetStateAction } from 'react'
 import type { RawCurrency, RawCurrencyAmount } from '../types/currency'
 import { ActionIconGrid } from './actions/shared/ActionIconGrid'
 import { SelectedActionHeader } from './actions/shared/SelectedActionHeader'
@@ -209,13 +209,6 @@ export default function ActionSelector(props: ActionSelectorProps) {
     setDestinationInfo?.(undefined, undefined, [])
   }
 
-  const wrappedSetDestinationInfo = useCallback<ActionHandler>(
-    (amount, receiver, calls, label) => {
-      setDestinationInfo?.(amount, receiver, calls, label, selectedAction ?? undefined)
-    },
-    [setDestinationInfo, selectedAction]
-  )
-
   /* -------------------------------------------------------------------------- */
   /*                               Panel Renderer                               */
   /* -------------------------------------------------------------------------- */
@@ -229,7 +222,7 @@ export default function ActionSelector(props: ActionSelectorProps) {
     const Panel = def.panel
 
     const ctx = {
-      setDestinationInfo: wrappedSetDestinationInfo,
+      setDestinationInfo,
       srcCurrency,
       dstCurrency,
       slippage,

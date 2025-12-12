@@ -7,6 +7,7 @@ import { formatDisplayAmount } from '../actionsTab/swapUtils'
 import { UnifiedState } from '../ActionSelector'
 import { getRegisteredActions } from '../actions/shared/actionDefinitions'
 import { useChainsRegistry } from '../../sdk/hooks/useChainsRegistry'
+import { PayInfo } from './PayInfo'
 
 interface TransactionSummaryProps {
   srcCurrency?: RawCurrency
@@ -161,14 +162,11 @@ export function TransactionSummary({
     // or the default
     return (
       <def.customSummary
-        actionData={state.actionData}
-        common={{
-          formattedOutput,
-          dstCurrency,
-          dstChainName,
-          outputUsd,
-          destinationActionLabel,
-        }}
+        formattedOutput={formattedOutput}
+        dstCurrency={dstCurrency}
+        dstChainName={dstChainName}
+        outputUsd={outputUsd}
+        destinationActionLabel={destinationActionLabel}
       />
     )
   }
@@ -176,14 +174,14 @@ export function TransactionSummary({
   return (
     <div className="card bg-base-200 shadow-sm border border-base-300 mt-4">
       <div className="card-body p-4">
-        <div className="text-sm font-semibold mb-3">Transaction Details</div>
+        <div className="text-sm font-semibold mb-3">Transaction Summary</div>
 
         <div className="space-y-3">
           {/* Pay info */}
-          <SummaryRow
+          <PayInfo
             label="You'll pay:"
             amount={formattedInput}
-            currencySymbol={srcCurrency?.symbol}
+            currency={srcCurrency}
             chainName={srcChainName}
             amountUsd={inputUsd}
             showFadedAmount={!hasInputAmount}

@@ -6,6 +6,7 @@ import { ThemeSwitcher } from './components/themeSwitcher'
 import { WalletConnect } from './components/connect'
 import { TxHistoryButton } from './components/history/TxHistoryButton'
 import { QuoteTracePanel } from './components/debug/QuoteTracePanel'
+import { DestinationInfoProvider } from './contexts/DestinationInfoContext'
 
 export default function App() {
   const [showSwapReset, setShowSwapReset] = useState(false)
@@ -79,12 +80,14 @@ export default function App() {
             <div className="w-full max-w-[1000px] min-w-[450px]">
               <div className="card bg-base-100 shadow-xl rounded-2xl">
                 <div className="card-body p-4 sm:p-6">
-                  <ActionsTab
-                    onResetStateChange={(showReset, resetCallback) => {
-                      setShowSwapReset(showReset)
-                      setSwapResetCallback(resetCallback || null)
-                    }}
-                  />
+                  <DestinationInfoProvider>
+                    <ActionsTab
+                      onResetStateChange={(showReset, resetCallback) => {
+                        setShowSwapReset(showReset)
+                        setSwapResetCallback(resetCallback || null)
+                      }}
+                    />
+                  </DestinationInfoProvider>
                 </div>
               </div>
             </div>
