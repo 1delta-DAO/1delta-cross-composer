@@ -29,6 +29,7 @@ export function executeTrade(args: {
   }
 
   tracker.done = (async () => {
+    await Promise.resolve() // required for listeners to be registered before event emitting
     try {
       // -----------------------------------------------------
       // 1. APPROVAL
