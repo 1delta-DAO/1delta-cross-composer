@@ -154,6 +154,7 @@ export function OlderfallPanel({
       listing,
     })
     const nftName = listing.name || `NFT #${listing.tokenId}`
+
     setDestinationInfo?.(
       // define output amount
       CurrencyHandler.fromRawAmount(
@@ -162,7 +163,14 @@ export function OlderfallPanel({
       ),
       undefined, // intermediate receiver: default
       destinationCalls,
-      nftName
+      nftName,
+      undefined,
+      {
+        listing,
+        title: formatListingPriceLabel(listing, purchaseTokenData.chainId),
+        priceLabel: nftName,
+        chainId: purchaseTokenData.chainId,
+      }
     )
     setSelectedOlderfallOrderId('')
   }

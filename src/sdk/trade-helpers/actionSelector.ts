@@ -109,7 +109,7 @@ export async function fetchAllActionTrades(
 
         if (trade) return { action: bridge.toString(), trade }
       } catch (error) {
-        console.debug('Error fetching trade from ${bridge}:', {
+        console.debug(`Error fetching trade from ${bridge}:`, {
           bridge,
           error,
           input,

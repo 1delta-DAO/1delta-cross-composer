@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef, useCallback } from 'react'
+import { useMemo, useEffect, useRef, Dispatch, SetStateAction } from 'react'
 import type { RawCurrency, RawCurrencyAmount } from '../types/currency'
 import { ActionIconGrid } from './actions/shared/ActionIconGrid'
 import { SelectedActionHeader } from './actions/shared/SelectedActionHeader'
@@ -10,9 +10,34 @@ import {
   type ActionLoaderContext,
 } from './actions/shared/actionDefinitions'
 import { ActionHandler } from './actions/shared/types'
-import type { GenericTrade } from '@1delta/lib-utils'
+import { type GenericTrade } from '@1delta/lib-utils'
+import BalanceDisplay from './balance/balanceDisplay'
+import { PricesRecord } from '../hooks/prices/usePriceQuery'
+
+export const initialState: UnifiedState = {
+  selectedAction: null,
+  selectedCategory: 'all',
+  isExpanded: true,
+  isPanelExpanded: true,
+  actionData: {},
+  actionDataLoading: {},
+  panelResetKey: 0,
+}
+
+export interface UnifiedState {
+  selectedAction: ActionType | null
+  selectedCategory: ActionCategory
+  isExpanded: boolean
+  isPanelExpanded: boolean
+  actionData: Record<string, any>
+  actionDataLoading: Record<string, boolean>
+  panelResetKey: number
+}
 
 interface ActionSelectorProps {
+  state: UnifiedState
+  setState: Dispatch<SetStateAction<UnifiedState>>
+  pricesData?: PricesRecord
   srcCurrency?: RawCurrency
   dstCurrency?: RawCurrency
   setDestinationInfo?: ActionHandler
@@ -25,38 +50,47 @@ interface ActionSelectorProps {
   destinationInfo?: { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string }
 }
 
-export default function ActionSelector({
-  srcCurrency,
-  dstCurrency,
-  setDestinationInfo,
-  quotes,
-  selectedQuoteIndex,
-  setSelectedQuoteIndex,
-  slippage,
-  resetKey,
-  onSrcCurrencyChange,
-  destinationInfo,
-}: ActionSelectorProps) {
-  const [selectedAction, setSelectedAction] = useState<ActionType | null>(null)
-  const [selectedCategory, setSelectedCategory] = useState<ActionCategory>('all')
-  const [isExpanded, setIsExpanded] = useState(true)
-  const [isPanelExpanded, setIsPanelExpanded] = useState(true)
-  const [actionData, setActionData] = useState<Record<string, any>>({})
-  const [actionDataLoading, setActionDataLoading] = useState<Record<string, boolean>>({})
-  const [panelResetKey, setPanelResetKey] = useState(0)
+/* -------------------------------------------------------------------------- */
+/*                           COMPONENT START                                   */
+/* -------------------------------------------------------------------------- */
 
-  const dstChainId = useMemo(() => dstCurrency?.chainId as string | undefined, [dstCurrency])
+export default function ActionSelector(props: ActionSelectorProps) {
+  const {
+    srcCurrency,
+    dstCurrency,
+    setDestinationInfo,
+    quotes,
+    selectedQuoteIndex,
+    setSelectedQuoteIndex,
+    slippage,
+    resetKey,
+    onSrcCurrencyChange,
+    destinationInfo,
+    pricesData,
+    state,
+    setState,
+  } = props
+
+  const {
+    selectedAction,
+    selectedCategory,
+    isExpanded,
+    isPanelExpanded,
+    actionData,
+    actionDataLoading,
+    panelResetKey,
+  } = state
+
+  /* -------------------------------------------------------------------------- */
+  /*                        Derived lists + memo fields                          */
+  /* -------------------------------------------------------------------------- */
 
   const availableActions = useMemo(() => {
-    return getRegisteredActions().filter((action) => {
-      if (action.requiresSrcCurrency) {
-        return Boolean(srcCurrency)
-      }
-      return true
-    })
+    return getRegisteredActions().filter((action) =>
+      action.requiresSrcCurrency ? Boolean(srcCurrency) : true
+    )
   }, [srcCurrency])
 
-  // Filter actions by selected category
   const filteredActions = useMemo(() => {
     return getActionsByCategory(selectedCategory, srcCurrency)
   }, [selectedCategory, srcCurrency])
@@ -64,130 +98,131 @@ export default function ActionSelector({
   const isActionReady = useMemo(() => {
     const ready: Record<string, boolean> = {}
     availableActions.forEach((action) => {
-      const isLoading = actionDataLoading[action.id] === true
-      const hasData = actionData[action.id] !== null && actionData[action.id] !== undefined
-
-      if (action.dataLoader) {
-        ready[action.id] = !isLoading && hasData
-      } else {
-        ready[action.id] = true
-      }
+      const isLoading = actionDataLoading[action.id]
+      const hasData = actionData[action.id] != null
+      ready[action.id] = action.dataLoader ? !isLoading && hasData : true
     })
-
     return ready
-  }, [availableActions, srcCurrency, actionDataLoading, actionData])
+  }, [availableActions, actionDataLoading, actionData])
 
   const isActionLoading = useMemo(() => {
-    const loading: Record<string, boolean> = {}
-    availableActions.forEach((action) => {
-      const isDataLoading = actionDataLoading[action.id] === true
-      loading[action.id] = isDataLoading
-    })
-    return loading
+    const o: Record<string, boolean> = {}
+    availableActions.forEach((a) => (o[a.id] = actionDataLoading[a.id]))
+    return o
   }, [availableActions, actionDataLoading])
 
-  // Load data for actions with dataLoaders
+  /* -------------------------------------------------------------------------- */
+  /*                              Load Action Data                               */
+  /* -------------------------------------------------------------------------- */
+
   useEffect(() => {
-    const loadActionData = async () => {
-      const loaderContext: ActionLoaderContext = {
-        srcCurrency,
-        dstCurrency,
-      }
+    const load = async () => {
+      const ctx: ActionLoaderContext = { srcCurrency, dstCurrency }
 
-      const loadPromises = availableActions.map(async (action) => {
-        if (!action.dataLoader) return
+      await Promise.all(
+        availableActions.map(async (action) => {
+          if (!action.dataLoader) return
 
-        try {
-          setActionDataLoading((prev) => ({ ...prev, [action.id]: true }))
-          const data = await action.dataLoader!(loaderContext)
-          setActionData((prev) => ({ ...prev, [action.id]: data }))
-        } catch (error) {
-          console.error(`Failed to load data for action ${action.id}:`, error)
-          setActionData((prev) => ({ ...prev, [action.id]: null }))
-        } finally {
-          setActionDataLoading((prev) => ({ ...prev, [action.id]: false }))
-        }
-      })
+          setState((s) => ({
+            ...s,
+            actionDataLoading: { ...s.actionDataLoading, [action.id]: true },
+          }))
 
-      await Promise.all(loadPromises)
+          try {
+            const data = await action.dataLoader(ctx)
+            setState((s) => ({
+              ...s,
+              actionData: { ...s.actionData, [action.id]: data },
+            }))
+          } catch (e) {
+            console.error('Failed to load:', action.id, e)
+            setState((s) => ({
+              ...s,
+              actionData: { ...s.actionData, [action.id]: null },
+            }))
+          } finally {
+            setState((s) => ({
+              ...s,
+              actionDataLoading: { ...s.actionDataLoading, [action.id]: false },
+            }))
+          }
+        })
+      )
     }
 
-    loadActionData()
+    load()
   }, [availableActions, srcCurrency, dstCurrency])
 
-  const prevSelectedActionRef = useRef<ActionType | null>(null)
+  /* -------------------------------------------------------------------------- */
+  /*                Clear destination info if selectedAction changes            */
+  /* -------------------------------------------------------------------------- */
+
+  const prevActionRef = useRef<ActionType | null>(null)
 
   useEffect(() => {
-    const prevAction = prevSelectedActionRef.current
-    const currentAction = selectedAction
+    const prev = prevActionRef.current
+    const cur = selectedAction
 
-    if (prevAction !== null && currentAction !== null && prevAction !== currentAction) {
+    if (prev && cur && prev !== cur) {
       setDestinationInfo?.(undefined, undefined, [])
     }
 
-    prevSelectedActionRef.current = currentAction
+    prevActionRef.current = cur
   }, [selectedAction, setDestinationInfo])
 
+  /* -------------------------------------------------------------------------- */
+  /*                              Event Handlers                                 */
+  /* -------------------------------------------------------------------------- */
+
   const handleReset = () => {
-    setSelectedAction(null)
-    setSelectedCategory('all')
-    setIsExpanded(true)
-    setIsPanelExpanded(true)
-
+    setState((s) => ({
+      ...initialState,
+      panelResetKey: s.panelResetKey + 1,
+    }))
     setDestinationInfo?.(undefined, undefined, [])
-
-    setPanelResetKey((prev) => prev + 1)
   }
 
-  const handleActionSelect = (actionId: ActionType) => {
-    const actionDef = availableActions.find((a) => a.id === actionId)
-    if (!actionDef) return
+  const handleActionSelect = (id: ActionType) => {
+    const def = availableActions.find((a) => a.id === id)
+    if (!def) return
 
-    const isLoading = actionDataLoading[actionId] === true
-    const hasData = actionData[actionId] !== null && actionData[actionId] !== undefined
+    const isLoading = actionDataLoading[id]
+    const hasData = actionData[id] != null
 
-    if (actionDef.dataLoader && (isLoading || !hasData)) {
-      return
-    }
+    if (def.dataLoader && (isLoading || !hasData)) return
 
-    setSelectedAction(actionId)
-    setIsExpanded(false)
-    setIsPanelExpanded(true)
-  }
-
-  const handlePanelToggle = () => {
-    setIsPanelExpanded(!isPanelExpanded)
+    setState((s) => ({
+      ...s,
+      selectedAction: id,
+      isExpanded: false,
+      isPanelExpanded: true,
+    }))
   }
 
   const handleCloseAction = () => {
-    setSelectedAction(null)
-    setIsPanelExpanded(true)
+    setState((s) => ({
+      ...s,
+      selectedAction: null,
+      isPanelExpanded: true,
+      panelResetKey: s.panelResetKey + 1,
+    }))
     setDestinationInfo?.(undefined, undefined, [])
-    setPanelResetKey((prev) => prev + 1)
   }
 
-  const wrappedSetDestinationInfo = useCallback<ActionHandler>(
-    (currencyAmount, receiverAddress, destinationCalls, actionLabel) => {
-      setDestinationInfo?.(
-        currencyAmount,
-        receiverAddress,
-        destinationCalls,
-        actionLabel,
-        selectedAction || undefined
-      )
-    },
-    [setDestinationInfo, selectedAction]
-  )
+  /* -------------------------------------------------------------------------- */
+  /*                               Panel Renderer                               */
+  /* -------------------------------------------------------------------------- */
 
   const renderActionPanel = () => {
     if (!selectedAction) return null
 
-    const actionDef = getRegisteredActions().find((a) => a.id === selectedAction)
-    if (!actionDef) return null
+    const def = getRegisteredActions().find((a) => a.id === selectedAction)
+    if (!def) return null
 
-    const Panel = actionDef.panel
-    const context = {
-      setDestinationInfo: wrappedSetDestinationInfo,
+    const Panel = def.panel
+
+    const ctx = {
+      setDestinationInfo,
       srcCurrency,
       dstCurrency,
       slippage,
@@ -198,52 +233,52 @@ export default function ActionSelector({
       destinationInfo,
     }
 
-    const props = actionDef.buildPanelProps
-      ? actionDef.buildPanelProps(context)
-      : {
-          setDestinationInfo: context.setDestinationInfo,
-        }
+    const props = def.buildPanelProps
+      ? def.buildPanelProps(ctx)
+      : { setDestinationInfo: ctx.setDestinationInfo }
 
-    return (
-      <Panel
-        {...props}
-        resetKey={resetKey !== undefined ? resetKey + panelResetKey : panelResetKey}
-      />
-    )
+    return <Panel {...props} resetKey={(resetKey ?? 0) + panelResetKey} />
   }
 
-  const selectedActionDef = selectedAction
+  const selectedDef = selectedAction
     ? getRegisteredActions().find((a) => a.id === selectedAction)
     : null
 
+  /* -------------------------------------------------------------------------- */
+  /*                                   Render                                   */
+  /* -------------------------------------------------------------------------- */
+
   return (
     <div className="space-y-4">
+      <BalanceDisplay
+        onSrcCurrencyChange={onSrcCurrencyChange}
+        srcCurrency={srcCurrency}
+        pricesData={pricesData}
+      />
       <div className="card bg-base-100 border border-base-300 shadow-sm">
         <div className="card-body p-4">
           <ActionIconGrid
             actions={filteredActions}
             selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
+            onCategoryChange={(cat) => setState((s) => ({ ...s, selectedCategory: cat }))}
             selectedAction={selectedAction}
             onActionSelect={handleActionSelect}
             isExpanded={isExpanded}
-            onToggleExpand={() => setIsExpanded(!isExpanded)}
+            onToggleExpand={() => setState((s) => ({ ...s, isExpanded: !s.isExpanded }))}
             onReset={handleReset}
-            srcCurrency={srcCurrency}
-            onSrcCurrencyChange={onSrcCurrencyChange}
             isActionReady={isActionReady}
             isActionLoading={isActionLoading}
           />
         </div>
       </div>
 
-      {selectedAction && selectedActionDef && (
+      {selectedAction && selectedDef && (
         <div className="card bg-base-100 border border-primary/20 shadow-md">
           <div className="card-body p-0">
             <SelectedActionHeader
-              action={selectedActionDef}
+              action={selectedDef}
               isExpanded={isPanelExpanded}
-              onToggle={handlePanelToggle}
+              onToggle={() => setState((s) => ({ ...s, isPanelExpanded: !s.isPanelExpanded }))}
               onClose={handleCloseAction}
             />
             {isPanelExpanded && <div className="p-4">{renderActionPanel()}</div>}

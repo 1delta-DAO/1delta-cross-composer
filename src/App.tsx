@@ -1,25 +1,14 @@
 import { useState } from 'react'
-import BatchTransactionForm from './components/BatchTransactionForm'
 import { ActionsTab } from './components/actionsTab/ActionsTab'
-import { ReverseActionsTab } from './components/actionsTab/ReverseActionsTab'
 import { TradeSdkWalletSync } from './lib/trade-helpers/walletClient'
 import { SwapSlippageSelector } from './components/actionsTab/SwapSlippageSelector'
 import { ThemeSwitcher } from './components/themeSwitcher'
 import { WalletConnect } from './components/connect'
 import { TxHistoryButton } from './components/history/TxHistoryButton'
 import { QuoteTracePanel } from './components/debug/QuoteTracePanel'
+import { DestinationInfoProvider } from './contexts/DestinationInfoContext'
 
 export default function App() {
-  enum Tabs {
-    ACTIONS = 'actions',
-    TRANSACTIONS = 'transactions',
-  }
-  enum ActionMode {
-    NORMAL = 'normal',
-    REVERSE = 'reverse',
-  }
-  const [activeTab, setActiveTab] = useState<Tabs>(Tabs.ACTIONS)
-  const [actionMode, setActionMode] = useState<ActionMode>(ActionMode.NORMAL)
   const [showSwapReset, setShowSwapReset] = useState(false)
   const [swapResetCallback, setSwapResetCallback] = useState<(() => void) | null>(null)
 
@@ -33,7 +22,7 @@ export default function App() {
       <TradeSdkWalletSync />
 
       {/* NAVBAR */}
-      <div className="navbar bg-base-100 shadow-lg flex-shrink-0">
+      <div className="navbar bg-base-100 shadow-lg shrink-0">
         <div className="flex flex-row p-2 grow">
           <div className="flex-1">
             <div className="flex items-center space-x-2">
@@ -58,45 +47,15 @@ export default function App() {
           <div className="space-y-4 flex flex-col items-center">
             {/* TABS + SLIPPAGE */}
             <div className="w-full max-w-[1000px] min-w-[450px] flex items-center justify-between">
-              <div className="flex items-center gap-2 w-full">
-                <div className="join">
-                  <button
-                    className={`btn btn-sm join-item ${activeTab === Tabs.ACTIONS ? 'btn-primary' : 'btn-ghost'}`}
-                    onClick={() => setActiveTab(Tabs.ACTIONS)}
-                  >
-                    Actions
-                  </button>
-                  <button
-                    className={`btn btn-sm join-item ${activeTab === Tabs.TRANSACTIONS ? 'btn-primary' : 'btn-ghost'}`}
-                    onClick={() => setActiveTab(Tabs.TRANSACTIONS)}
-                  >
-                    Transactions
-                  </button>
-                </div>
-                {activeTab === Tabs.ACTIONS && (
-                  <>
-                    <div className="flex flex-grow-1"></div>
-                    <div className="join">
-                      <button
-                        className={`btn btn-xs join-item ${actionMode === ActionMode.NORMAL ? 'btn-secondary' : 'btn-ghost'}`}
-                        onClick={() => setActionMode(ActionMode.NORMAL)}
-                      >
-                        Normal
-                      </button>
-                      <button
-                        className={`btn btn-xs join-item ${actionMode === ActionMode.REVERSE ? 'btn-secondary' : 'btn-ghost'}`}
-                        onClick={() => setActionMode(ActionMode.REVERSE)}
-                      >
-                        Reverse
-                      </button>
-                    </div>
-                  </>
-                )}
+              <div className="join">
+                <button className={`btn btn-sm join-item btn-primary`} onClick={undefined}>
+                  Select an Action
+                </button>
               </div>
 
               <div className="flex items-center gap-2">
-                {activeTab === Tabs.ACTIONS && <SwapSlippageSelector />}
-                {activeTab === Tabs.ACTIONS && showSwapReset && (
+                {<SwapSlippageSelector />}
+                {showSwapReset && (
                   <button className="btn btn-ghost btn-xs" onClick={handleSwapReset}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -121,25 +80,14 @@ export default function App() {
             <div className="w-full max-w-[1000px] min-w-[450px]">
               <div className="card bg-base-100 shadow-xl rounded-2xl">
                 <div className="card-body p-4 sm:p-6">
-                  {activeTab === Tabs.ACTIONS ? (
-                    actionMode === ActionMode.NORMAL ? (
-                      <ActionsTab
-                        onResetStateChange={(showReset, resetCallback) => {
-                          setShowSwapReset(showReset)
-                          setSwapResetCallback(resetCallback || null)
-                        }}
-                      />
-                    ) : (
-                      <ReverseActionsTab
-                        onResetStateChange={(showReset, resetCallback) => {
-                          setShowSwapReset(showReset)
-                          setSwapResetCallback(resetCallback || null)
-                        }}
-                      />
-                    )
-                  ) : (
-                    <BatchTransactionForm />
-                  )}
+                  <DestinationInfoProvider>
+                    <ActionsTab
+                      onResetStateChange={(showReset, resetCallback) => {
+                        setShowSwapReset(showReset)
+                        setSwapResetCallback(resetCallback || null)
+                      }}
+                    />
+                  </DestinationInfoProvider>
                 </div>
               </div>
             </div>

@@ -8,6 +8,7 @@ import { MoonwellMarket } from './marketCache'
 import { useConnection } from 'wagmi'
 import { DUMMY_ADDRESS } from '../../../../lib/consts'
 import { RawCurrency } from '../../../../types/currency'
+import { Lender } from '@1delta/lib-utils'
 
 type DepositActionModalProps = {
   open: boolean
@@ -72,7 +73,10 @@ export function DepositActionModal({
       undefined,
       destinationCalls,
       `${mTokenSymbol} shares`,
-      'moonwell_deposit'
+      'moonwell_deposit',
+      {
+        lender: Lender.MOONWELL,
+      }
     )
 
     onClose()

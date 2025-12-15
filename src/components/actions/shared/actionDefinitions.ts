@@ -64,6 +64,15 @@ export interface ActionDefinition {
   requiresMarkets?: boolean
   dataLoader?: DataLoader | InputDataLoader
   buildPanelProps?: PanelPropsBuilder
+
+  /** optional checkout summary */
+  customSummary?: ComponentType<{
+    formattedOutput: string
+    dstCurrency?: RawCurrency
+    dstChainName?: string
+    outputUsd?: number
+    destinationActionLabel?: string
+  }>
 }
 
 export { getRegisteredActions }

@@ -1,11 +1,7 @@
 import { useMemo } from 'react'
 import type { ActionDefinition, ActionCategory, ActionType } from './actionDefinitions'
 import { CATEGORIES } from './actionDefinitions'
-import type { RawCurrency } from '../../../types/currency'
 import { useContainerWidth } from '../../../hooks/useContainerWidth'
-import { InputTokenSelector } from './InputTokenSelector'
-import { DestinationTokenSelector } from './DestinationTokenSelector'
-import { useChainsRegistry } from '../../../sdk/hooks/useChainsRegistry'
 
 interface ActionIconGridProps {
   actions: ActionDefinition[]
@@ -16,10 +12,6 @@ interface ActionIconGridProps {
   isExpanded: boolean
   onToggleExpand: () => void
   onReset: () => void
-  srcCurrency?: RawCurrency
-  onSrcCurrencyChange?: (currency: RawCurrency) => void
-  dstCurrency?: RawCurrency
-  onDstCurrencyChange?: (currency: RawCurrency) => void
   isActionReady?: Record<string, boolean>
   isActionLoading?: Record<string, boolean>
   isReverseFlow?: boolean
@@ -34,16 +26,11 @@ export function ActionIconGrid({
   isExpanded,
   onToggleExpand,
   onReset,
-  srcCurrency,
-  onSrcCurrencyChange,
-  dstCurrency,
-  onDstCurrencyChange,
   isActionReady,
   isActionLoading,
   isReverseFlow = false,
 }: ActionIconGridProps) {
   const { containerRef, width } = useContainerWidth()
-  const { data: chains } = useChainsRegistry()
 
   const filteredActions = useMemo(() => {
     if (selectedCategory === 'all') {
@@ -123,21 +110,6 @@ export function ActionIconGrid({
               <span className="font-medium">Actions</span>
             </button>
             <div className="flex-1"></div>
-            {onDstCurrencyChange && !isReverseFlow && (
-              <DestinationTokenSelector
-                dstCurrency={dstCurrency}
-                onCurrencyChange={onDstCurrencyChange}
-                chains={chains}
-                isReverseFlow={isReverseFlow}
-              />
-            )}
-            {onSrcCurrencyChange && !onDstCurrencyChange && (
-              <InputTokenSelector
-                srcCurrency={srcCurrency}
-                onCurrencyChange={onSrcCurrencyChange}
-                chains={chains}
-              />
-            )}
             <button
               type="button"
               className="btn btn-sm btn-ghost btn-circle"

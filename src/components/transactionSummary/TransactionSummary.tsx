@@ -1,8 +1,13 @@
 import { useMemo, useState, useEffect } from 'react'
-import type { RawCurrency, RawCurrencyAmount } from '../../../types/currency'
-import { formatDisplayAmount } from '../../actionsTab/swapUtils'
-import { CurrencyHandler } from '../../../sdk/types'
-import type { PricesRecord } from '../../../hooks/prices/usePriceQuery'
+import { SummaryRow } from './SummaryRow'
+import { RouteSection } from './RouteSection'
+import { CurrencyHandler, RawCurrency, RawCurrencyAmount } from '@1delta/lib-utils'
+import { PricesRecord } from '../../hooks/prices/usePriceQuery'
+import { formatDisplayAmount } from '../actionsTab/swapUtils'
+import { UnifiedState } from '../ActionSelector'
+import { getRegisteredActions } from '../actions/shared/actionDefinitions'
+import { useChainsRegistry } from '../../sdk/hooks/useChainsRegistry'
+import { PayInfo } from './PayInfo'
 
 interface TransactionSummaryProps {
   srcCurrency?: RawCurrency
@@ -14,10 +19,10 @@ interface TransactionSummaryProps {
   inputActionLabel?: string
   isReverseFlow?: boolean
   route?: string
-  chains?: Record<string, { data?: { name?: string } }>
   pricesData?: PricesRecord
   isLoadingPrices?: boolean
   isFetchingPrices?: boolean
+  state: UnifiedState
 }
 
 export function TransactionSummary({
@@ -30,11 +35,13 @@ export function TransactionSummary({
   inputActionLabel,
   isReverseFlow = false,
   route,
-  chains,
   pricesData: pricesDataProp,
   isLoadingPrices: isLoadingPricesProp,
   isFetchingPrices: isFetchingPricesProp,
+  state,
 }: TransactionSummaryProps) {
+  const { data: chains } = useChainsRegistry()
+
   const outputAmount = useMemo(() => {
     if (outputAmountProp) return outputAmountProp
     if (currencyAmount) {
@@ -52,12 +59,12 @@ export function TransactionSummary({
   const pricesData = pricesDataProp
   const isLoadingPrices = isLoadingPricesProp ?? false
   const isFetchingPrices = isFetchingPricesProp ?? false
+  const isPricesLoading = isLoadingPrices || isFetchingPrices
 
   const srcPrice = useMemo(() => {
     if (!pricesData || !srcCurrency) return undefined
     const chainId = srcCurrency.chainId
     const addressKey = srcCurrency.address?.toLowerCase()
-    if (!chainId || !addressKey) return undefined
     return pricesData[chainId]?.[addressKey]?.usd
   }, [pricesData, srcCurrency])
 
@@ -65,13 +72,10 @@ export function TransactionSummary({
     if (!pricesData || !dstCurrency) return undefined
     const chainId = dstCurrency.chainId
     const addressKey = dstCurrency.address?.toLowerCase()
-    if (!chainId || !addressKey) return undefined
     return pricesData[chainId]?.[addressKey]?.usd
   }, [pricesData, dstCurrency])
 
   const [showCalculatingTimeout, setShowCalculatingTimeout] = useState(false)
-
-  const isPricesLoading = isLoadingPrices || isFetchingPrices
 
   useEffect(() => {
     setShowCalculatingTimeout(false)
@@ -125,72 +129,72 @@ export function TransactionSummary({
     return chains[dstCurrency.chainId]?.data?.name || dstCurrency.chainId
   }, [dstCurrency?.chainId, chains])
 
-  if (!shouldShow) return null
-
   const hasInputAmount = inputAmount && Number(inputAmount) > 0
   const formattedInput = hasInputAmount
     ? formatDisplayAmount(inputAmount)
     : showCalculatingTimeout
       ? 'Price unavailable'
       : 'Calculating...'
+
   const formattedOutput = formatDisplayAmount(outputAmount || '0')
+
+  if (!shouldShow) return null
+
+  /* -------------------------------------------------------------------------- */
+  /*                    Checkout Summary Renderer                               */
+  /* -------------------------------------------------------------------------- */
+
+  const renderSummary = () => {
+    if (!state.selectedAction) return null
+
+    const def = getRegisteredActions().find((a) => a.id === state.selectedAction)
+    if (!def) return null
+
+    // either pick costom summary if any
+    if (!def.customSummary)
+      return (
+        <SummaryRow
+          label="You'll receive:"
+          amount={formattedOutput}
+          currencySymbol={dstCurrency?.symbol}
+          chainName={dstChainName}
+          amountUsd={outputUsd}
+          destinationActionLabel={destinationActionLabel}
+        />
+      )
+
+    // or the default
+    return (
+      <def.customSummary
+        formattedOutput={formattedOutput}
+        dstCurrency={dstCurrency}
+        dstChainName={dstChainName}
+        outputUsd={outputUsd}
+        destinationActionLabel={destinationActionLabel}
+      />
+    )
+  }
 
   return (
     <div className="card bg-base-200 shadow-sm border border-base-300 mt-4">
       <div className="card-body p-4">
-        <div className="text-sm font-semibold mb-3">Transaction Details</div>
+        <div className="text-sm font-semibold mb-3">Transaction Summary</div>
+
         <div className="space-y-3">
-          <div>
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-sm opacity-70">You'll pay:</span>
-              <span className="font-medium">
-                {hasInputAmount ? (
-                  <>
-                    {formattedInput} {srcCurrency?.symbol}
-                  </>
-                ) : (
-                  <span className="opacity-60">{formattedInput}</span>
-                )}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs opacity-50"></span>
-              <div className="text-xs opacity-60">
-                {inputUsd !== undefined && isFinite(inputUsd) ? `$${inputUsd.toFixed(2)}` : ''}
-                {srcChainName && <span className="ml-2">({srcChainName})</span>}
-              </div>
-            </div>
-          </div>
+          {/* Pay info */}
+          <PayInfo
+            label="You'll pay:"
+            amount={formattedInput}
+            currency={srcCurrency}
+            chainName={srcChainName}
+            amountUsd={inputUsd}
+            showFadedAmount={!hasInputAmount}
+          />
 
-          <div>
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-sm opacity-70">
-                {isReverseFlow ? `You'll receive:` : `You'll receive:`}
-              </span>
-              <span className="font-medium">
-                {isReverseFlow && inputActionLabel && (
-                  <span className="mr-1 opacity-80">{inputActionLabel} →</span>
-                )}
-                {formattedOutput} {dstCurrency?.symbol}
-                {!isReverseFlow && destinationActionLabel && (
-                  <span className="ml-1 opacity-80">→ {destinationActionLabel}</span>
-                )}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs opacity-50"></span>
-              <div className="text-xs opacity-60">
-                {outputUsd !== undefined && isFinite(outputUsd) ? `$${outputUsd.toFixed(2)}` : ''}
-                {dstChainName && <span className="ml-2">({dstChainName})</span>}
-              </div>
-            </div>
-          </div>
+          {/* Checkout info */}
+          {renderSummary()}
 
-          {route && (
-            <div className="pt-2 border-t border-base-300">
-              <div className="text-xs opacity-60">Route: {route}</div>
-            </div>
-          )}
+          {route && <RouteSection route={route} />}
         </div>
       </div>
     </div>

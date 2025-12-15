@@ -2,6 +2,7 @@ import { registerAction } from '../shared/actionRegistry'
 import { BridgePanel } from './BridgePanel'
 import { BridgeIcon } from './BridgeIcon'
 import type { ActionDefinition } from '../shared/actionDefinitions'
+import { CurrencyReceiveCheckout } from '../shared/CurrencyReceiptCheckout'
 
 export function registerBridgeAction(): void {
   const bridgeAction: ActionDefinition = {
@@ -22,6 +23,7 @@ export function registerBridgeAction(): void {
       selectedQuoteIndex: context.selectedQuoteIndex,
       setSelectedQuoteIndex: context.setSelectedQuoteIndex,
     }),
+    customSummary: CurrencyReceiveCheckout,
   }
 
   registerAction(bridgeAction)

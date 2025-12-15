@@ -2,6 +2,7 @@ import { registerAction } from '../../shared/actionRegistry'
 import { StellaStakingPanel } from './StellaStakingPanel'
 import { StakingIcon } from './StakingIcon'
 import type { ActionDefinition } from '../../shared/actionDefinitions'
+import { StakingCheckout } from './Checkout'
 
 export function registerStakingAction(): void {
   const stakingAction: ActionDefinition = {
@@ -18,6 +19,7 @@ export function registerStakingAction(): void {
       dstCurrency: context.dstCurrency,
       slippage: context.slippage,
     }),
+    customSummary: StakingCheckout,
   }
 
   registerAction(stakingAction)

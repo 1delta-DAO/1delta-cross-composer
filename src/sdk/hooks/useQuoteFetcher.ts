@@ -115,7 +115,7 @@ export async function fetchQuotes(params: QuoteFetcherParams): Promise<Quote[]> 
       controller,
       (axelarPrices || {}) as PricesRecord
     )
-    console.log('All actions received from trade-sdk:', {
+    console.info('All actions received from trade-sdk:', {
       actions: actionTrades.map((t) => t.action),
       actionTrades,
     })

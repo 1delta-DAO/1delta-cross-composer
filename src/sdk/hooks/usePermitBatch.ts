@@ -31,7 +31,7 @@ export function usePermitBatch() {
           functionName: 'nonces',
           args: [userAddress],
         })
-        console.log('nonce fetch result:', nonce)
+        console.info('nonce fetch result:', nonce)
         return nonce
       } catch (error) {
         console.error('Error fetching nonce:', error)
@@ -84,7 +84,7 @@ export function usePermitBatch() {
           }
         }
 
-        console.log('Fetching nonce for self-transmit:', address)
+        console.info('Fetching nonce for self-transmit:', address)
         const currentNonce = await fetchNonce(address)
         if (currentNonce === null) {
           return {

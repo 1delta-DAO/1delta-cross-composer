@@ -13,7 +13,6 @@ import { useQuoteRefreshHelpers, REFRESH_INTERVAL_MS } from './useQuoteRefresh'
 import {
   generateDestinationCallsKey,
   generateQuoteKey,
-  generateCurrencyKey,
   areQuoteKeysEqual,
 } from './useTradeQuotes/stateHelpers'
 import { validateInputs } from './useTradeQuotes/inputValidation'
@@ -64,8 +63,7 @@ export function useTradeQuotes({
   const { validateAndUpdateQuotes } = validation
 
   const srcCurrency = useMemo(() => srcAmount?.currency, [srcAmount])
-  const srcKey = useMemo(() => generateCurrencyKey(srcCurrency), [srcCurrency])
-  const dstKey = useMemo(() => generateCurrencyKey(dstCurrency), [dstCurrency])
+
   const destinationCallsKey = useMemo(
     () => generateDestinationCallsKey(destinationCalls),
     [destinationCalls]

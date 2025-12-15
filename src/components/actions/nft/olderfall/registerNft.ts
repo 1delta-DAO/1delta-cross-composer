@@ -7,6 +7,7 @@ import type { OlderfallListing } from './api'
 import type { ActionLoaderContext } from '../../shared/actionDefinitions'
 import { getCachedListings, setCachedListings } from './cache'
 import { OLDERFALL_SUPPORTED_CHAINS } from './constants'
+import { NFTCheckout } from './Checkout'
 
 async function loadListings(
   _context: ActionLoaderContext
@@ -50,6 +51,7 @@ export function registerNftAction(): void {
       setDestinationInfo: context.setDestinationInfo,
       preloadedListings: context.actionData,
     }),
+    customSummary: NFTCheckout,
   }
 
   registerAction(nftAction)

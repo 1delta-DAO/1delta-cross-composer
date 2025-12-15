@@ -1,10 +1,14 @@
-import ActionSelector from '../ActionSelector'
+import ActionSelector, { initialState, UnifiedState } from '../ActionSelector'
 import type { RawCurrency, RawCurrencyAmount } from '../../types/currency'
 import { ActionHandler } from '../actions/shared/types'
 import type { GenericTrade } from '@1delta/lib-utils'
-import { TransactionSummary } from '../actions/shared/TransactionSummary'
-import { useChainsRegistry } from '../../sdk/hooks/useChainsRegistry'
+import { TransactionSummary } from '../transactionSummary/TransactionSummary'
 import type { PricesRecord } from '../../hooks/prices/usePriceQuery'
+import { useState } from 'react'
+
+/* -------------------------------------------------------------------------- */
+/*                            UNIFIED STATE SHAPE                             */
+/* -------------------------------------------------------------------------- */
 
 type ActionsPanelProps = {
   srcCurrency?: RawCurrency
@@ -40,11 +44,15 @@ export function ActionsPanel({
   isLoadingPrices,
   isFetchingPrices,
 }: ActionsPanelProps) {
-  const { data: chains } = useChainsRegistry()
+  /** selection state */
+  const [state, setState] = useState<UnifiedState>(initialState)
 
   return (
     <>
       <ActionSelector
+        state={state}
+        setState={setState}
+        pricesData={pricesData}
         resetKey={resetKey}
         srcCurrency={srcCurrency}
         dstCurrency={dstCurrency}
@@ -63,10 +71,10 @@ export function ActionsPanel({
         inputAmount={calculatedInputAmount}
         currencyAmount={destinationInfo?.currencyAmount}
         destinationActionLabel={destinationInfo?.actionLabel}
-        chains={chains}
         pricesData={pricesData}
         isLoadingPrices={isLoadingPrices}
         isFetchingPrices={isFetchingPrices}
+        state={state}
       />
     </>
   )

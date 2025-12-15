@@ -2,6 +2,7 @@ import { registerAction } from '../shared/actionRegistry'
 import { SwapPanel } from './SwapPanel'
 import { SwapIcon } from './SwapIcon'
 import type { ActionDefinition } from '../shared/actionDefinitions'
+import { CurrencyReceiveCheckout } from '../shared/CurrencyReceiptCheckout'
 
 export function registerSwapAction(): void {
   const swapAction: ActionDefinition = {
@@ -21,6 +22,7 @@ export function registerSwapAction(): void {
       selectedQuoteIndex: context.selectedQuoteIndex,
       setSelectedQuoteIndex: context.setSelectedQuoteIndex,
     }),
+    customSummary: CurrencyReceiveCheckout,
   }
 
   registerAction(swapAction)

@@ -18,7 +18,7 @@ import type { Quote } from '../../sdk/hooks/useQuoteFetcher'
 import ExecuteButton from './ExecuteButton'
 import { ActionsPanel } from './ActionsPanel'
 import { formatDisplayAmount, pickPreferredToken } from './swapUtils'
-import type { ActionCall } from '../actions/shared/types'
+import type { ActionCall, ActionHandler } from '../actions/shared/types'
 import {
   generateDestinationCallsKey,
   generateCurrencyKey,
@@ -26,6 +26,7 @@ import {
 import { detectChainTransition } from '../../sdk/hooks/useTradeQuotes/inputValidation'
 import { useDestinationReverseQuote } from '../../sdk/hooks/useDestinationReverseQuote'
 import { useQuoteTrace } from '../../contexts/QuoteTraceContext'
+import { useDestinationInfo } from '../../contexts/DestinationInfoContext'
 
 type Props = {
   onResetStateChange?: (showReset: boolean, resetCallback?: () => void) => void
@@ -42,9 +43,9 @@ export function ActionsTab({ onResetStateChange }: Props) {
   const [inputCurrency, setInputCurrency] = useState<RawCurrency | undefined>(undefined)
   const [actionCurrency, setActionCurrency] = useState<RawCurrency | undefined>(undefined)
   const [amount, setAmount] = useState('')
-  const [destinationInfo, setDestinationInfoState] = useState<
-    { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string } | undefined
-  >(undefined)
+
+  /** This sets the destination purchase info */
+  const { destinationInfo, setDestinationInfoState } = useDestinationInfo()
 
   const inputChainId = inputCurrency?.chainId ?? DEFAULT_INPUT_CHAIN_ID
   const actionChainId = actionCurrency?.chainId
@@ -395,13 +396,14 @@ export function ActionsTab({ onResetStateChange }: Props) {
 
   const queryClient = useQueryClient()
 
-  const setDestinationInfo = useCallback(
+  const setDestinationInfo: ActionHandler = useCallback(
     (
       currencyAmount: RawCurrencyAmount | undefined,
       receiverAddress: string | undefined,
       destinationCalls: ActionCall[],
       actionLabel?: string,
-      actionId?: string
+      actionId?: string,
+      actionData?: any
     ) => {
       if (!currencyAmount) {
         setDestinationInfoState(undefined)
@@ -426,7 +428,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
         return
       }
 
-      setDestinationInfoState({ currencyAmount, actionLabel, actionId })
+      setDestinationInfoState({ currencyAmount, actionLabel, actionId, actionData })
       setDestinationCalls(destinationCalls)
 
       quoteTrace.addTrace({
@@ -515,7 +517,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
             srcCurrency={inputCurrency}
             dstCurrency={actionCurrency}
             amountWei={amountWei}
-            actionCalls={destinationCalls}
+            hasActionCalls={destinationCalls?.length > 0}
             chains={chains}
             quoting={quoting && !tradeToUse}
             onDone={(hashes) => {

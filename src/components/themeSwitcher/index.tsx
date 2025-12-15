@@ -19,18 +19,14 @@ const DEFAULT_THEME = 'dark'
 export function ThemeSwitcher() {
   const [theme, setTheme] = useState<string>(DEFAULT_THEME)
 
-  // Initialize from localStorage & apply once on mount
   useEffect(() => {
     if (typeof window === 'undefined') return
-
     const stored = window.localStorage.getItem('theme')
     const initial = stored && THEMES.includes(stored as any) ? stored : DEFAULT_THEME
-
     setTheme(initial)
     document.documentElement.setAttribute('data-theme', initial)
   }, [])
 
-  // Apply on change
   useEffect(() => {
     if (typeof document === 'undefined') return
     document.documentElement.setAttribute('data-theme', theme)
@@ -38,16 +34,18 @@ export function ThemeSwitcher() {
   }, [theme])
 
   return (
-    <select
-      className="select select-bordered select-sm pr-10"
-      value={theme}
-      onChange={(e) => setTheme(e.target.value)}
-    >
-      {THEMES.map((t) => (
-        <option key={t} value={t}>
-          {t.charAt(0).toUpperCase() + t.slice(1)}
-        </option>
-      ))}
-    </select>
+    <div className="relative inline-block w-30">
+      <select
+        className="select select-bordered select-sm w-full pr-10 appearance-none bg-base-100 hover:bg-base-200 transition rounded-xl"
+        value={theme}
+        onChange={(e) => setTheme(e.target.value)}
+      >
+        {THEMES.map((t) => (
+          <option key={t} value={t}>
+            {t.charAt(0).toUpperCase() + t.slice(1)}
+          </option>
+        ))}
+      </select>
+    </div>
   )
 }
