@@ -154,14 +154,14 @@ export function ReverseActionsTab({ onResetStateChange }: Props) {
         srcCurrency={inputActionCurrency}
         dstCurrency={destinationCurrency}
         currentChainId={currentChainId}
-        setInputInfo={setInputInfo}
+        setActionInfo={setInputInfo}
         quotes={[]}
         selectedQuoteIndex={0}
         setSelectedQuoteIndex={() => {}}
         slippage={slippage}
         onDstCurrencyChange={setDestinationCurrency}
         calculatedInputAmount={undefined}
-        inputInfo={inputInfo}
+        actionInfo={inputInfo}
         pricesData={pricesData}
         isLoadingPrices={isLoadingPrices}
         isFetchingPrices={isFetchingPrices}

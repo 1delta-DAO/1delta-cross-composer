@@ -8,6 +8,7 @@ import {
   type ActionType,
   type ActionCategory,
   type ActionLoaderContext,
+  type ActionPanelContext,
 } from './actions/shared/actionDefinitions'
 import { ActionHandler } from './actions/shared/types'
 import { type GenericTrade } from '@1delta/lib-utils'
@@ -40,14 +41,14 @@ interface ActionSelectorProps {
   pricesData?: PricesRecord
   srcCurrency?: RawCurrency
   dstCurrency?: RawCurrency
-  setDestinationInfo?: ActionHandler
+  setActionInfo?: ActionHandler
   quotes?: Array<{ label: string; trade: GenericTrade }>
   selectedQuoteIndex?: number
   setSelectedQuoteIndex?: (index: number) => void
   slippage?: number
   resetKey?: number
   onSrcCurrencyChange?: (currency: RawCurrency) => void
-  destinationInfo?: { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string }
+  actionInfo?: { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -58,14 +59,14 @@ export default function ActionSelector(props: ActionSelectorProps) {
   const {
     srcCurrency,
     dstCurrency,
-    setDestinationInfo,
+    setActionInfo,
     quotes,
     selectedQuoteIndex,
     setSelectedQuoteIndex,
     slippage,
     resetKey,
     onSrcCurrencyChange,
-    destinationInfo,
+    actionInfo,
     pricesData,
     state,
     setState,
@@ -164,11 +165,11 @@ export default function ActionSelector(props: ActionSelectorProps) {
     const cur = selectedAction
 
     if (prev && cur && prev !== cur) {
-      setDestinationInfo?.(undefined, undefined, [])
+      setActionInfo?.(undefined, undefined, [])
     }
 
     prevActionRef.current = cur
-  }, [selectedAction, setDestinationInfo])
+  }, [selectedAction, setActionInfo])
 
   /* -------------------------------------------------------------------------- */
   /*                              Event Handlers                                 */
@@ -179,7 +180,7 @@ export default function ActionSelector(props: ActionSelectorProps) {
       ...initialState,
       panelResetKey: s.panelResetKey + 1,
     }))
-    setDestinationInfo?.(undefined, undefined, [])
+    setActionInfo?.(undefined, undefined, [])
   }
 
   const handleActionSelect = (id: ActionType) => {
@@ -206,7 +207,7 @@ export default function ActionSelector(props: ActionSelectorProps) {
       isPanelExpanded: true,
       panelResetKey: s.panelResetKey + 1,
     }))
-    setDestinationInfo?.(undefined, undefined, [])
+    setActionInfo?.(undefined, undefined, [])
   }
 
   /* -------------------------------------------------------------------------- */
@@ -221,8 +222,8 @@ export default function ActionSelector(props: ActionSelectorProps) {
 
     const Panel = def.panel
 
-    const ctx = {
-      setDestinationInfo,
+    const ctx: ActionPanelContext = {
+      setActionInfo,
       srcCurrency,
       dstCurrency,
       slippage,
@@ -230,12 +231,12 @@ export default function ActionSelector(props: ActionSelectorProps) {
       quotes,
       selectedQuoteIndex,
       setSelectedQuoteIndex,
-      destinationInfo,
+      actionInfo,
     }
 
     const props = def.buildPanelProps
       ? def.buildPanelProps(ctx)
-      : { setDestinationInfo: ctx.setDestinationInfo }
+      : { setActionInfo: ctx.setActionInfo }
 
     return <Panel {...props} resetKey={(resetKey ?? 0) + panelResetKey} />
   }

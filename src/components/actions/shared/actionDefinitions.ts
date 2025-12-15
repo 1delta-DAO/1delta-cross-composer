@@ -13,13 +13,8 @@ export interface ActionLoaderContext {
   dstCurrency?: RawCurrency
 }
 
-export interface InputActionLoaderContext {
-  srcCurrency?: RawCurrency
-  dstCurrency?: RawCurrency
-}
-
 export interface ActionPanelContext {
-  setDestinationInfo?: ActionHandler
+  setActionInfo?: ActionHandler
   srcCurrency?: RawCurrency
   dstCurrency?: RawCurrency
   slippage?: number
@@ -28,28 +23,12 @@ export interface ActionPanelContext {
   selectedQuoteIndex?: number
   setSelectedQuoteIndex?: (index: number) => void
   requiresExactDestinationAmount?: boolean
-  destinationInfo?: { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string }
-  isRequoting?: boolean
-}
-
-export interface InputActionPanelContext {
-  setInputInfo?: ActionHandler
-  srcCurrency?: RawCurrency
-  dstCurrency?: RawCurrency
-  slippage?: number
-  actionData?: any
-  quotes?: Array<{ label: string; trade: GenericTrade }>
-  selectedQuoteIndex?: number
-  setSelectedQuoteIndex?: (index: number) => void
-  inputInfo?: { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string }
+  actionInfo?: { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string }
   isRequoting?: boolean
 }
 
 export type DataLoader = (context: ActionLoaderContext) => Promise<any>
-export type InputDataLoader = (context: InputActionLoaderContext) => Promise<any>
-export type PanelPropsBuilder = (
-  context: ActionPanelContext | InputActionPanelContext
-) => Record<string, any>
+export type PanelPropsBuilder = (context: ActionPanelContext) => Record<string, any>
 
 export interface ActionDefinition {
   id: ActionType
@@ -62,7 +41,7 @@ export interface ActionDefinition {
   actionDirection?: ActionDirection
   requiresSrcCurrency?: boolean
   requiresMarkets?: boolean
-  dataLoader?: DataLoader | InputDataLoader
+  dataLoader?: DataLoader
   buildPanelProps?: PanelPropsBuilder
 
   /** optional checkout summary */
