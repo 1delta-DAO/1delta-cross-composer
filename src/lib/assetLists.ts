@@ -10,6 +10,7 @@ export interface DeltaTokenList {
 }
 
 let cachedTokenLists: TokenListsRecord | null = null
+let cachedMainTokens: Record<string, Set<string>> | null = null
 let loadPromise: Promise<TokenListsRecord> | null = null
 
 type ReadyListener = () => void
@@ -46,6 +47,7 @@ export async function loadTokenLists(): Promise<TokenListsRecord> {
 
   loadPromise = (async () => {
     const lists: TokenListsRecord = {}
+    const mainTokens: Record<string, Set<string>> = {}
 
     for (const chainId of SUPPORTED_CHAIN_IDS) {
       const list = await fetchList(chainId)
@@ -57,9 +59,18 @@ export async function loadTokenLists(): Promise<TokenListsRecord> {
       }
 
       lists[chainId] = normalized
+
+      const mainTokensSet = new Set<string>()
+      if (list.mainTokens && Array.isArray(list.mainTokens)) {
+        for (const address of list.mainTokens) {
+          mainTokensSet.add(address.toLowerCase())
+        }
+      }
+      mainTokens[chainId] = mainTokensSet
     }
 
     cachedTokenLists = lists
+    cachedMainTokens = mainTokens
     notifyReady()
     return lists
   })()
@@ -87,4 +98,12 @@ export function subscribeTokenListsReady(listener: ReadyListener): () => void {
   return () => {
     listeners.delete(listener)
   }
+}
+
+export function getMainTokensCache(): Record<string, Set<string>> | null {
+  return cachedMainTokens
+}
+
+export function isMainToken(chainId: string, address: string): boolean {
+  return cachedMainTokens?.[chainId]?.has(address.toLowerCase()) ?? false
 }

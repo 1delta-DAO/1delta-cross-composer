@@ -12,6 +12,8 @@ import { TokenSelectorDropdownMode } from './Dropdown'
 import { TokenSelectorListMode } from './ListMode'
 import type { TokenRowData } from './types'
 import { useConnection } from 'wagmi'
+import { getMainTokensCache, isMainToken } from '../../lib/assetLists'
+import { getUserTokensForChain, addUserToken, isUserToken } from '../../lib/userTokens'
 
 type TokenSelectorProps = {
   chainId: string
@@ -65,24 +67,63 @@ export function TokenSelector({
   const allAddrs = useMemo(() => Object.keys(tokensMap) as Address[], [tokensMap])
   const nativeCurrencySymbol = chains?.[chainId]?.data?.nativeCurrency?.symbol?.toUpperCase() || ''
 
+  const mainTokensSet = useMemo(() => {
+    const mainTokensCache = getMainTokensCache()
+    return mainTokensCache?.[chainId] || new Set<string>()
+  }, [chainId])
+
+  const [userTokensVersion, setUserTokensVersion] = useState(0)
+  const userTokensForChain = useMemo(() => {
+    return getUserTokensForChain(chainId)
+  }, [chainId, userTokensVersion])
+
+  const mainAndUserTokensSet = useMemo(() => {
+    const set = new Set<string>(mainTokensSet)
+    set.add(zeroAddress.toLowerCase())
+    for (const addr of userTokensForChain) {
+      set.add(addr.toLowerCase())
+    }
+    return set
+  }, [mainTokensSet, userTokensForChain])
+
   const balanceCurrencies = useMemo(() => {
     if (!userAddress) return []
     const currencies: RawCurrency[] = []
     const seenAddresses = new Set<string>()
 
+    const addressesToFetch = new Set<string>()
+    
+    addressesToFetch.add(zeroAddress.toLowerCase())
+    
+    for (const addr of mainTokensSet) {
+      addressesToFetch.add(addr.toLowerCase())
+    }
+    
+    for (const addr of userTokensForChain) {
+      addressesToFetch.add(addr.toLowerCase())
+    }
+
     for (const addr of allAddrs) {
-      const currency = getCurrency(chainId, addr)
-      if (currency) {
-        const key = currency.address.toLowerCase()
-        if (!seenAddresses.has(key)) {
-          seenAddresses.add(key)
-          currencies.push(currency)
+      const addrLower = addr.toLowerCase()
+      if (addressesToFetch.has(addrLower)) {
+        const currency = getCurrency(chainId, addr)
+        if (currency) {
+          const key = currency.address.toLowerCase()
+          if (!seenAddresses.has(key)) {
+            seenAddresses.add(key)
+            currencies.push(currency)
+          }
         }
       }
     }
 
+    const nativeCurrency = getCurrency(chainId, zeroAddress)
+    if (nativeCurrency && !seenAddresses.has(zeroAddress.toLowerCase())) {
+      currencies.push(nativeCurrency)
+    }
+
     return currencies
-  }, [allAddrs, chainId, userAddress])
+  }, [allAddrs, chainId, userAddress, mainTokensSet, userTokensForChain])
 
   const { data: balances, isLoading: balancesLoading } = useBalanceQuery({
     currencies: balanceCurrencies,
@@ -246,7 +287,41 @@ export function TokenSelector({
     const q = searchQuery.trim().toLowerCase()
     const relevantSet = new Set(relevant.map((addr) => addr.toLowerCase()))
 
-    const filtered = allAddrs
+    let addressesToShow: Address[]
+    
+    if (!q) {
+      addressesToShow = allAddrs.filter((addr) => {
+        const addrLower = addr.toLowerCase()
+        return mainAndUserTokensSet.has(addrLower)
+      })
+    } else {
+      const mainAndUserMatches: Address[] = []
+      const otherMatches: Address[] = []
+      const seen = new Set<string>()
+
+      for (const addr of allAddrs) {
+        const addrLower = addr.toLowerCase()
+        const token = tokensMap[addr]
+        if (!token) continue
+
+        const symbolLower = token.symbol.toLowerCase()
+        const nameLower = token.name.toLowerCase()
+        const matches = symbolLower.includes(q) || nameLower.includes(q) || addrLower.includes(q)
+
+        if (matches && !seen.has(addrLower)) {
+          seen.add(addrLower)
+          if (mainAndUserTokensSet.has(addrLower)) {
+            mainAndUserMatches.push(addr)
+          } else {
+            otherMatches.push(addr)
+          }
+        }
+      }
+
+      addressesToShow = [...mainAndUserMatches, ...otherMatches]
+    }
+
+    const filtered = addressesToShow
       .map((addr) => {
         const token = tokensMap[addr]
         const bal = balances?.[chainId]?.[addr.toLowerCase()]
@@ -255,7 +330,6 @@ export function TokenSelector({
 
         const finalPrice = price || 0
 
-        // Calculate USD value: balance * price, or use price for sorting if no balance
         const balanceAmount = bal ? Number(bal.value || 0) : 0
         const usdValue = balanceAmount * finalPrice
 
@@ -275,37 +349,22 @@ export function TokenSelector({
           !excludeAddresses ||
           !excludeAddresses.map((a) => a.toLowerCase()).includes(addr.toLowerCase())
       )
-      .filter(({ addr, token }) => {
-        if (!q) return true
-        const addrLower = addr.toLowerCase()
-        const symbolLower = token.symbol.toLowerCase()
-        const nameLower = token.name.toLowerCase()
-        // Search by name, symbol, or address
-        return symbolLower.includes(q) || nameLower.includes(q) || addrLower.includes(q)
-      })
 
-    // Sort by USD value (balance * price), then by price for tokens without balance
     return filtered.sort((a, b) => {
-      // Primary: Sort by USD value (highest first)
       const usdValueDiff = b.usdValue - a.usdValue
-      // If USD value difference is significant (> $0.01), prioritize USD value
       if (Math.abs(usdValueDiff) > 0.01) {
         return usdValueDiff
       }
 
-      // Secondary: For tokens with same USD value (or both zero), sort by price
-      // This helps sort tokens without balance by their price
       const priceDiff = b.price - a.price
       if (Math.abs(priceDiff) > 0.0001) {
         return priceDiff
       }
 
-      // Tertiary: Sort by category (lower category number = higher priority)
       if (a.category !== b.category) {
         return a.category - b.category
       }
 
-      // Quaternary: Alphabetically by symbol
       return a.token.symbol.localeCompare(b.token.symbol)
     })
   }, [
@@ -318,9 +377,21 @@ export function TokenSelector({
     excludeAddresses,
     getTokenCategory,
     relevant,
+    mainAndUserTokensSet,
   ])
 
   const selected = value ? tokensMap[value.toLowerCase()] : undefined
+
+  const handleTokenChange = useCallback(
+    (address: Address) => {
+      if (!isMainToken(chainId, address) && !isUserToken(chainId, address)) {
+        addUserToken(chainId, address)
+        setUserTokensVersion((v) => v + 1)
+      }
+      onChange(address)
+    },
+    [chainId, onChange]
+  )
 
   // List mode: just show the token list without dropdown button
   if (listMode) {
@@ -336,7 +407,7 @@ export function TokenSelector({
         balancesLoading={balancesLoading}
         pricesLoading={pricesLoading}
         userAddress={userAddress}
-        onChange={onChange}
+        onChange={handleTokenChange}
       />
     )
   }
@@ -362,7 +433,7 @@ export function TokenSelector({
       showSearch={showSearch}
       listsLoading={listsLoading}
       selected={selected}
-      onChange={onChange}
+      onChange={handleTokenChange}
     />
   )
 }

@@ -4,4 +4,6 @@ export {
   getTokenFromCache,
   isTokenListsReady,
   subscribeTokenListsReady,
+  getMainTokensCache,
+  isMainToken,
 } from '../assetLists'
