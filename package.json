@@ -17,35 +17,36 @@
     "@1delta/calldata-sdk": "^0.0.132",
     "@1delta/calldatalib": "0.0.46",
     "@1delta/chain-registry": "^0.0.4",
-    "@1delta/data-sdk": "^0.0.10",
+    "@1delta/data-sdk": "^0.0.11",
     "@1delta/lib-utils": "^0.1.8",
-    "@1delta/providers": "^0.0.40",
+    "@1delta/providers": "^0.0.42",
     "@1delta/trade-sdk": "^0.1.7",
     "@rainbow-me/rainbowkit": "^2.2.10",
-    "@tailwindcss/postcss": "^4.1.17",
+    "@tailwindcss/postcss": "^4.1.18",
     "@tanstack/react-query": "^5.90.12",
     "@vitejs/plugin-react": "^5.1.2",
     "postcss": "^8.5.6",
     "qs": "^6.14.0",
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "react-window": "2.2.3",
-    "tailwindcss": "^4.1.17",
-    "viem": "^2.41.2",
-    "vite": "^7.2.7",
+    "tailwindcss": "^4.1.18",
+    "viem": "^2.43.1",
+    "vite": "^7.3.0",
     "wagmi": "^3.1.0"
   },
   "devDependencies": {
-    "@types/node": "^25.0.0",
+    "@types/node": "^25.0.3",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "daisyui": "^5.5.11",
+    "daisyui": "^5.5.14",
     "prettier": "^3.7.4",
     "tsx": "^4.21.0",
     "typescript": "5.9.3"
   },
   "pnpm": {
     "overrides": {
+      "@1delta/providers": "^0.0.42",
       "@1delta/bridge-configs": "^0.1.8"
     }
   }

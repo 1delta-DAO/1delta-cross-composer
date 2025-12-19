@@ -519,7 +519,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
             amountWei={amountWei}
             hasActionCalls={destinationCalls?.length > 0}
             chains={chains}
-            quoting={quoting && !tradeToUse}
+            quoting={quoting}
             onDone={(hashes) => {
               if (hashes.src) {
                 abortQuotes()
