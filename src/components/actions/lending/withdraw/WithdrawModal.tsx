@@ -1,0 +1,204 @@
+import { useState } from 'react'
+import type { Address } from 'viem'
+import { parseUnits } from 'viem'
+import { CurrencyHandler } from '@1delta/lib-utils/dist/services/currency/currencyUtils'
+import { ActionHandler } from '../../shared/types'
+import { buildCalls } from './callBuilder'
+import { MoonwellMarket } from '../deposit/marketCache'
+import { useConnection } from 'wagmi'
+import { DUMMY_ADDRESS } from '../../../../lib/consts'
+import { RawCurrency } from '../../../../types/currency'
+import { Lender } from '@1delta/lib-utils'
+
+type WithdrawActionModalProps = {
+  open: boolean
+  onClose: () => void
+  market: MoonwellMarket
+  selectedCurrency: RawCurrency
+  userAddress?: Address
+  chainId?: string
+  setActionInfo?: ActionHandler
+  amount?: string
+  onAmountChange?: (amount: string) => void
+}
+
+export function WithdrawActionModal({
+  open,
+  onClose,
+  market,
+  selectedCurrency,
+  setActionInfo,
+  amount: externalAmount,
+  onAmountChange,
+}: WithdrawActionModalProps) {
+  const [internalAmount, setInternalAmount] = useState<string>('')
+  const { address } = useConnection()
+  const userAddress = address ?? DUMMY_ADDRESS
+
+  const amount = onAmountChange ? externalAmount || '' : internalAmount
+
+  const handleAmountChange = (value: string) => {
+    if (onAmountChange) {
+      onAmountChange(value)
+    } else {
+      setInternalAmount(value)
+    }
+  }
+
+  const underlying = selectedCurrency ?? market.underlyingCurrency
+
+  const symbol = selectedCurrency?.symbol || market.underlyingCurrency?.symbol || ''
+
+  const name = selectedCurrency?.name || symbol
+
+  const iconSrc =
+    (selectedCurrency as any)?.icon || (selectedCurrency as any)?.logoURI || undefined
+
+  const mTokenSymbol = market.mTokenCurrency?.symbol || 'mToken'
+
+  const handleConfirm = async () => {
+    if (!amount || !underlying) return
+
+    const inputCalls = await buildCalls({
+      amountHuman: amount,
+      underlying: market.underlyingCurrency,
+      userAddress: userAddress as any,
+      isMax: false,
+    })
+
+    const parsedAmount = parseUnits(amount, underlying.decimals)
+    setActionInfo?.(
+      CurrencyHandler.fromRawAmount(underlying, parsedAmount),
+      undefined,
+      inputCalls,
+      `${mTokenSymbol} withdraw`,
+      'moonwell_withdraw',
+      {
+        lender: Lender.MOONWELL,
+        mTokenAddress: market.mTokenCurrency.address,
+      }
+    )
+
+    onClose()
+  }
+
+  const handleMax = async () => {
+    if (!underlying) return
+
+    const inputCalls = await buildCalls({
+      amountHuman: '0',
+      underlying: market.underlyingCurrency,
+      userAddress: userAddress as any,
+      isMax: true,
+    })
+
+    setActionInfo?.(
+      CurrencyHandler.fromRawAmount(underlying, 0n),
+      undefined,
+      inputCalls,
+      `${mTokenSymbol} withdraw (Max)`,
+      'moonwell_withdraw',
+      {
+        lender: Lender.MOONWELL,
+        mTokenAddress: market.mTokenCurrency.address,
+      }
+    )
+
+    onClose()
+  }
+
+  if (!open) return null
+
+  return (
+    <div className={`modal ${open ? 'modal-open' : ''}`} onClick={onClose}>
+      <div className="modal-box max-w-lg w-full rounded-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h3 className="font-semibold text-lg">Withdraw</h3>
+            <p className="text-xs text-base-content/60 mt-0.5">
+              Withdraw from Moonwell and receive {symbol} underlying.
+            </p>
+          </div>
+          <button
+            className="btn btn-sm btn-ghost btn-circle"
+            onClick={() => {
+              setActionInfo?.(undefined, undefined, [])
+              onClose()
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="mt-4 mb-5 rounded-xl border border-base-300 bg-base-200/40 px-3 py-2.5 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="h-10 w-10 rounded-full bg-base-100 flex items-center justify-center overflow-hidden shrink-0">
+              {iconSrc ? (
+                <img src={iconSrc} alt={symbol || 'Token'} className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-xs font-semibold">
+                  {(symbol || '?').slice(0, 3).toUpperCase()}
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-medium truncate">{symbol || 'Select token'}</span>
+              {name && <span className="text-xs text-base-content/60 truncate">{name}</span>}
+            </div>
+          </div>
+
+          {underlying?.chainId && (
+            <span className="badge badge-outline text-[0.7rem] px-2 py-1 whitespace-nowrap">
+              Chain ID {underlying.chainId}
+            </span>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div className="form-control">
+            <label className="label py-1">
+              <span className="label-text text-sm font-medium">
+                Amount {symbol && `(${symbol})`}
+              </span>
+            </label>
+            <div className="input-group">
+              <input
+                className="input input-bordered w-full"
+                inputMode="decimal"
+                placeholder="0.0"
+                value={amount}
+                onChange={(e) => handleAmountChange(e.target.value)}
+              />
+              <button className="btn btn-outline" onClick={handleMax}>
+                Max
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-3 pt-4 border-t border-base-300">
+            <div className="text-[0.7rem] text-base-content/60">
+              You&apos;ll withdraw <span className="font-medium">{symbol}</span> from your{' '}
+              <span className="font-medium">{mTokenSymbol}</span> position.
+            </div>
+            <div className="flex gap-2">
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={() => {
+                  setActionInfo?.(undefined, undefined, [])
+                  onClose()
+                }}
+              >
+                Cancel
+              </button>
+              <button className="btn btn-primary btn-sm" onClick={handleConfirm} disabled={!amount}>
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
