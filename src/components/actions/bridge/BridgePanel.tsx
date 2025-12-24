@@ -114,8 +114,7 @@ export function BridgePanel({
   }, [])
 
   const handleQuoteSelect = (index: number) => {
-    if (!srcCurrency || !dstCurrency || !setActionInfo || !quotes || !setSelectedQuoteIndex)
-      return
+    if (!srcCurrency || !dstCurrency || !setActionInfo || !quotes || !setSelectedQuoteIndex) return
 
     setSelectedQuoteIndex(index)
 

@@ -51,8 +51,7 @@ export function WithdrawActionModal({
 
   const name = selectedCurrency?.name || symbol
 
-  const iconSrc =
-    (selectedCurrency as any)?.icon || (selectedCurrency as any)?.logoURI || undefined
+  const iconSrc = (selectedCurrency as any)?.icon || (selectedCurrency as any)?.logoURI || undefined
 
   const mTokenSymbol = market.mTokenCurrency?.symbol || 'mToken'
 
@@ -201,4 +200,3 @@ export function WithdrawActionModal({
     </div>
   )
 }
-

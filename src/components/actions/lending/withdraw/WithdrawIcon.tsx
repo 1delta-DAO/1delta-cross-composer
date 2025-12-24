@@ -12,4 +12,3 @@ export function WithdrawIcon({ className = '' }: { className?: string }) {
     </svg>
   )
 }
-

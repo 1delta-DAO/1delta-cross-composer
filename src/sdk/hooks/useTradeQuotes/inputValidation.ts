@@ -19,7 +19,7 @@ export function validateInputs(
       call?.lendingAction === LendingCall.DeltaCallLendingAction.WITHDRAW &&
       call?.amount === 0n
   )
-  
+
   const amountOk = !!srcAmount && (srcAmount.amount > 0n || hasWithdrawMax)
   const srcCurrencyOk = Boolean(srcAmount?.currency)
   const dstCurrencyOk = Boolean(dstCurrency)
