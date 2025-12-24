@@ -4,14 +4,13 @@ import { DUMMY_ADDRESS } from '../../lib/consts'
 import { useToast } from '../../components/common/ToastHost'
 import type { ActionCall } from '../../components/actions/shared/types'
 import type { RawCurrency, RawCurrencyAmount } from '../../types/currency'
-import { usePriceQuery } from '../../hooks/prices/usePriceQuery'
-import type { PricesRecord } from '../../hooks/prices/usePriceQuery'
 import { useConnection } from 'wagmi'
 import { fetchQuotes, type Quote } from './useQuoteFetcher'
 import { useQuoteValidation } from './useQuoteValidation'
 import { useQuoteRefreshHelpers, REFRESH_INTERVAL_MS } from './useQuoteRefresh'
 import {
   generateDestinationCallsKey,
+  generateInputCallsKey,
   generateQuoteKey,
   areQuoteKeysEqual,
 } from './useTradeQuotes/stateHelpers'
@@ -25,6 +24,7 @@ export function useTradeQuotes({
   dstCurrency,
   slippage,
   destinationCalls,
+  inputCalls,
   onQuotesChange,
   shouldFetch,
   actionInfo,
@@ -33,6 +33,7 @@ export function useTradeQuotes({
   dstCurrency?: RawCurrency
   slippage: number
   destinationCalls?: ActionCall[]
+  inputCalls?: ActionCall[]
   onQuotesChange?: (quotes: Quote[]) => void
   shouldFetch?: boolean
   actionInfo?: {
@@ -69,17 +70,7 @@ export function useTradeQuotes({
     [destinationCalls]
   )
 
-  const axelarPriceCurrencies = useMemo(() => {
-    const currencies: RawCurrency[] = []
-    if (srcCurrency) currencies.push(srcCurrency)
-    if (dstCurrency) currencies.push(dstCurrency)
-    return currencies
-  }, [srcCurrency, dstCurrency])
-
-  const { data: axelarPrices } = usePriceQuery({
-    currencies: axelarPriceCurrencies,
-    enabled: axelarPriceCurrencies.length > 0,
-  })
+  const inputCallsKey = useMemo(() => generateInputCallsKey(inputCalls), [inputCalls])
 
   const clearQuotes = useCallback(() => {
     setQuotes([])
@@ -98,7 +89,7 @@ export function useTradeQuotes({
       return
     }
 
-    const inputValidation = validateInputs(srcAmount, dstCurrency)
+    const inputValidation = validateInputs(srcAmount, dstCurrency, inputCalls)
 
     if (!inputValidation.isValid) {
       if (quotes.length > 0) {
@@ -117,7 +108,8 @@ export function useTradeQuotes({
       dstCurrency,
       slippage,
       receiverAddress,
-      destinationCallsKey
+      destinationCallsKey,
+      inputCallsKey
     )
 
     const now = Date.now()
@@ -158,8 +150,8 @@ export function useTradeQuotes({
           slippage,
           receiverAddress: receiverAddress as Address,
           destinationCalls,
+          inputCalls,
           controller,
-          axelarPrices: (axelarPrices || {}) as PricesRecord,
         })
 
         if (cancel || controller.signal.aborted) {
@@ -275,6 +267,7 @@ export function useTradeQuotes({
     refreshTrigger,
     shouldFetch,
     destinationCallsKey,
+    inputCallsKey,
     receiverAddress,
     validateAndUpdateQuotes,
     clearRefreshTimeout,

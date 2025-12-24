@@ -1,62 +1,28 @@
 import { fetchBridgeTradeWithoutComposed } from '@1delta/trade-sdk'
 import { Bridge, getBridges } from '@1delta/bridge-configs'
-import type { GenericTrade, RawCurrency } from '@1delta/lib-utils'
+import type { GenericTrade, PreDeltaCall, PostDeltaCall } from '@1delta/lib-utils'
 import type {
   AcrossBaseInput,
   AxelarBaseInput,
   BaseBridgeInput,
 } from '@1delta/trade-sdk/dist/types'
-import type { DeltaCall } from '@1delta/lib-utils'
-import type { Address } from 'viem'
-import { getCurrency as getCurrencyRaw } from '../../lib/trade-helpers/utils'
 import { fetchAxelarTradeWithSwaps } from '@1delta/trade-sdk/dist/composedTrades/axelar/axelarWithSwaps'
 import { fetchAcrossTradeWithSwaps } from '@1delta/trade-sdk/dist/composedTrades/across/acrossWithSwaps'
-import type { PricesRecord } from '../../hooks/prices/usePriceQuery'
-import type { useGeneralPricesCallbackType } from '@1delta/lib-utils/dist/types/priceQuery'
 
 type ExtendedBridgeInput = BaseBridgeInput & {
-  additionalCalls?: DeltaCall[]
-}
-
-function getCurrency(chainId: string | undefined, tokenAddress: string | undefined): RawCurrency {
-  if (!chainId || !tokenAddress) {
-    throw new Error('Invalid currency parameters')
-  }
-  const currency = getCurrencyRaw(chainId, tokenAddress as Address)
-  if (!currency) {
-    throw new Error(`Currency not found for ${chainId}:${tokenAddress}`)
-  }
-  return currency
-}
-
-function buildPricesCallbackFromRecord(prices?: PricesRecord): useGeneralPricesCallbackType {
-  const record = prices || {}
-  return (priceQueries) => {
-    return priceQueries.map((q) => {
-      if (!q.chainId || !q.asset) {
-        return 0
-      }
-      const chainPrices = record[q.chainId]
-      if (!chainPrices) {
-        return 0
-      }
-      const assetLower = q.asset.toLowerCase()
-      const priceObj = chainPrices[assetLower]
-      if (!priceObj || !Number.isFinite(priceObj.usd) || priceObj.usd <= 0) {
-        return 0
-      }
-      return priceObj.usd
-    })
-  }
+  preCalls?: PreDeltaCall[]
+  postCalls?: PostDeltaCall[]
+  destinationGasLimit?: bigint
 }
 
 export async function fetchAllActionTrades(
   input: ExtendedBridgeInput,
-  controller?: AbortController,
-  prices?: PricesRecord
+  controller?: AbortController
 ): Promise<Array<{ action: string; trade: GenericTrade }>> {
   const availableBridges = getBridges()
-  const hasAdditionalCalls = Boolean(input.additionalCalls && input.additionalCalls.length > 0)
+  const hasPreCalls = Boolean(input.preCalls && input.preCalls.length > 0)
+  const hasPostCalls = Boolean(input.postCalls && input.postCalls.length > 0)
+  const hasAdditionalCalls = hasPreCalls || hasPostCalls
 
   console.debug(
     'Fetching from actions:',
@@ -71,27 +37,28 @@ export async function fetchAllActionTrades(
 
         if (hasAdditionalCalls) {
           if (bridge === Bridge.AXELAR) {
+            const { postCalls: _, preCalls: __, ...baseInput } = input
             const composedInput: AxelarBaseInput = {
-              ...input,
+              ...baseInput,
               payFeeWithNative: true,
-              additionalCalls: {
-                calls: input.additionalCalls || [],
-                gasLimit: input.destinationGasLimit,
-              },
+              ...(hasPostCalls && input.postCalls
+                ? {
+                    postCalls: {
+                      calls: input.postCalls,
+                      gasLimit: input.destinationGasLimit,
+                    },
+                  }
+                : undefined),
+              ...(hasPreCalls && input.preCalls ? { preCalls: input.preCalls } : undefined),
             }
-            const pricesCallback = buildPricesCallbackFromRecord(prices)
-            trade = await fetchAxelarTradeWithSwaps(
-              composedInput,
-              getCurrency,
-              pricesCallback,
-              controller
-            )
+            trade = await fetchAxelarTradeWithSwaps(composedInput, controller)
           } else if (bridge === Bridge.ACROSS) {
             const composedInput: AcrossBaseInput = {
               ...input,
-              additionalCalls: input.additionalCalls || [],
+              ...(hasPostCalls ? { postCalls: input.postCalls || [] } : {}),
+              ...(hasPreCalls ? { preCalls: input.preCalls || [] } : {}),
             }
-            trade = await fetchAcrossTradeWithSwaps(composedInput, getCurrency, controller)
+            trade = await fetchAcrossTradeWithSwaps(composedInput, controller)
           } else {
             return undefined
           }

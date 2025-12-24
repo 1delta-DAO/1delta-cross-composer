@@ -20,6 +20,24 @@ export function generateDestinationCallsKey(destinationCalls?: ActionCall[]): st
   )
 }
 
+export function generateInputCallsKey(inputCalls?: ActionCall[]): string {
+  return JSON.stringify(
+    (inputCalls || []).map((c) => ({
+      t: 'target' in c && c.target ? c.target.toLowerCase() : '',
+      v: 'value' in c && c.value ? c.value.toString() : '',
+      dStart: 'callData' in c && c.callData ? c.callData.slice(0, 10) : '',
+      dEnd: 'callData' in c && c.callData ? c.callData.slice(-10) : '',
+      g: c.gasLimit ? c.gasLimit.toString() : '',
+      ct: typeof c.callType === 'number' ? c.callType : 0,
+      ta: 'tokenAddress' in c && c.tokenAddress ? c.tokenAddress.toLowerCase() : '',
+      bi:
+        'balanceOfInjectIndex' in c && typeof c.balanceOfInjectIndex === 'number'
+          ? c.balanceOfInjectIndex
+          : 0,
+    }))
+  )
+}
+
 export function generateCurrencyKey(currency?: RawCurrency): string {
   if (!currency) return ''
   return `${currency.chainId}|${currency.address.toLowerCase()}`
@@ -30,12 +48,13 @@ export function generateQuoteKey(
   dstCurrency: RawCurrency | undefined,
   slippage: number,
   receiverAddress: Address | string,
-  destinationCallsKey: string
+  destinationCallsKey: string,
+  inputCallsKey?: string
 ): string {
   const srcKey = srcAmount ? generateCurrencyKey(srcAmount.currency) : ''
   const dstKey = dstCurrency ? generateCurrencyKey(dstCurrency) : ''
   const amount = srcAmount ? srcAmount.amount.toString() : ''
-  return `${amount}|${srcKey}|${dstKey}|${slippage}|${receiverAddress}|${destinationCallsKey}`
+  return `${amount}|${srcKey}|${dstKey}|${slippage}|${receiverAddress}|${destinationCallsKey}|${inputCallsKey || ''}`
 }
 
 export function areQuoteKeysEqual(key1: string | null, key2: string | null): boolean {

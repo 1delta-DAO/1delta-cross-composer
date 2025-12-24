@@ -1,4 +1,5 @@
 import type { RawCurrency, RawCurrencyAmount } from '../../../types/currency'
+import { DeltaCallType, LendingCall } from '@1delta/lib-utils'
 
 export interface InputValidationResult {
   isValid: boolean
@@ -9,9 +10,17 @@ export interface InputValidationResult {
 
 export function validateInputs(
   srcAmount?: RawCurrencyAmount,
-  dstCurrency?: RawCurrency
+  dstCurrency?: RawCurrency,
+  inputCalls?: any[]
 ): InputValidationResult {
-  const amountOk = !!srcAmount && srcAmount.amount > 0n
+  const hasWithdrawMax = inputCalls?.some(
+    (call) =>
+      call?.callType === DeltaCallType.LENDING &&
+      call?.lendingAction === LendingCall.DeltaCallLendingAction.WITHDRAW &&
+      call?.amount === 0n
+  )
+  
+  const amountOk = !!srcAmount && (srcAmount.amount > 0n || hasWithdrawMax)
   const srcCurrencyOk = Boolean(srcAmount?.currency)
   const dstCurrencyOk = Boolean(dstCurrency)
 
