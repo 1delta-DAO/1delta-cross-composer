@@ -87,13 +87,18 @@ export default function ActionSelector(props: ActionSelectorProps) {
   /* -------------------------------------------------------------------------- */
 
   const availableActions = useMemo(() => {
-    return getRegisteredActions().filter((action) =>
-      action.requiresSrcCurrency ? Boolean(srcCurrency) : true
-    )
+    return getRegisteredActions().filter((action) => {
+      const direction = action.actionDirection || 'destination'
+      if (direction !== 'destination') return false
+      if (action.requiresSrcCurrency) {
+        return Boolean(srcCurrency)
+      }
+      return true
+    })
   }, [srcCurrency])
 
   const filteredActions = useMemo(() => {
-    return getActionsByCategory(selectedCategory, srcCurrency)
+    return getActionsByCategory(selectedCategory, srcCurrency, 'destination')
   }, [selectedCategory, srcCurrency])
 
   const isActionReady = useMemo(() => {
