@@ -14,6 +14,10 @@ import { useTradeQuotes } from '../../sdk/hooks/useTradeQuotes'
 import type { Quote } from '../../sdk/hooks/useQuoteFetcher'
 import ExecuteButton from './ExecuteButton'
 import { useQueryClient } from '@tanstack/react-query'
+import { isLendingAction } from '../actions/lending/utils/isLendingAction'
+import { refreshUserLendingBalances } from '../actions/lending/withdraw/balanceCache'
+import { getCachedMarkets } from '../actions/lending/shared/marketCache'
+import type { Address } from 'viem'
 
 type Props = {
   onResetStateChange?: (showReset: boolean, resetCallback?: () => void) => void
@@ -232,12 +236,34 @@ export function ReverseActionsTab({ onResetStateChange }: Props) {
             queryKey: ['balances', address],
           })
         }
+
+        if (
+          address &&
+          (inputActionCurrency?.chainId || destinationCurrency?.chainId) &&
+          isLendingAction(inputCalls)
+        ) {
+          const chainId = inputActionCurrency?.chainId || destinationCurrency?.chainId
+          const markets = getCachedMarkets()
+          if (chainId && markets) {
+            refreshUserLendingBalances(chainId, address as Address, markets).catch(console.error)
+          }
+        }
+
         setInputInfo(undefined, undefined, [])
         setActionResetKey((prev) => prev + 1)
         setPreservedTrade(undefined)
       }
     },
-    [abortQuotes, inputActionCurrency, destinationCurrency, address, queryClient, setInputInfo]
+    [
+      abortQuotes,
+      inputActionCurrency,
+      destinationCurrency,
+      address,
+      queryClient,
+      setInputInfo,
+      inputInfo,
+      inputCalls,
+    ]
   )
 
   const handleTransactionStart = useCallback(() => {
