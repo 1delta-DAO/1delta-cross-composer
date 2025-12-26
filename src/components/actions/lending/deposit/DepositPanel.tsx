@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { type MoonwellMarket } from './marketCache'
+import { type MoonwellMarket } from '../shared/marketCache'
 import { DepositActionModal } from './DepositModal'
 import { DepositCard } from './DepositCard'
 import { ActionHandler } from '../../shared/types'

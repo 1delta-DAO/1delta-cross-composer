@@ -7,7 +7,8 @@ import {
   isMarketsReady,
   subscribeToCacheChanges,
   type MoonwellMarket,
-} from '../deposit/marketCache'
+  initializeMoonwellMarkets,
+} from '../shared/marketCache'
 import { LendingCheckout } from './Checkout'
 
 async function waitForMarkets(): Promise<MoonwellMarket[]> {

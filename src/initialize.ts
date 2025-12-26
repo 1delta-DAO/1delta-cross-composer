@@ -7,7 +7,7 @@ import type { WalletClient } from 'viem'
 import { registerActions } from './components/actions/shared/registerActions'
 import { fetchMainPrices } from './hooks/prices/usePriceQuery'
 import { loadTokenLists } from './lib/data/tokenListsCache'
-import { initializeMoonwellMarkets } from './components/actions/lending/deposit/marketCache'
+import { initializeMoonwellMarkets } from './components/actions/lending/shared/marketCache'
 import { currencyGetter, priceGetter } from './utils/initUtils'
 
 let isInitialized = false
