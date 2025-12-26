@@ -6,6 +6,7 @@ import { ActionHandler } from '../../shared/types'
 import { useConnection } from 'wagmi'
 import { useTokenLists } from '../../../../hooks/useTokenLists'
 import type { RawCurrencyAmount } from '../../../../types/currency'
+import { waitForBalances, getCachedBalances, subscribeToBalanceChanges } from './balanceCache'
 
 type WithdrawPanelProps = {
   chainId?: string
@@ -24,10 +25,49 @@ export function WithdrawPanel({
 }: WithdrawPanelProps) {
   const { address } = useConnection()
   const [isExpanded, setIsExpanded] = useState(false)
+  const [showNoBalance, setShowNoBalance] = useState(false)
+  const userAddress = address
+
+  const [balanceUpdateKey, setBalanceUpdateKey] = useState(0)
+
+  useEffect(() => {
+    if (chainId && userAddress && markets.length > 0) {
+      waitForBalances(chainId, userAddress, markets).catch(console.error)
+    }
+  }, [chainId, userAddress, markets])
+
+  useEffect(() => {
+    if (!chainId || !userAddress) return
+
+    const unsubscribe = subscribeToBalanceChanges(() => {
+      setBalanceUpdateKey((prev) => prev + 1)
+    })
+
+    return unsubscribe
+  }, [chainId, userAddress])
+
+  const balances = useMemo(() => {
+    if (!chainId || !userAddress) return {}
+    return getCachedBalances(chainId, userAddress)
+  }, [chainId, userAddress, balanceUpdateKey])
 
   const withdrawMarkets = useMemo(() => {
-    return markets.filter((m) => m.isListed && !m.borrowPaused)
-  }, [markets])
+    let filtered = markets.filter((m) => m.isListed && !m.borrowPaused)
+
+    if (chainId && userAddress) {
+      if (showNoBalance) {
+        return filtered
+      } else {
+        filtered = filtered.filter((market) => {
+          const mTokenKey = market.mTokenCurrency.address.toLowerCase()
+          const balance = balances[mTokenKey] || 0n
+          return balance > 0n
+        })
+      }
+    }
+
+    return filtered
+  }, [markets, showNoBalance, balances, chainId, userAddress])
 
   const [selectedMarket, setSelectedMarket] = useState<undefined | MoonwellMarket>(undefined)
   const [marketAmounts, setMarketAmounts] = useState<Map<string, string>>(new Map())
@@ -87,6 +127,18 @@ export function WithdrawPanel({
   return (
     <>
       <div className="card-body p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-medium">Select Market</h3>
+          <label className="label cursor-pointer gap-2">
+            <span className="label-text text-xs">Show positions with no balance</span>
+            <input
+              type="checkbox"
+              className="toggle toggle-sm"
+              checked={showNoBalance}
+              onChange={(e) => setShowNoBalance(e.target.checked)}
+            />
+          </label>
+        </div>
         <div className="grid grid-cols-2 min-[600px]:grid-cols-3 min-[800px]:grid-cols-4 min-[1000px]:grid-cols-5 gap-3 max-h-[400px] overflow-y-auto">
           {withdrawMarkets.length === 0 ? (
             <div className="col-span-full text-sm opacity-50 text-center py-4">
