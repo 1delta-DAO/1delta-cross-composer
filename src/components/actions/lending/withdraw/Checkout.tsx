@@ -38,9 +38,7 @@ export function LendingCheckout({
       const market = getMarketByMToken(actionData.mTokenAddress)
       return market?.mTokenCurrency?.symbol || 'mToken'
     }
-    return destinationActionLabel
-      ? destinationActionLabel.replace(/\s+withdraw$/i, '')
-      : 'mToken'
+    return destinationActionLabel ? destinationActionLabel.replace(/\s+withdraw$/i, '') : 'mToken'
   }, [actionData?.mTokenAddress, destinationActionLabel])
 
   return (
