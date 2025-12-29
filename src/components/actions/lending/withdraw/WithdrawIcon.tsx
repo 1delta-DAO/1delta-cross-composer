@@ -8,7 +8,7 @@ export function WithdrawIcon({ className = '' }: { className?: string }) {
       stroke="currentColor"
       strokeWidth={2}
     >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m0 0l-4-4m4 4l4-4" />
     </svg>
   )
 }
