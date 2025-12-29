@@ -42,19 +42,35 @@ export function TransactionSummary({
 }: TransactionSummaryProps) {
   const { data: chains } = useChainsRegistry()
 
+  const selectedDef = useMemo(() => {
+    if (!state.selectedAction) return undefined
+    return getRegisteredActions().find((a) => a.id === state.selectedAction)
+  }, [state.selectedAction])
+
+  const isInputDirection = selectedDef?.actionDirection === 'input'
+
+  const actionAmount = useMemo(() => {
+    if (!currencyAmount) return undefined
+    const amount = CurrencyHandler.toExactNumber(currencyAmount)
+    return amount > 0 ? amount.toString() : undefined
+  }, [currencyAmount])
+
   const outputAmount = useMemo(() => {
     if (outputAmountProp) return outputAmountProp
-    if (currencyAmount) {
+    if (!isReverseFlow && currencyAmount) {
       const amount = CurrencyHandler.toExactNumber(currencyAmount)
       return amount > 0 ? amount.toString() : undefined
     }
     return undefined
-  }, [outputAmountProp, currencyAmount])
+  }, [outputAmountProp, currencyAmount, isReverseFlow])
 
   const shouldShow = useMemo(() => {
-    const hasOutputAmount = outputAmount && Number(outputAmount) > 0
-    return Boolean(srcCurrency && dstCurrency && hasOutputAmount)
-  }, [srcCurrency, dstCurrency, outputAmount])
+    if (!srcCurrency || !dstCurrency) return false
+    if (isReverseFlow) {
+      return Boolean(actionAmount && Number(actionAmount) > 0)
+    }
+    return Boolean(outputAmount && Number(outputAmount) > 0)
+  }, [srcCurrency, dstCurrency, isReverseFlow, actionAmount, outputAmount])
 
   const pricesData = pricesDataProp
   const isLoadingPrices = isLoadingPricesProp ?? false
@@ -114,6 +130,11 @@ export function TransactionSummary({
     return Number(inputAmount) * srcPrice
   }, [inputAmount, srcPrice])
 
+  const actionUsd = useMemo(() => {
+    if (!actionAmount || !srcPrice) return undefined
+    return Number(actionAmount) * srcPrice
+  }, [actionAmount, srcPrice])
+
   const outputUsd = useMemo(() => {
     if (!outputAmount || !dstPrice) return undefined
     return Number(outputAmount) * dstPrice
@@ -137,21 +158,16 @@ export function TransactionSummary({
       : 'Calculating...'
 
   const formattedOutput = formatDisplayAmount(outputAmount || '0')
+  const formattedActionOutput = formatDisplayAmount(actionAmount || '0')
+
+  const hasReceiveAmount = outputAmount && Number(outputAmount) > 0
+  const formattedReceive = hasReceiveAmount ? formatDisplayAmount(outputAmount) : 'Calculating...'
 
   if (!shouldShow) return null
 
-  /* -------------------------------------------------------------------------- */
-  /*                    Checkout Summary Renderer                               */
-  /* -------------------------------------------------------------------------- */
-
-  const renderSummary = () => {
-    if (!state.selectedAction) return null
-
-    const def = getRegisteredActions().find((a) => a.id === state.selectedAction)
-    if (!def) return null
-
-    // either pick costom summary if any
-    if (!def.customSummary)
+  const renderDestinationActionSummary = () => {
+    if (!selectedDef) return null
+    if (!selectedDef.customSummary)
       return (
         <SummaryRow
           label="You'll receive:"
@@ -163,14 +179,37 @@ export function TransactionSummary({
         />
       )
 
-    // or the default
     return (
-      <def.customSummary
+      <selectedDef.customSummary
         formattedOutput={formattedOutput}
         dstCurrency={dstCurrency}
         dstChainName={dstChainName}
         outputUsd={outputUsd}
         destinationActionLabel={destinationActionLabel}
+      />
+    )
+  }
+
+  const renderInputActionSummary = () => {
+    if (!selectedDef) return null
+    if (!selectedDef.customSummary)
+      return (
+        <SummaryRow
+          label="You'll withdraw:"
+          amount={formattedActionOutput}
+          currencySymbol={srcCurrency?.symbol}
+          chainName={srcChainName}
+          amountUsd={actionUsd}
+        />
+      )
+
+    return (
+      <selectedDef.customSummary
+        formattedOutput={formattedActionOutput}
+        dstCurrency={srcCurrency}
+        dstChainName={srcChainName}
+        outputUsd={actionUsd}
+        destinationActionLabel={inputActionLabel}
       />
     )
   }
@@ -181,18 +220,31 @@ export function TransactionSummary({
         <div className="text-sm font-semibold mb-3">Transaction Summary</div>
 
         <div className="space-y-3">
-          {/* Pay info */}
-          <PayInfo
-            label="You'll pay:"
-            amount={formattedInput}
-            currency={srcCurrency}
-            chainName={srcChainName}
-            amountUsd={inputUsd}
-            showFadedAmount={!hasInputAmount}
-          />
-
-          {/* Checkout info */}
-          {renderSummary()}
+          {isReverseFlow && isInputDirection ? (
+            <>
+              {renderInputActionSummary()}
+              <PayInfo
+                label="You'll receive:"
+                amount={formattedReceive}
+                currency={dstCurrency}
+                chainName={dstChainName}
+                amountUsd={outputUsd}
+                showFadedAmount={!hasReceiveAmount}
+              />
+            </>
+          ) : (
+            <>
+              <PayInfo
+                label="You'll pay:"
+                amount={formattedInput}
+                currency={srcCurrency}
+                chainName={srcChainName}
+                amountUsd={inputUsd}
+                showFadedAmount={!hasInputAmount}
+              />
+              {renderDestinationActionSummary()}
+            </>
+          )}
 
           {route && <RouteSection route={route} />}
         </div>
