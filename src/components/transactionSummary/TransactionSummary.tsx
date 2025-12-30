@@ -165,9 +165,27 @@ export function TransactionSummary({
 
   if (!shouldShow) return null
 
-  const renderDestinationActionSummary = () => {
+  const renderActionSummary = () => {
     if (!selectedDef) return null
-    if (!selectedDef.customSummary)
+
+    const isInputAction = selectedDef.actionDirection === 'input'
+    const effectiveCurrency = isInputAction ? srcCurrency : dstCurrency
+    const effectiveAmount = isInputAction ? formattedActionOutput : formattedOutput
+    const effectiveUsd = isInputAction ? actionUsd : outputUsd
+    const effectiveLabel = isInputAction ? inputActionLabel : destinationActionLabel
+
+    if (!selectedDef.customSummary) {
+      if (isInputAction) {
+        return (
+          <SummaryRow
+            label="You'll withdraw:"
+            amount={formattedActionOutput}
+            currencySymbol={srcCurrency?.symbol}
+            chainName={srcChainName}
+            amountUsd={actionUsd}
+          />
+        )
+      }
       return (
         <SummaryRow
           label="You'll receive:"
@@ -178,38 +196,17 @@ export function TransactionSummary({
           destinationActionLabel={destinationActionLabel}
         />
       )
+    }
 
     return (
       <selectedDef.customSummary
-        formattedOutput={formattedOutput}
-        dstCurrency={dstCurrency}
-        dstChainName={dstChainName}
-        outputUsd={outputUsd}
-        destinationActionLabel={destinationActionLabel}
-      />
-    )
-  }
-
-  const renderInputActionSummary = () => {
-    if (!selectedDef) return null
-    if (!selectedDef.customSummary)
-      return (
-        <SummaryRow
-          label="You'll withdraw:"
-          amount={formattedActionOutput}
-          currencySymbol={srcCurrency?.symbol}
-          chainName={srcChainName}
-          amountUsd={actionUsd}
-        />
-      )
-
-    return (
-      <selectedDef.customSummary
-        formattedOutput={formattedActionOutput}
-        dstCurrency={srcCurrency}
-        dstChainName={srcChainName}
-        outputUsd={actionUsd}
-        destinationActionLabel={inputActionLabel}
+        formattedOutput={effectiveAmount}
+        currency={effectiveCurrency}
+        outputUsd={effectiveUsd}
+        actionLabel={effectiveLabel}
+        actionDirection={isInputAction ? 'input' : 'destination'}
+        dstCurrency={effectiveCurrency}
+        destinationActionLabel={effectiveLabel}
       />
     )
   }
@@ -220,32 +217,27 @@ export function TransactionSummary({
         <div className="text-sm font-semibold mb-3">Transaction Summary</div>
 
         <div className="space-y-3">
-          {isReverseFlow && isInputDirection ? (
-            <>
-              {renderInputActionSummary()}
-              <PayInfo
-                label="You'll receive:"
-                amount={formattedReceive}
-                currency={dstCurrency}
-                chainName={dstChainName}
-                amountUsd={outputUsd}
-                showFadedAmount={!hasReceiveAmount}
-              />
-            </>
-          ) : (
-            <>
-              <PayInfo
-                label="You'll pay:"
-                amount={formattedInput}
-                currency={srcCurrency}
-                chainName={srcChainName}
-                amountUsd={inputUsd}
-                showFadedAmount={!hasInputAmount}
-              />
-              {renderDestinationActionSummary()}
-            </>
+          {!isReverseFlow && (
+            <PayInfo
+              label="You'll pay:"
+              amount={formattedInput}
+              currency={srcCurrency}
+              chainName={srcChainName}
+              amountUsd={inputUsd}
+              showFadedAmount={!hasInputAmount}
+            />
           )}
-
+          {renderActionSummary()}
+          {isReverseFlow && isInputDirection && (
+            <PayInfo
+              label="You'll receive:"
+              amount={formattedReceive}
+              currency={dstCurrency}
+              chainName={dstChainName}
+              amountUsd={outputUsd}
+              showFadedAmount={!hasReceiveAmount}
+            />
+          )}
           {route && <RouteSection route={route} />}
         </div>
       </div>

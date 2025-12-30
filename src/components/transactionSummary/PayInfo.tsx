@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Logo } from '../common/Logo'
 import { getChainLogo, RawCurrency } from '@1delta/lib-utils'
 import { trimDecimals } from '../../lib/trimDecimal'
+import { useChainsRegistry } from '../../sdk/hooks/useChainsRegistry'
 
 interface PayInfoProps {
   label?: string
@@ -16,14 +17,21 @@ export function PayInfo({
   label = "You'll pay",
   amount,
   currency,
-  chainName,
+  chainName: chainNameProp,
   amountUsd,
   showFadedAmount = false,
 }: PayInfoProps) {
+  const { data: chains } = useChainsRegistry()
   const formattedUsd =
     amountUsd !== undefined && isFinite(amountUsd) ? `$${amountUsd.toFixed(2)}` : undefined
 
   const chainLogo = getChainLogo(currency?.chainId)
+
+  const chainName = useMemo(() => {
+    if (chainNameProp) return chainNameProp
+    if (!currency?.chainId || !chains) return currency?.chainId
+    return chains[currency.chainId]?.data?.name || currency.chainId
+  }, [chainNameProp, currency?.chainId, chains])
 
   return (
     <div className="flex flex-col gap-1 p-3 rounded-xl bg-base-100 border border-base-300">

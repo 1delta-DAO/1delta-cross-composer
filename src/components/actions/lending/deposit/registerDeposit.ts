@@ -8,7 +8,7 @@ import {
   subscribeToCacheChanges,
   type MoonwellMarket,
 } from '../shared/marketCache'
-import { LendingCheckout } from './Checkout'
+import { DepositCheckout } from './Checkout'
 
 async function waitForMarkets(): Promise<MoonwellMarket[]> {
   return new Promise((resolve) => {
@@ -46,7 +46,7 @@ export function registerDepositAction(): void {
       actionInfo: context.actionInfo,
       markets: context.actionData,
     }),
-    customSummary: LendingCheckout,
+    customSummary: DepositCheckout,
     params: { lender: 'MOONWELL' },
   }
 

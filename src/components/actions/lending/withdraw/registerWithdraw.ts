@@ -9,7 +9,7 @@ import {
   type MoonwellMarket,
   initializeMoonwellMarkets,
 } from '../shared/marketCache'
-import { LendingCheckout } from './Checkout'
+import { WithdrawCheckout } from './Checkout'
 
 async function waitForMarkets(): Promise<MoonwellMarket[]> {
   return new Promise((resolve) => {
@@ -48,7 +48,7 @@ export function registerWithdrawAction(): void {
       actionInfo: context.actionInfo,
       markets: context.actionData,
     }),
-    customSummary: LendingCheckout,
+    customSummary: WithdrawCheckout,
     params: { lender: 'MOONWELL' },
   }
 

@@ -2,29 +2,39 @@ import { RawCurrency } from '@1delta/lib-utils'
 import { Logo } from '../../../common/Logo'
 import { useActionData } from '../../../../contexts/DestinationInfoContext'
 import { getChainLogo } from '@1delta/lib-utils'
+import { useChainsRegistry } from '../../../../sdk/hooks/useChainsRegistry'
+import { useMemo } from 'react'
 
 interface StakingCheckoutProps {
   formattedOutput: string
-  dstCurrency?: RawCurrency
-  dstChainName?: string
+  currency?: RawCurrency
   outputUsd?: number
+  actionLabel?: string
+  actionDirection?: 'input' | 'destination'
+  dstCurrency?: RawCurrency
   destinationActionLabel?: string
 }
 
 export function StakingCheckout({
   formattedOutput,
-  dstCurrency,
-  dstChainName,
+  currency,
   outputUsd,
-  destinationActionLabel,
+  dstCurrency,
 }: StakingCheckoutProps) {
   const actionData = useActionData()
+  const { data: chains } = useChainsRegistry()
   if (!actionData || !actionData.lst) return null
 
   const formattedUsd =
     outputUsd !== undefined && isFinite(outputUsd) ? `$${outputUsd.toFixed(2)}` : undefined
 
-  const chainLogo = getChainLogo(actionData.lst.chainId)
+  const chainId = actionData.lst.chainId
+  const chainLogo = getChainLogo(chainId)
+
+  const chainName = useMemo(() => {
+    if (!chainId || !chains) return chainId
+    return chains[chainId]?.data?.name || chainId
+  }, [chainId, chains])
 
   return (
     <div className="flex flex-col gap-1 p-3 rounded-xl bg-base-100 border border-base-300">
@@ -45,15 +55,15 @@ export function StakingCheckout({
         </div>
 
         {/* Chain info */}
-        {dstChainName && (
+        {chainName && (
           <div className="flex items-center gap-1 text-xs opacity-70">
-            <span>on {dstChainName}</span>
+            <span>on {chainName}</span>
             {chainLogo && (
               <Logo
                 src={chainLogo}
-                alt={dstChainName}
+                alt={chainName}
                 className="h-4 w-4 rounded-full"
-                fallbackText={dstChainName[0]}
+                fallbackText={chainName[0]}
               />
             )}
           </div>

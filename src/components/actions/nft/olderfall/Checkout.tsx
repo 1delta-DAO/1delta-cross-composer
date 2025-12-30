@@ -1,18 +1,33 @@
 import { Logo } from '../../../common/Logo'
 import { getChainLogo } from '@1delta/lib-utils'
 import { useActionData } from '../../../../contexts/DestinationInfoContext'
+import { useChainsRegistry } from '../../../../sdk/hooks/useChainsRegistry'
+import { useMemo } from 'react'
 
 interface NFTCheckoutProps {
-  dstChainName?: string
+  formattedOutput?: string
+  currency?: any
+  outputUsd?: number
+  actionLabel?: string
+  actionDirection?: 'input' | 'destination'
+  dstCurrency?: any
+  destinationActionLabel?: string
 }
 
-export function NFTCheckout({ dstChainName }: NFTCheckoutProps) {
+export function NFTCheckout({}: NFTCheckoutProps) {
   const actionData = useActionData()
+  const { data: chains } = useChainsRegistry()
 
   if (!actionData || !actionData.listing) return null
 
   const { listing, title, priceLabel } = actionData
-  const chainLogo = getChainLogo(actionData.chainId)
+  const chainId = actionData.chainId
+  const chainLogo = getChainLogo(chainId)
+
+  const chainName = useMemo(() => {
+    if (!chainId || !chains) return chainId
+    return chains[chainId]?.data?.name || chainId
+  }, [chainId, chains])
 
   return (
     <div className="flex flex-col gap-1 p-3 rounded-xl bg-base-100 border border-base-300">
@@ -34,15 +49,15 @@ export function NFTCheckout({ dstChainName }: NFTCheckoutProps) {
       </div>
 
       {/* Chain info */}
-      {dstChainName && (
+      {chainName && (
         <div className="flex items-center gap-1 text-xs opacity-70">
-          <span>on {dstChainName}</span>
+          <span>on {chainName}</span>
           {chainLogo && (
             <Logo
               src={chainLogo}
-              alt={dstChainName}
+              alt={chainName}
               className="h-4 w-4 rounded-full"
-              fallbackText={dstChainName[0]}
+              fallbackText={chainName[0]}
             />
           )}
         </div>
