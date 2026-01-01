@@ -92,13 +92,13 @@ export function TokenSelector({
     const seenAddresses = new Set<string>()
 
     const addressesToFetch = new Set<string>()
-    
+
     addressesToFetch.add(zeroAddress.toLowerCase())
-    
+
     for (const addr of mainTokensSet) {
       addressesToFetch.add(addr.toLowerCase())
     }
-    
+
     for (const addr of userTokensForChain) {
       addressesToFetch.add(addr.toLowerCase())
     }
@@ -288,7 +288,7 @@ export function TokenSelector({
     const relevantSet = new Set(relevant.map((addr) => addr.toLowerCase()))
 
     let addressesToShow: Address[]
-    
+
     if (!q) {
       addressesToShow = allAddrs.filter((addr) => {
         const addrLower = addr.toLowerCase()
