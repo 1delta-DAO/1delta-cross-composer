@@ -24,4 +24,3 @@ export function LenderBadge({ lender }: LenderBadgeProps) {
     </div>
   )
 }
-
