@@ -60,7 +60,7 @@ export function WithdrawActionModal({
 
     const inputCalls = await buildCalls({
       amountHuman: amount,
-      underlying: market.underlyingCurrency,
+      underlying,
       userAddress: userAddress as any,
       isMax: false,
     })
@@ -86,7 +86,7 @@ export function WithdrawActionModal({
 
     const inputCalls = await buildCalls({
       amountHuman: '0',
-      underlying: market.underlyingCurrency,
+      underlying,
       userAddress: userAddress as any,
       isMax: true,
     })
