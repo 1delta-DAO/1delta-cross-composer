@@ -1,1 +1,0 @@
-import{r as e}from"./index-CZyBPvr7.js";const a=e({prefix:"f",name:"base16",alphabet:"0123456789abcdef",bitsPerChar:4}),r=e({prefix:"F",name:"base16upper",alphabet:"0123456789ABCDEF",bitsPerChar:4}),b=Object.freeze(Object.defineProperty({__proto__:null,base16:a,base16upper:r},Symbol.toStringTag,{value:"Module"}));export{b};
