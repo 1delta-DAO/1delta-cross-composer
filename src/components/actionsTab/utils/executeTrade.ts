@@ -58,7 +58,7 @@ export function executeTrade(args: {
                 args.walletClient.account?.address!,
                 approval.spender,
                 approval.token,
-                approval.balance
+                approval.requiredAmount
               )
               approvalTxHash = await args.walletClient.sendTransaction({
                 to: approveTx.to as any,
