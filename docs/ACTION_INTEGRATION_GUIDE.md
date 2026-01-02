@@ -268,6 +268,7 @@ If `true`, the action will only be shown when a source currency is available.
 #### `params?: ActionParams`
 
 Optional action-specific parameters. Currently supports:
+
 - `lender?: string` - Lender provider identifier (e.g., "MOONWELL") used for displaying lender badges
 
 ```typescript

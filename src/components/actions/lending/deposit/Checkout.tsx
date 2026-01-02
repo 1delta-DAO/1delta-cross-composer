@@ -46,7 +46,9 @@ export function DepositCheckout({
     <div className="flex flex-col gap-1 p-3 rounded-xl bg-base-100 border border-base-300">
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold opacity-70">Deposit {effectiveCurrency?.symbol} to</span>
+          <span className="text-sm font-semibold opacity-70">
+            Deposit {effectiveCurrency?.symbol} to
+          </span>
           <Logo
             src={getLenderUri(actionData.lender)}
             alt={actionData.lender}
@@ -89,4 +91,3 @@ export function DepositCheckout({
     </div>
   )
 }
-
