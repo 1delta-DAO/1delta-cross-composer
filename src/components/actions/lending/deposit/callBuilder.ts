@@ -29,7 +29,7 @@ export const buildCalls: ActionCallBuilder<DepositCallBuilderParams> = async ({
     lender: Lender.MOONWELL,
     chainId: underlying.chainId,
     tokenAddress: underlying.address,
-    amount: 0n,
+    amount: amountRaw,
     receiver: userAddress,
     useOverride: {
       pool: mTokenAddress,
