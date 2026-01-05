@@ -23,7 +23,6 @@ export function DepositPanel({
   markets = [],
 }: DepositPanelProps) {
   const { address } = useConnection()
-  const [isExpanded, setIsExpanded] = useState(false)
 
   // Only listed markets can be used for deposits
   const depositMarkets = useMemo(() => {
@@ -39,7 +38,6 @@ export function DepositPanel({
   useEffect(() => {
     if (resetKey !== undefined && resetKey > 0) {
       setSelectedMarket(undefined)
-      setIsExpanded(false)
       setMarketAmounts(new Map())
       setLastSelectedMarketAddress(undefined)
       setActionInfo?.(undefined, undefined, [])
@@ -88,7 +86,7 @@ export function DepositPanel({
   return (
     <>
       <div className="card-body p-4">
-        <div className="grid grid-cols-2 min-[600px]:grid-cols-3 min-[800px]:grid-cols-4 min-[1000px]:grid-cols-5 gap-3 max-h-[400px] overflow-y-auto">
+        <div className="grid grid-cols-2 min-[600px]:grid-cols-3 min-[800px]:grid-cols-4 min-[1000px]:grid-cols-5 gap-3 max-h-100 overflow-y-auto">
           {depositMarkets.length === 0 ? (
             <div className="col-span-full text-sm opacity-50 text-center py-4">
               No markets available

@@ -1,7 +1,7 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import { Address, erc20Abi } from 'viem'
-import { useReadContracts } from 'wagmi'
-import { Lender } from '@1delta/lib-utils'
+import { Lender, getBestRpcsForChain } from '@1delta/lib-utils'
+import { multicallRetryUniversal } from '@1delta/providers'
 import {
   prepareLenderDebitMulticall,
   parseLenderDebitResult,
@@ -12,14 +12,17 @@ import {
 } from '@1delta/calldata-sdk'
 import type { ActionCall } from '../../actions/shared/types'
 import { extractLendingApprovals } from '../utils/extractMTokenApprovals'
-import { MOONWELL_COMPTROLLER } from '../../actions/lending/deposit/consts'
-import { getMarketByMToken } from '../../actions/lending/shared/marketCache'
+import {
+  getUnderlyingTokenFromLendingToken as getUnderlyingToken,
+  calculateRequiredLendingTokenAmount,
+} from '../utils/lenderUtils'
 
 export interface LendingApprovalInfo {
   lender: Lender
   token: Address
   spender: Address
   balance: bigint
+  requiredAmount: bigint
   needsApproval: boolean
   approvalTransaction?: ReturnType<typeof getLenderApproveTransaction>
 }
@@ -42,15 +45,26 @@ export function useLendingApprovals(
   }, [inputCalls, chainId, account])
 
   const lendersByToken = useMemo(() => {
-    const map: Record<string, { lender: Lender; tokens: Address[] }> = {}
+    const map: Record<string, { lender: Lender; underlyingTokens: Address[] }> = {}
 
     for (const approval of lendingApprovals) {
       const key = String(approval.lender)
       if (!map[key]) {
-        map[key] = { lender: approval.lender, tokens: [] }
+        map[key] = { lender: approval.lender, underlyingTokens: [] }
       }
-      if (!map[key].tokens.includes(approval.token)) {
-        map[key].tokens.push(approval.token)
+
+      try {
+        const underlyingToken = getUnderlyingToken(
+          approval.lender,
+          approval.token,
+          approval.underlyingTokenAddress
+        )
+
+        if (underlyingToken && !map[key].underlyingTokens.includes(underlyingToken)) {
+          map[key].underlyingTokens.push(underlyingToken)
+        }
+      } catch (error) {
+        console.error('Failed to get underlying token:', error)
       }
     }
 
@@ -65,9 +79,9 @@ export function useLendingApprovals(
     const lenders: Lender[] = []
     const tokenAddressesByLender: Record<Lender, Address[]> = {} as any
 
-    for (const { lender, tokens } of lendersByToken) {
+    for (const { lender, underlyingTokens } of lendersByToken) {
       lenders.push(lender)
-      tokenAddressesByLender[lender] = tokens
+      tokenAddressesByLender[lender] = underlyingTokens
     }
 
     const composerAddress = getComposerAddress(chainId)
@@ -82,52 +96,109 @@ export function useLendingApprovals(
     })
   }, [account, chainId, lendersByToken])
 
-  const contracts = useMemo(() => {
-    if (!prepared) return []
-    return prepared.calls.map((call) => ({
-      address: call.address as Address,
-      abi: prepared.abi as any,
-      functionName: call.name as any,
-      args: call.params as any[],
-    }))
-  }, [prepared])
+  const [lenderDebitResults, setLenderDebitResults] = useState<any[] | null>(null)
+  const [balanceAndAllowanceResults, setBalanceAndAllowanceResults] = useState<any[] | null>(null)
 
-  const { data: results } = useReadContracts({
-    contracts,
-    query: {
-      enabled: contracts.length > 0,
-    },
-  })
+  useEffect(() => {
+    if (!chainId) {
+      setLenderDebitResults(null)
+      setBalanceAndAllowanceResults(null)
+      return
+    }
+
+    const fetchAllData = async () => {
+      const rpcFromRpcSelector = await getBestRpcsForChain(chainId)
+      const overrides =
+        rpcFromRpcSelector && rpcFromRpcSelector.length > 0
+          ? { [chainId]: rpcFromRpcSelector }
+          : undefined
+
+      const promises: Promise<any>[] = []
+
+      if (prepared) {
+        promises.push(
+          (async () => {
+            try {
+              const calls = prepared.calls.map((call) => ({
+                address: call.address as Address,
+                name: call.name as string,
+                params: call.params as any[],
+              }))
+
+              const results = await multicallRetryUniversal({
+                chain: chainId,
+                calls,
+                abi: prepared.abi as any,
+                maxRetries: 3,
+                providerId: 0,
+                ...(overrides && { overrdies: overrides }),
+              })
+
+              setLenderDebitResults(results)
+            } catch (error) {
+              console.error('Failed to fetch lender debit data:', error)
+              setLenderDebitResults(null)
+            }
+          })()
+        )
+      } else {
+        setLenderDebitResults(null)
+      }
+
+      if (account && lendingApprovals.length > 0) {
+        promises.push(
+          (async () => {
+            try {
+              const calls = lendingApprovals.flatMap((approval) => [
+                {
+                  address: approval.token,
+                  name: 'balanceOf' as const,
+                  params: [account],
+                },
+                {
+                  address: approval.token,
+                  name: 'allowance' as const,
+                  params: [account, approval.spender],
+                },
+              ])
+
+              const results = await multicallRetryUniversal({
+                chain: chainId,
+                calls,
+                abi: erc20Abi,
+                maxRetries: 3,
+                providerId: 0,
+                ...(overrides && { overrdies: overrides }),
+              })
+
+              setBalanceAndAllowanceResults(results)
+            } catch (error) {
+              console.error('Failed to fetch balance and allowance:', error)
+              setBalanceAndAllowanceResults(null)
+            }
+          })()
+        )
+      } else {
+        setBalanceAndAllowanceResults(null)
+      }
+
+      await Promise.all(promises)
+    }
+
+    fetchAllData()
+  }, [prepared, account, chainId, lendingApprovals])
 
   const lenderDebitData = useMemo(() => {
-    if (!prepared || !results) {
+    if (!prepared || !lenderDebitResults) {
       return {}
     }
 
-    const rawResults = results.map((r) => r.result)
     return parseLenderDebitResult({
       metadata: prepared.meta.metadata,
-      raw: rawResults,
+      raw: lenderDebitResults,
       chainId: prepared.meta.chainId,
     })
-  }, [prepared, results])
-
-  const balanceContracts = useMemo(() => {
-    if (!account || lendingApprovals.length === 0) return []
-    return lendingApprovals.map((approval) => ({
-      address: approval.token,
-      abi: erc20Abi,
-      functionName: 'balanceOf' as const,
-      args: [account],
-    }))
-  }, [account, lendingApprovals])
-
-  const { data: balanceResults } = useReadContracts({
-    contracts: balanceContracts,
-    query: {
-      enabled: balanceContracts.length > 0,
-    },
-  })
+  }, [prepared, lenderDebitResults])
 
   const approvalInfos = useMemo(() => {
     if (lendingApprovals.length === 0) {
@@ -137,9 +208,12 @@ export function useLendingApprovals(
     const composerAddress = getComposerAddress(chainId || '')
 
     return lendingApprovals.map((approval, index) => {
-      const balance = (balanceResults?.[index]?.result as bigint) || 0n
-      const tokenKey = approval.token.toLowerCase()
-      const debitData = lenderDebitData[tokenKey]
+      const balanceIndex = index * 2
+      const allowanceIndex = index * 2 + 1
+      const balance = (balanceAndAllowanceResults?.[balanceIndex] as bigint) || 0n
+      const currentAllowance = (balanceAndAllowanceResults?.[allowanceIndex] as bigint) || 0n
+      const lenderKey = String(approval.lender)
+      const debitData = lenderDebitData[lenderKey]
       const hasDelegation = debitData
         ? Object.values(debitData).some(
             (entry) => entry && (entry.amount !== undefined || entry.params !== undefined)
@@ -148,43 +222,40 @@ export function useLendingApprovals(
 
       let requiredAmount = balance
 
-      if (
-        approval.underlyingAmount &&
-        approval.underlyingAmount > 0n &&
-        approval.lender === Lender.MOONWELL
-      ) {
-        const market = getMarketByMToken(approval.token)
-        const underlyingAmount = approval.underlyingAmount
-
-        if (!market) {
-        } else if (!market.exchangeRate || market.exchangeRate === 0n) {
-        } else {
-          const exchangeRate = market.exchangeRate
-          const mTokenAmount = (underlyingAmount * 10n ** 18n) / exchangeRate
-
-          const finalRequiredAmount = mTokenAmount > balance ? balance : mTokenAmount
-
-          requiredAmount = finalRequiredAmount
+      if (approval.underlyingAmount && approval.underlyingAmount > 0n) {
+        try {
+          const calculatedAmount = calculateRequiredLendingTokenAmount(
+            approval.lender,
+            approval.underlyingAmount,
+            approval.token,
+            balance
+          )
+          if (calculatedAmount !== null) {
+            requiredAmount = calculatedAmount
+          }
+        } catch (error) {
+          console.error('Failed to calculate required amount:', error)
         }
       }
 
-      const needsApproval = requiredAmount > 0n && !hasDelegation
+      const hasSufficientAllowance = currentAllowance >= requiredAmount
+      const needsApproval = requiredAmount > 0n && !hasDelegation && !hasSufficientAllowance
 
       let approvalTransaction: ReturnType<typeof getLenderApproveTransaction> | undefined
 
       if (needsApproval && chainId && account) {
-        const lenderAddress = approval.lender === Lender.MOONWELL ? MOONWELL_COMPTROLLER : undefined
-
-        if (lenderAddress) {
+        try {
           approvalTransaction = getLenderApproveTransaction(
             chainId,
             account,
-            lenderAddress,
+            String(approval.lender),
             approval.token,
             composerAddress,
             LendingMode.NONE,
             requiredAmount
           )
+        } catch (error) {
+          approvalTransaction = undefined
         }
       }
 
@@ -193,11 +264,12 @@ export function useLendingApprovals(
         token: approval.token,
         spender: approval.spender,
         balance,
+        requiredAmount,
         needsApproval,
         approvalTransaction,
       }
     })
-  }, [lendingApprovals, lenderDebitData, chainId, account, balanceResults])
+  }, [lendingApprovals, lenderDebitData, chainId, account, balanceAndAllowanceResults])
 
   const needsAnyApproval = useMemo(
     () => approvalInfos.some((info) => info.needsApproval),
