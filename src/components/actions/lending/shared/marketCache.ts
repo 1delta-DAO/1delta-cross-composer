@@ -1,10 +1,12 @@
 import { type Address, zeroAddress } from 'viem'
 import { erc20Abi } from 'viem'
-import { getRpcSelectorEvmClient, SupportedChainId } from '@1delta/lib-utils'
-import { MOONWELL_LENS, MOONWELL_UNDERLYING_TO_MTOKEN } from './consts'
+import { getBestRpcsForChain, SupportedChainId } from '@1delta/lib-utils'
+import { MOONWELL_LENS, MOONWELL_UNDERLYING_TO_MTOKEN } from '../deposit/consts'
 import type { RawCurrency } from '../../../../types/currency'
 import { CurrencyHandler } from '@1delta/lib-utils/dist/services/currency/currencyUtils'
 import { VenusLensAbi } from '../../../../lib/abi/compV2'
+import { multicallRetryUniversal } from '@1delta/providers'
+import { getTokenFromCache } from '../../../../lib/data/tokenListsCache'
 
 export type MoonwellMarket = {
   mTokenCurrency: RawCurrency
@@ -14,6 +16,7 @@ export type MoonwellMarket = {
   isListed: boolean
   mintPaused: boolean
   borrowPaused: boolean
+  exchangeRate?: bigint
 }
 
 let cachedMarkets: MoonwellMarket[] | undefined = undefined
@@ -69,19 +72,19 @@ export function getMarketByUnderlying(underlying: Address): MoonwellMarket | und
 
 export async function initializeMoonwellMarkets(
   chainId: string = SupportedChainId.MOONBEAM
-): Promise<void> {
+): Promise<{ markets: MoonwellMarket[] }> {
   if (isInitialized && cachedMarkets !== undefined) {
-    return
+    return { markets: cachedMarkets }
   }
 
   if (isLoading) {
-    return
+    return { markets: cachedMarkets || [] }
   }
 
   if (chainId !== SupportedChainId.MOONBEAM) {
     error = 'Only moonbeam supported'
     notifyListeners()
-    return
+    return { markets: [] }
   }
 
   isLoading = true
@@ -89,23 +92,41 @@ export async function initializeMoonwellMarkets(
   notifyListeners()
 
   try {
-    const client = await getRpcSelectorEvmClient(chainId)
-    if (!client) {
-      throw new Error('No client for chain')
-    }
-
+    const mTokenEntries = Object.entries(MOONWELL_UNDERLYING_TO_MTOKEN)
     const results: MoonwellMarket[] = []
 
-    for (const [underlyingRaw, mToken] of Object.entries(MOONWELL_UNDERLYING_TO_MTOKEN)) {
-      const underlying = underlyingRaw as Address
+    const marketInfoCalls = mTokenEntries.map(([, mToken]) => ({
+      address: MOONWELL_LENS as Address,
+      name: 'getMarketInfo' as const,
+      params: [mToken as Address],
+    }))
 
-      // getMarketInfo(mToken) returns Market struct (see ABI)
-      const info = (await client.readContract({
-        address: MOONWELL_LENS,
-        abi: VenusLensAbi,
-        functionName: 'getMarketInfo',
-        args: [mToken],
-      })) as any
+    const rpcFromRpcSelector = await getBestRpcsForChain(chainId)
+    const overrides =
+      rpcFromRpcSelector && rpcFromRpcSelector.length > 0
+        ? { [chainId]: rpcFromRpcSelector }
+        : undefined
+
+    const marketInfosResults = await multicallRetryUniversal({
+      chain: chainId,
+      calls: marketInfoCalls,
+      abi: VenusLensAbi,
+      maxRetries: 3,
+      providerId: 0,
+      ...(overrides && { overrdies: overrides }),
+    })
+
+    console.log('marketInfosResults', marketInfosResults)
+
+    const underlyingAddresses: Address[] = []
+    const mTokenSymbolCalls: any[] = []
+    const mTokenDecimalsCalls: any[] = []
+
+    for (let i = 0; i < mTokenEntries.length; i++) {
+      const [underlyingRaw, mToken] = mTokenEntries[i]
+      const underlying = underlyingRaw as Address
+      const info = marketInfosResults[i] as any
+
       const underlyingFromLens = (info?.[18]?.token ||
         info?.underlying ||
         info?.underlyingAssetAddress ||
@@ -114,50 +135,64 @@ export async function initializeMoonwellMarkets(
         underlying && underlying !== ('' as Address) ? underlying : underlyingFromLens
       ) as Address
 
-      let symbol: string | undefined
-      let decimals: number | undefined
-      try {
-        if (resolvedUnderlying && resolvedUnderlying.toLowerCase() !== zeroAddress.toLowerCase()) {
-          symbol = (await client.readContract({
-            address: resolvedUnderlying,
-            abi: erc20Abi,
-            functionName: 'symbol',
-          })) as string
-          decimals = (await client.readContract({
-            address: resolvedUnderlying,
-            abi: erc20Abi,
-            functionName: 'decimals',
-          })) as number
-        } else {
-          // fallback to mToken symbol
-          symbol = (await client.readContract({
-            address: mToken,
-            abi: erc20Abi,
-            functionName: 'symbol',
-          })) as string
-          decimals = 18
-        }
-      } catch {}
+      underlyingAddresses.push(resolvedUnderlying)
 
-      let mTokenSymbol: string | undefined
-      let mTokenDecimals: number | undefined
-      try {
-        mTokenSymbol = (await client.readContract({
-          address: mToken,
-          abi: erc20Abi,
-          functionName: 'symbol',
-        })) as string
-        mTokenDecimals = (await client.readContract({
-          address: mToken,
-          abi: erc20Abi,
-          functionName: 'decimals',
-        })) as number
-      } catch {}
+      mTokenSymbolCalls.push({
+        address: mToken as Address,
+        name: 'symbol' as const,
+        params: [],
+      })
+      mTokenDecimalsCalls.push({
+        address: mToken as Address,
+        name: 'decimals' as const,
+        params: [],
+      })
+    }
+
+    const allCalls = [...mTokenSymbolCalls, ...mTokenDecimalsCalls]
+
+    const allResults = await multicallRetryUniversal({
+      chain: chainId,
+      calls: allCalls,
+      abi: erc20Abi,
+      maxRetries: 3,
+      providerId: 0,
+      ...(overrides && { overrdies: overrides }),
+    })
+
+    const mTokenSymbols: (string | undefined)[] = []
+    const mTokenDecimals: (number | undefined)[] = []
+
+    for (let i = 0; i < mTokenEntries.length; i++) {
+      const mTokenSymbolResult = allResults[i]
+      mTokenSymbols.push(mTokenSymbolResult ? (mTokenSymbolResult as string) : undefined)
+    }
+
+    for (let i = 0; i < mTokenEntries.length; i++) {
+      const mTokenDecimalsResult = allResults[mTokenEntries.length + i]
+      mTokenDecimals.push(mTokenDecimalsResult ? (mTokenDecimalsResult as number) : undefined)
+    }
+
+    for (let i = 0; i < mTokenEntries.length; i++) {
+      const [underlyingRaw, mToken] = mTokenEntries[i]
+      const underlying = underlyingRaw as Address
+      const info = marketInfosResults[i] as any
+      const resolvedUnderlying = underlyingAddresses[i]
+
+      const underlyingToken =
+        resolvedUnderlying && resolvedUnderlying.toLowerCase() !== zeroAddress.toLowerCase()
+          ? getTokenFromCache(chainId, resolvedUnderlying)
+          : undefined
+
+      const symbol = underlyingToken?.symbol || mTokenSymbols[i]
+      const decimals = underlyingToken?.decimals ?? 18
+      const mTokenSymbol = mTokenSymbols[i]
+      const mTokenDecimalsValue = mTokenDecimals[i] ?? 18
 
       const mTokenCurrency = CurrencyHandler.Currency(
         chainId,
-        mToken,
-        mTokenDecimals ?? 18,
+        mToken as Address,
+        mTokenDecimalsValue,
         mTokenSymbol || 'mToken',
         mTokenSymbol || 'Moonwell Market Token'
       )
@@ -165,10 +200,16 @@ export async function initializeMoonwellMarkets(
       const underlyingCurrency = CurrencyHandler.Currency(
         chainId,
         resolvedUnderlying || underlying,
-        decimals ?? 18,
+        decimals,
         symbol || 'Token',
         symbol || 'Token'
       )
+
+      const exchangeRate = info?.exchangeRate
+        ? BigInt(info.exchangeRate)
+        : info?.[11]
+          ? BigInt(info[11])
+          : undefined
 
       results.push({
         mTokenCurrency,
@@ -178,24 +219,26 @@ export async function initializeMoonwellMarkets(
         isListed: Boolean(info?.isListed),
         mintPaused: Boolean(info?.mintPaused),
         borrowPaused: Boolean(info?.borrowPaused),
+        exchangeRate,
       })
     }
 
     cachedMarkets = results
     isInitialized = true
     error = undefined
+
+    console.log('results', results)
+    return { markets: results }
   } catch (e) {
     error = e instanceof Error ? e.message : 'Failed to fetch Moonwell markets'
     cachedMarkets = undefined
+    return { markets: [] }
   } finally {
     isLoading = false
     notifyListeners()
   }
 }
 
-/**
- * Force refresh the markets data
- */
 export async function refreshMoonwellMarkets(
   chainId: string = SupportedChainId.MOONBEAM
 ): Promise<void> {

@@ -1,13 +1,16 @@
 import { useState, useEffect, useMemo } from 'react'
 import { type MoonwellMarket } from '../shared/marketCache'
-import { DepositActionModal } from './DepositModal'
-import { DepositCard } from './DepositCard'
+import { WithdrawActionModal } from './WithdrawModal'
+import { WithdrawCard } from './WithdrawCard'
 import { ActionHandler } from '../../shared/types'
 import { useConnection } from 'wagmi'
 import { useTokenLists } from '../../../../hooks/useTokenLists'
 import type { RawCurrencyAmount } from '../../../../types/currency'
+import { waitForBalances, getCachedBalances, subscribeToBalanceChanges } from './balanceCache'
+import { DUMMY_ADDRESS } from '../../../../lib/consts'
+import { SupportedChainId } from '@1delta/lib-utils'
 
-type DepositPanelProps = {
+type WithdrawPanelProps = {
   chainId?: string
   setActionInfo?: ActionHandler
   resetKey?: number
@@ -15,19 +18,68 @@ type DepositPanelProps = {
   markets?: MoonwellMarket[]
 }
 
-export function DepositPanel({
+export function WithdrawPanel({
   chainId,
   setActionInfo,
   resetKey,
   actionInfo,
   markets = [],
-}: DepositPanelProps) {
+}: WithdrawPanelProps) {
   const { address } = useConnection()
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [showNoBalance, setShowNoBalance] = useState(true)
+  const userAddress = address || DUMMY_ADDRESS
+  const effectiveChainId = chainId || SupportedChainId.MOONBEAM
 
-  // Only listed markets can be used for deposits
-  const depositMarkets = useMemo(() => {
-    return markets.filter((m) => m.isListed && !m.mintPaused)
-  }, [markets])
+  const [balanceUpdateKey, setBalanceUpdateKey] = useState(0)
+  const [balancesInitialized, setBalancesInitialized] = useState(false)
+
+  useEffect(() => {
+    if (effectiveChainId && address && markets.length > 0 && !balancesInitialized) {
+      waitForBalances(effectiveChainId, address, markets)
+        .then(() => {
+          setBalancesInitialized(true)
+        })
+        .catch(console.error)
+    }
+  }, [effectiveChainId, address, markets, balancesInitialized])
+
+  useEffect(() => {
+    if (!effectiveChainId || !address) return
+
+    const unsubscribe = subscribeToBalanceChanges(() => {
+      setBalanceUpdateKey((prev) => prev + 1)
+    })
+
+    return unsubscribe
+  }, [effectiveChainId, address])
+
+  const balances = useMemo(() => {
+    if (!effectiveChainId || !address) return {}
+    return getCachedBalances(effectiveChainId, address)
+  }, [effectiveChainId, address, balanceUpdateKey])
+
+  const withdrawMarkets = useMemo(() => {
+    let filtered = markets.filter((m) => m.isListed && !m.borrowPaused)
+
+    if (showNoBalance) {
+      return filtered
+    }
+
+    if (address && Object.keys(balances).length > 0) {
+      filtered = filtered.filter((market) => {
+        const mTokenKey = market.mTokenCurrency.address.toLowerCase()
+        const balance = balances[mTokenKey] || 0n
+        return balance > 0n
+      })
+    } else if (!address) {
+      return []
+    } else {
+      return []
+    }
+
+    return filtered
+  }, [markets, showNoBalance, balances, address])
 
   const [selectedMarket, setSelectedMarket] = useState<undefined | MoonwellMarket>(undefined)
   const [marketAmounts, setMarketAmounts] = useState<Map<string, string>>(new Map())
@@ -38,6 +90,7 @@ export function DepositPanel({
   useEffect(() => {
     if (resetKey !== undefined && resetKey > 0) {
       setSelectedMarket(undefined)
+      setIsExpanded(false)
       setMarketAmounts(new Map())
       setLastSelectedMarketAddress(undefined)
       setActionInfo?.(undefined, undefined, [])
@@ -86,13 +139,25 @@ export function DepositPanel({
   return (
     <>
       <div className="card-body p-4">
-        <div className="grid grid-cols-2 min-[600px]:grid-cols-3 min-[800px]:grid-cols-4 min-[1000px]:grid-cols-5 gap-3 max-h-100 overflow-y-auto">
-          {depositMarkets.length === 0 ? (
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-medium">Select Market</h3>
+          <label className="label cursor-pointer gap-2">
+            <span className="label-text text-xs">Show positions with no balance</span>
+            <input
+              type="checkbox"
+              className="toggle toggle-sm"
+              checked={showNoBalance}
+              onChange={(e) => setShowNoBalance(e.target.checked)}
+            />
+          </label>
+        </div>
+        <div className="grid grid-cols-2 min-[600px]:grid-cols-3 min-[800px]:grid-cols-4 min-[1000px]:grid-cols-5 gap-3 max-h-[400px] overflow-y-auto">
+          {withdrawMarkets.length === 0 ? (
             <div className="col-span-full text-sm opacity-50 text-center py-4">
               No markets available
             </div>
           ) : (
-            depositMarkets.map((market) => {
+            withdrawMarkets.map((market) => {
               const marketKey = market.mTokenCurrency.address
               const enteredAmount = marketAmounts.get(marketKey)
               const isSelected =
@@ -101,7 +166,7 @@ export function DepositPanel({
                 enteredAmount.trim() !== '' &&
                 Number(enteredAmount) > 0
               return (
-                <DepositCard
+                <WithdrawCard
                   key={marketKey}
                   market={market}
                   onActionClick={() => handleMarketClick(market)}
@@ -120,7 +185,7 @@ export function DepositPanel({
       </div>
 
       {selectedMarket && (
-        <DepositActionModal
+        <WithdrawActionModal
           open={!!selectedMarket}
           market={selectedMarket}
           selectedCurrency={
@@ -130,7 +195,7 @@ export function DepositPanel({
           }
           onClose={() => setSelectedMarket(undefined)}
           userAddress={address as any}
-          chainId={chainId}
+          chainId={effectiveChainId}
           setActionInfo={setActionInfo}
           amount={marketAmounts.get(selectedMarket.mTokenCurrency.address) || ''}
           onAmountChange={(amount) =>

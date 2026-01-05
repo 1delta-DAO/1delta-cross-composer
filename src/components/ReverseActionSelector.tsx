@@ -6,36 +6,16 @@ import {
   getRegisteredActions,
   getActionsByCategory,
   type ActionType,
-  type ActionCategory,
   type ActionLoaderContext,
   type ActionPanelContext,
 } from './actions/shared/actionDefinitions'
 import { ActionHandler } from './actions/shared/types'
-import { type GenericTrade } from '@1delta/lib-utils'
+import type { GenericTrade } from '@1delta/lib-utils'
 import BalanceDisplay from './balance/balanceDisplay'
 import { PricesRecord } from '../hooks/prices/usePriceQuery'
+import { initialState, UnifiedState } from './ActionSelector'
 
-export const initialState: UnifiedState = {
-  selectedAction: null,
-  selectedCategory: 'all',
-  isExpanded: true,
-  isPanelExpanded: true,
-  actionData: {},
-  actionDataLoading: {},
-  panelResetKey: 0,
-}
-
-export interface UnifiedState {
-  selectedAction: ActionType | null
-  selectedCategory: ActionCategory
-  isExpanded: boolean
-  isPanelExpanded: boolean
-  actionData: Record<string, any>
-  actionDataLoading: Record<string, boolean>
-  panelResetKey: number
-}
-
-interface ActionSelectorProps {
+interface ReverseActionSelectorProps {
   state: UnifiedState
   setState: Dispatch<SetStateAction<UnifiedState>>
   pricesData?: PricesRecord
@@ -47,31 +27,25 @@ interface ActionSelectorProps {
   setSelectedQuoteIndex?: (index: number) => void
   slippage?: number
   resetKey?: number
-  onSrcCurrencyChange?: (currency: RawCurrency) => void
+  onDstCurrencyChange?: (currency: RawCurrency) => void
   actionInfo?: { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string }
 }
 
-/* -------------------------------------------------------------------------- */
-/*                           COMPONENT START                                   */
-/* -------------------------------------------------------------------------- */
-
-export default function ActionSelector(props: ActionSelectorProps) {
-  const {
-    srcCurrency,
-    dstCurrency,
-    setActionInfo,
-    quotes,
-    selectedQuoteIndex,
-    setSelectedQuoteIndex,
-    slippage,
-    resetKey,
-    onSrcCurrencyChange,
-    actionInfo,
-    pricesData,
-    state,
-    setState,
-  } = props
-
+export default function ReverseActionSelector({
+  srcCurrency,
+  dstCurrency,
+  setActionInfo,
+  quotes,
+  selectedQuoteIndex,
+  setSelectedQuoteIndex,
+  slippage,
+  resetKey,
+  onDstCurrencyChange,
+  actionInfo,
+  pricesData,
+  state,
+  setState,
+}: ReverseActionSelectorProps) {
   const {
     selectedAction,
     selectedCategory,
@@ -82,14 +56,10 @@ export default function ActionSelector(props: ActionSelectorProps) {
     panelResetKey,
   } = state
 
-  /* -------------------------------------------------------------------------- */
-  /*                        Derived lists + memo fields                          */
-  /* -------------------------------------------------------------------------- */
-
   const availableActions = useMemo(() => {
     return getRegisteredActions().filter((action) => {
       const direction = action.actionDirection || 'destination'
-      if (direction !== 'destination') return false
+      if (direction !== 'input') return false
       if (action.requiresSrcCurrency) {
         return Boolean(srcCurrency)
       }
@@ -98,7 +68,7 @@ export default function ActionSelector(props: ActionSelectorProps) {
   }, [srcCurrency])
 
   const filteredActions = useMemo(() => {
-    return getActionsByCategory(selectedCategory, srcCurrency, 'destination')
+    return getActionsByCategory(selectedCategory, srcCurrency, 'input')
   }, [selectedCategory, srcCurrency])
 
   const isActionReady = useMemo(() => {
@@ -116,10 +86,6 @@ export default function ActionSelector(props: ActionSelectorProps) {
     availableActions.forEach((a) => (o[a.id] = actionDataLoading[a.id]))
     return o
   }, [availableActions, actionDataLoading])
-
-  /* -------------------------------------------------------------------------- */
-  /*                              Load Action Data                               */
-  /* -------------------------------------------------------------------------- */
 
   useEffect(() => {
     const load = async () => {
@@ -157,11 +123,7 @@ export default function ActionSelector(props: ActionSelectorProps) {
     }
 
     load()
-  }, [availableActions, srcCurrency, dstCurrency])
-
-  /* -------------------------------------------------------------------------- */
-  /*                Clear destination info if selectedAction changes            */
-  /* -------------------------------------------------------------------------- */
+  }, [availableActions, srcCurrency, dstCurrency, setState])
 
   const prevActionRef = useRef<ActionType | null>(null)
 
@@ -175,10 +137,6 @@ export default function ActionSelector(props: ActionSelectorProps) {
 
     prevActionRef.current = cur
   }, [selectedAction, setActionInfo])
-
-  /* -------------------------------------------------------------------------- */
-  /*                              Event Handlers                                 */
-  /* -------------------------------------------------------------------------- */
 
   const handleReset = () => {
     setState((s) => ({
@@ -215,10 +173,6 @@ export default function ActionSelector(props: ActionSelectorProps) {
     setActionInfo?.(undefined, undefined, [])
   }
 
-  /* -------------------------------------------------------------------------- */
-  /*                               Panel Renderer                               */
-  /* -------------------------------------------------------------------------- */
-
   const renderActionPanel = () => {
     if (!selectedAction) return null
 
@@ -250,17 +204,8 @@ export default function ActionSelector(props: ActionSelectorProps) {
     ? getRegisteredActions().find((a) => a.id === selectedAction)
     : null
 
-  /* -------------------------------------------------------------------------- */
-  /*                                   Render                                   */
-  /* -------------------------------------------------------------------------- */
-
   return (
     <div className="space-y-4">
-      <BalanceDisplay
-        onSrcCurrencyChange={onSrcCurrencyChange}
-        srcCurrency={srcCurrency}
-        pricesData={pricesData}
-      />
       <div className="card bg-base-100 border border-base-300 shadow-sm">
         <div className="card-body p-4">
           <ActionIconGrid
@@ -274,6 +219,7 @@ export default function ActionSelector(props: ActionSelectorProps) {
             onReset={handleReset}
             isActionReady={isActionReady}
             isActionLoading={isActionLoading}
+            isReverseFlow={true}
           />
         </div>
       </div>
@@ -290,6 +236,14 @@ export default function ActionSelector(props: ActionSelectorProps) {
             {isPanelExpanded && <div className="p-4">{renderActionPanel()}</div>}
           </div>
         </div>
+      )}
+
+      {onDstCurrencyChange && (
+        <BalanceDisplay
+          onSrcCurrencyChange={onDstCurrencyChange}
+          srcCurrency={dstCurrency}
+          pricesData={pricesData}
+        />
       )}
     </div>
   )

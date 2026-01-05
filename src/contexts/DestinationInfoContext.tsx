@@ -8,9 +8,13 @@ export interface DestinationInfo {
   actionData?: any
 }
 
+export type FlowMode = 'src' | 'dst'
+
 interface DestinationInfoContextValue {
   destinationInfo?: DestinationInfo
   setDestinationInfoState: React.Dispatch<React.SetStateAction<DestinationInfo | undefined>>
+  flowMode: FlowMode
+  setFlowMode: React.Dispatch<React.SetStateAction<FlowMode>>
 }
 
 // -------- Create Context --------
@@ -21,9 +25,12 @@ export const DestinationInfoProvider: React.FC<React.PropsWithChildren> = ({ chi
   const [destinationInfo, setDestinationInfoState] = useState<DestinationInfo | undefined>(
     undefined
   )
+  const [flowMode, setFlowMode] = useState<FlowMode>('dst')
 
   return (
-    <DestinationInfoContext.Provider value={{ destinationInfo, setDestinationInfoState }}>
+    <DestinationInfoContext.Provider
+      value={{ destinationInfo, setDestinationInfoState, flowMode, setFlowMode }}
+    >
       {children}
     </DestinationInfoContext.Provider>
   )

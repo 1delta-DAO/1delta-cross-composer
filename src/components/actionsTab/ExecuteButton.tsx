@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import type { Address } from 'viem'
+import { zeroAddress } from 'viem'
 import { usePublicClient, useConnection, useWalletClient } from 'wagmi'
 import type { GenericTrade } from '../../sdk/types'
 import { buildTransactionUrl } from '../../lib/explorer'
@@ -9,9 +10,10 @@ import { WalletConnect } from '../connect'
 import type { RawCurrency } from '../../types/currency'
 import { ExecutionEvent } from './utils/types'
 import { executeTrade } from './utils/executeTrade'
-import { useAllowance } from './hooks/useAllowance'
+import { useUnifiedApprovals } from './hooks/useUnifiedApprovals'
 import { TradeState, useHandleEvent } from './hooks/useHandleEvent'
 import { useSyncChain } from './hooks/useSyncChain'
+import { useLendingApprovals } from './hooks/useLendingApprovals'
 
 type StepStatus = 'idle' | 'active' | 'done' | 'error'
 
@@ -57,6 +59,7 @@ type ExecuteButtonProps = {
   onTransactionStart?: () => void
   onTransactionEnd?: () => void
   hasActionCalls?: boolean
+  inputCalls?: import('../actions/shared/types').ActionCall[]
   quoting?: boolean
 }
 
@@ -73,6 +76,7 @@ export default function ExecuteButton(props: ExecuteButtonProps) {
     onTransactionStart,
     onTransactionEnd,
     hasActionCalls = false,
+    inputCalls,
     quoting,
   } = props
 
@@ -109,12 +113,39 @@ export default function ExecuteButton(props: ExecuteButtonProps) {
   const spender = trade ? (trade as any).approvalTarget || (trade as any).target : undefined
   const skipApprove = trade ? (trade as any).skipApprove || false : false
 
-  const { needsApproval } = useAllowance(
+  const shouldSkipUnderlyingApproval = hasActionCalls && inputCalls && inputCalls.length > 0
+
+  const tokenApprovals = useMemo(() => {
+    if (
+      !srcTokenAddress ||
+      srcTokenAddress === zeroAddress ||
+      !spender ||
+      skipApprove ||
+      shouldSkipUnderlyingApproval ||
+      !amountWei
+    ) {
+      return []
+    }
+    return [
+      {
+        token: srcTokenAddress,
+        spender: spender as Address,
+        amount: amountWei,
+      },
+    ]
+  }, [srcTokenAddress, spender, amountWei, skipApprove, shouldSkipUnderlyingApproval])
+
+  const { needsAnyApproval: needsApproval } = useUnifiedApprovals(
     address,
-    srcTokenAddress as Address,
-    spender as Address,
-    amountWei,
-    skipApprove
+    srcChainId,
+    tokenApprovals,
+    skipApprove || shouldSkipUnderlyingApproval
+  )
+
+  const { approvals: mTokenApprovals, needsAnyApproval: needsMTokenApproval } = useLendingApprovals(
+    address,
+    hasActionCalls ? inputCalls : undefined,
+    srcChainId
   )
 
   /** Get event handler */
@@ -156,6 +187,7 @@ export default function ExecuteButton(props: ExecuteButtonProps) {
         walletClient: walletClient as any,
         publicClient: publicClient as any,
         needsApproval,
+        mTokenApprovals: needsMTokenApproval ? mTokenApprovals : undefined,
       })
 
       trackerRef.current = tracker
@@ -182,6 +214,8 @@ export default function ExecuteButton(props: ExecuteButtonProps) {
     walletClient,
     publicClient,
     needsApproval,
+    needsMTokenApproval,
+    mTokenApprovals,
     handleEvent,
     toast,
     onTransactionEnd,
@@ -240,9 +274,9 @@ export default function ExecuteButton(props: ExecuteButtonProps) {
       {step !== 'idle' && isExecuting && (
         <div className="space-y-3">
           <div className="flex items-center gap-4">
-            {needsApproval && shouldShow('approving') && (
+            {(needsApproval || needsMTokenApproval) && shouldShow('approving') && (
               <Step
-                label="Approve token"
+                label={needsMTokenApproval ? 'Approve mToken' : 'Approve token'}
                 status={step === 'approving' ? 'active' : step === 'error' ? 'error' : 'done'}
               />
             )}

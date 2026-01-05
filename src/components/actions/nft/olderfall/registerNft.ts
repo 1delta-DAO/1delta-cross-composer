@@ -48,7 +48,7 @@ export function registerNftAction(): void {
     actionType: 'game_token',
     dataLoader: loadListings,
     buildPanelProps: (context) => ({
-      setDestinationInfo: context.setDestinationInfo,
+      setActionInfo: context.setActionInfo,
       preloadedListings: context.actionData,
     }),
     customSummary: NFTCheckout,

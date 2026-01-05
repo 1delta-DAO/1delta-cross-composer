@@ -1,17 +1,19 @@
 import { GenericTrade } from '@1delta/lib-utils'
-import type { PublicClient, WalletClient } from 'viem'
+import type { Hex, PublicClient, WalletClient } from 'viem'
 import { zeroAddress } from 'viem'
 import { getTransactionData } from './getTransactionData'
-import { UniversalToken } from '@1delta/calldata-sdk'
+import { createApproveTransaction } from '@1delta/calldata-sdk'
 import { isBridge } from './isBridge'
 import { ExecutionEvent, ExecutionTracker } from './types'
 import { trackTradeCompletion } from './trackTradeCompletion'
+import type { LendingApprovalInfo } from '../hooks/useLendingApprovals'
 
 export function executeTrade(args: {
   trade: GenericTrade
   walletClient: WalletClient
   publicClient: PublicClient
   needsApproval: boolean
+  mTokenApprovals?: LendingApprovalInfo[]
 }): ExecutionTracker {
   const listeners = new Set<(e: ExecutionEvent) => void>()
   let cancelled = false
@@ -32,19 +34,68 @@ export function executeTrade(args: {
     await Promise.resolve() // required for listeners to be registered before event emitting
     try {
       // -----------------------------------------------------
-      // 1. APPROVAL
+      // 1. APPROVALS
       // -----------------------------------------------------
+      if (args.mTokenApprovals && args.mTokenApprovals.length > 0) {
+        for (const approval of args.mTokenApprovals) {
+          if (approval.needsApproval && approval.token !== zeroAddress) {
+            emit({ type: 'approval:start' })
+
+            let approvalTxHash: string
+
+            if (approval.approvalTransaction) {
+              const tx = approval.approvalTransaction
+              approvalTxHash = await args.walletClient.sendTransaction({
+                to: tx.to as any,
+                data: tx.data as any,
+                value: tx.value || 0n,
+                account: args.walletClient.account?.address!,
+                chain: args.walletClient.chain!,
+              })
+            } else {
+              const approveTx = createApproveTransaction(
+                args.walletClient.chain?.id?.toString()!,
+                args.walletClient.account?.address!,
+                approval.spender,
+                approval.token,
+                approval.requiredAmount
+              )
+              approvalTxHash = await args.walletClient.sendTransaction({
+                to: approveTx.to as any,
+                data: approveTx.data as any,
+                value: approveTx.value || 0n,
+                account: args.walletClient.account?.address!,
+                chain: args.walletClient.chain!,
+              })
+            }
+            emit({ type: 'approval:sent', txHash: approvalTxHash })
+
+            await args.publicClient.waitForTransactionReceipt({ hash: approvalTxHash as Hex })
+
+            emit({ type: 'approval:confirmed', txHash: approvalTxHash })
+
+            if (cancelled) throw new Error('Cancelled')
+          }
+        }
+      }
+
       if (args.needsApproval && args.trade?.inputAmount.currency.address !== zeroAddress) {
         emit({ type: 'approval:start' })
 
-        // @ts-ignore
+        const approveTx = createApproveTransaction(
+          args.walletClient.chain?.id?.toString()!,
+          args.walletClient.account?.address!,
+          args.trade.target as any,
+          args.trade?.inputAmount.currency.address as any,
+          args.trade?.inputAmount.amount
+        )
+
         const approvalTxHash = await args.walletClient.sendTransaction({
-          to: args.trade?.inputAmount.currency.address as any,
-          data: UniversalToken.encodeApprove(
-            args.trade.target as any,
-            args.trade?.inputAmount.amount
-          ),
-          value: 0n,
+          to: approveTx.to as any,
+          data: approveTx.data as any,
+          value: approveTx.value || 0n,
+          account: args.walletClient.account?.address!,
+          chain: args.walletClient.chain!,
         })
 
         emit({ type: 'approval:sent', txHash: approvalTxHash })

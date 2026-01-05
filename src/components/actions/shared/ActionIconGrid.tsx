@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import type { ActionDefinition, ActionCategory, ActionType } from './actionDefinitions'
 import { CATEGORIES } from './actionDefinitions'
 import { useContainerWidth } from '../../../hooks/useContainerWidth'
-import { useChainsRegistry } from '../../../sdk/hooks/useChainsRegistry'
+import { LenderBadge } from './LenderBadge'
 
 interface ActionIconGridProps {
   actions: ActionDefinition[]
@@ -15,6 +15,7 @@ interface ActionIconGridProps {
   onReset: () => void
   isActionReady?: Record<string, boolean>
   isActionLoading?: Record<string, boolean>
+  isReverseFlow?: boolean
 }
 
 export function ActionIconGrid({
@@ -28,6 +29,7 @@ export function ActionIconGrid({
   onReset,
   isActionReady,
   isActionLoading,
+  isReverseFlow = false,
 }: ActionIconGridProps) {
   const { containerRef, width } = useContainerWidth()
 
@@ -109,7 +111,6 @@ export function ActionIconGrid({
               <span className="font-medium">Actions</span>
             </button>
             <div className="flex-1"></div>
-
             <button
               type="button"
               className="btn btn-sm btn-ghost btn-circle"
@@ -160,7 +161,10 @@ export function ActionIconGrid({
                 {isLoading && (
                   <span className="loading loading-spinner loading-xs absolute top-1 right-1"></span>
                 )}
-                <Icon className={`w-8 h-8 ${isSelected ? 'text-primary' : ''}`} />
+                <div className="relative">
+                  <Icon className={`w-8 h-8 ${isSelected ? 'text-primary' : ''}`} />
+                  <LenderBadge lender={action.params?.lender} />
+                </div>
                 <span className="text-xs">{action.label}</span>
               </button>
             )
@@ -188,7 +192,10 @@ export function ActionIconGrid({
                 {isLoading && (
                   <span className="loading loading-spinner loading-xs absolute -top-1 -right-1"></span>
                 )}
-                <Icon className={isSelected ? 'text-primary' : ''} />
+                <div className="relative">
+                  <Icon className={isSelected ? 'text-primary' : ''} />
+                  <LenderBadge lender={action.params?.lender} />
+                </div>
                 <span className="text-xs">{action.label}</span>
               </button>
             )

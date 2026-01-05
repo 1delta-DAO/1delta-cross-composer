@@ -10,7 +10,7 @@ import { DUMMY_ADDRESS } from '../../../../lib/consts'
 import { RawCurrency } from '../../../../types/currency'
 import { Lender } from '@1delta/lib-utils'
 
-type DepositActionModalProps = {
+type WithdrawActionModalProps = {
   open: boolean
   onClose: () => void
   market: MoonwellMarket
@@ -22,7 +22,7 @@ type DepositActionModalProps = {
   onAmountChange?: (amount: string) => void
 }
 
-export function DepositActionModal({
+export function WithdrawActionModal({
   open,
   onClose,
   market,
@@ -30,7 +30,7 @@ export function DepositActionModal({
   setActionInfo,
   amount: externalAmount,
   onAmountChange,
-}: DepositActionModalProps) {
+}: WithdrawActionModalProps) {
   const [internalAmount, setInternalAmount] = useState<string>('')
   const { address } = useConnection()
   const userAddress = address ?? DUMMY_ADDRESS
@@ -45,55 +45,77 @@ export function DepositActionModal({
     }
   }
 
-  // Prefer selectedCurrency for UI + math; fall back to market.underlyingCurrency
   const underlying = selectedCurrency ?? market.underlyingCurrency
 
   const symbol = selectedCurrency?.symbol || market.underlyingCurrency?.symbol || ''
 
   const name = selectedCurrency?.name || symbol
 
-  const iconSrc =
-    // depending on RawCurrency shape
-    (selectedCurrency as any)?.icon || (selectedCurrency as any)?.logoURI || undefined
+  const iconSrc = (selectedCurrency as any)?.icon || (selectedCurrency as any)?.logoURI || undefined
 
   const mTokenSymbol = market.mTokenCurrency?.symbol || 'mToken'
 
   const handleConfirm = async () => {
     if (!amount || !underlying) return
 
-    const destinationCalls = await buildCalls({
+    const inputCalls = await buildCalls({
       amountHuman: amount,
-      underlying: market.underlyingCurrency, // keep using market.underlyingCurrency for protocol calls
+      underlying,
       userAddress: userAddress as any,
+      isMax: false,
     })
 
     const parsedAmount = parseUnits(amount, underlying.decimals)
     setActionInfo?.(
       CurrencyHandler.fromRawAmount(underlying, parsedAmount),
       undefined,
-      destinationCalls,
-      `${mTokenSymbol} shares`,
-      'moonwell_deposit',
+      inputCalls,
+      `${mTokenSymbol} withdraw`,
+      'moonwell_withdraw',
       {
         lender: Lender.MOONWELL,
+        mTokenAddress: market.mTokenCurrency.address,
       }
     )
 
     onClose()
   }
 
-  // Early return AFTER hooks
+  const handleMax = async () => {
+    if (!underlying) return
+
+    const inputCalls = await buildCalls({
+      amountHuman: '0',
+      underlying,
+      userAddress: userAddress as any,
+      isMax: true,
+    })
+
+    setActionInfo?.(
+      CurrencyHandler.fromRawAmount(underlying, 0n),
+      undefined,
+      inputCalls,
+      `${mTokenSymbol} withdraw (Max)`,
+      'moonwell_withdraw',
+      {
+        lender: Lender.MOONWELL,
+        mTokenAddress: market.mTokenCurrency.address,
+      }
+    )
+
+    onClose()
+  }
+
   if (!open) return null
 
   return (
     <div className={`modal ${open ? 'modal-open' : ''}`} onClick={onClose}>
       <div className="modal-box max-w-lg w-full rounded-2xl" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h3 className="font-semibold text-lg">Deposit</h3>
+            <h3 className="font-semibold text-lg">Withdraw</h3>
             <p className="text-xs text-base-content/60 mt-0.5">
-              Deposit into Moonwell and receive {mTokenSymbol} shares.
+              Withdraw from Moonwell and receive {symbol} underlying.
             </p>
           </div>
           <button
@@ -107,7 +129,6 @@ export function DepositActionModal({
           </button>
         </div>
 
-        {/* Token summary */}
         <div className="mt-4 mb-5 rounded-xl border border-base-300 bg-base-200/40 px-3 py-2.5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="h-10 w-10 rounded-full bg-base-100 flex items-center justify-center overflow-hidden shrink-0">
@@ -133,31 +154,31 @@ export function DepositActionModal({
           )}
         </div>
 
-        {/* Form */}
         <div className="space-y-4">
-          {/* Amount input */}
           <div className="form-control">
             <label className="label py-1">
               <span className="label-text text-sm font-medium">
                 Amount {symbol && `(${symbol})`}
               </span>
             </label>
-            <div className="input-group">
+            <div className="flex items-center gap-2">
               <input
-                className="input input-bordered w-full"
+                className="input input-bordered flex-1"
                 inputMode="decimal"
                 placeholder="0.0"
                 value={amount}
                 onChange={(e) => handleAmountChange(e.target.value)}
               />
+              <button className="btn btn-sm btn-ghost shrink-0" onClick={handleMax}>
+                Max
+              </button>
             </div>
           </div>
 
-          {/* Footer / actions */}
           <div className="flex items-center justify-between gap-3 pt-4 border-t border-base-300">
             <div className="text-[0.7rem] text-base-content/60">
-              You&apos;ll receive <span className="font-medium">{mTokenSymbol}</span> shares
-              representing your deposit.
+              You&apos;ll withdraw <span className="font-medium">{symbol}</span> from your{' '}
+              <span className="font-medium">{mTokenSymbol}</span> position.
             </div>
             <div className="flex gap-2">
               <button

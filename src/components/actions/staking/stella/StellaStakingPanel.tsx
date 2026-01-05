@@ -9,20 +9,20 @@ import { useConnection } from 'wagmi'
 import { getTokenFromCache, isTokenListsReady } from '../../../../lib/data/tokenListsCache'
 
 interface StellaStakingPanelProps {
-  setDestinationInfo?: ActionHandler
+  setActionInfo?: ActionHandler
   resetKey?: number
 }
 
-export function StellaStakingPanel({ setDestinationInfo, resetKey }: StellaStakingPanelProps) {
+export function StellaStakingPanel({ setActionInfo, resetKey }: StellaStakingPanelProps) {
   const { address } = useConnection()
 
   const [outputAmount, setOutputAmount] = useState('')
   const lastDestinationKeyRef = useRef<string | null>(null)
-  const setDestinationInfoRef = useRef(setDestinationInfo)
+  const setActionInfoRef = useRef(setActionInfo)
 
   useEffect(() => {
-    setDestinationInfoRef.current = setDestinationInfo
-  }, [setDestinationInfo])
+    setActionInfoRef.current = setActionInfo
+  }, [setActionInfo])
 
   const chainId = SupportedChainId.MOONBEAM
   const debouncedOutputAmount = useDebounce(outputAmount, 1000)
@@ -37,7 +37,7 @@ export function StellaStakingPanel({ setDestinationInfo, resetKey }: StellaStaki
       if (!debouncedOutputAmount || !xcDOTToken || !address) {
         if (lastDestinationKeyRef.current !== null) {
           lastDestinationKeyRef.current = null
-          setDestinationInfoRef.current?.(undefined, undefined, [])
+          setActionInfoRef.current?.(undefined, undefined, [])
         }
         return
       }
@@ -46,7 +46,7 @@ export function StellaStakingPanel({ setDestinationInfo, resetKey }: StellaStaki
       if (!amount || amount <= 0) {
         if (lastDestinationKeyRef.current !== null) {
           lastDestinationKeyRef.current = null
-          setDestinationInfoRef.current?.(undefined, undefined, [])
+          setActionInfoRef.current?.(undefined, undefined, [])
         }
         return
       }
@@ -61,7 +61,7 @@ export function StellaStakingPanel({ setDestinationInfo, resetKey }: StellaStaki
 
       if (lastDestinationKeyRef.current !== destinationKey) {
         lastDestinationKeyRef.current = destinationKey
-        setDestinationInfoRef.current?.(
+        setActionInfoRef.current?.(
           currencyAmount,
           undefined,
           destinationCalls,
@@ -82,7 +82,7 @@ export function StellaStakingPanel({ setDestinationInfo, resetKey }: StellaStaki
     setOutputAmount(value)
     if (!value || Number(value) <= 0) {
       lastDestinationKeyRef.current = null
-      setDestinationInfoRef.current?.(undefined, undefined, [])
+      setActionInfoRef.current?.(undefined, undefined, [])
     }
   }
 
@@ -90,7 +90,7 @@ export function StellaStakingPanel({ setDestinationInfo, resetKey }: StellaStaki
     if (resetKey !== undefined && resetKey > 0) {
       setOutputAmount('')
       lastDestinationKeyRef.current = null
-      setDestinationInfoRef.current?.(undefined, undefined, [])
+      setActionInfoRef.current?.(undefined, undefined, [])
     }
   }, [resetKey])
 

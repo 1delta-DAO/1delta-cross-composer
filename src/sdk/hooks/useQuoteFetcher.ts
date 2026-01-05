@@ -1,12 +1,14 @@
 import type { Address } from 'viem'
-import type { DeltaCall, GenericTrade } from '@1delta/lib-utils'
+import type { GenericTrade } from '@1delta/lib-utils'
 import { TradeType } from '@1delta/lib-utils'
-import { convertActionCallsToDeltaCalls } from '../../lib/trade-helpers/utils'
+import {
+  convertActionCallsToPreDeltaCalls,
+  convertActionCallsToPostDeltaCalls,
+} from '../../lib/trade-helpers/utils'
 import { fetchAllAggregatorTrades } from '../../lib/trade-helpers/aggregatorSelector'
 import { fetchAllActionTrades } from '../trade-helpers/actionSelector'
 import type { ActionCall } from '../../components/actions/shared/types'
 import type { RawCurrency, RawCurrencyAmount } from '../../types/currency'
-import type { PricesRecord } from '../../hooks/prices/usePriceQuery'
 
 export type Quote = { label: string; trade: GenericTrade }
 
@@ -16,8 +18,8 @@ export interface QuoteFetcherParams {
   slippage: number
   receiverAddress: Address
   destinationCalls?: ActionCall[]
+  inputCalls?: ActionCall[]
   controller: AbortController
-  axelarPrices?: PricesRecord
 }
 
 export async function fetchQuotes(params: QuoteFetcherParams): Promise<Quote[]> {
@@ -27,8 +29,8 @@ export async function fetchQuotes(params: QuoteFetcherParams): Promise<Quote[]> 
     slippage,
     receiverAddress,
     destinationCalls,
+    inputCalls,
     controller,
-    axelarPrices,
   } = params
 
   const srcCurrency = srcAmount.currency
@@ -71,12 +73,16 @@ export async function fetchQuotes(params: QuoteFetcherParams): Promise<Quote[]> 
 
   let allQuotes: Quote[] = []
 
-  let additionalCalls: DeltaCall[] | undefined
-  let destinationGasLimit: bigint | undefined
-  if (destinationCalls && destinationCalls.length > 0) {
-    additionalCalls = convertActionCallsToDeltaCalls(destinationCalls)
-    destinationGasLimit = destinationCalls.reduce((acc, c) => acc + (c.gasLimit || 0n), 0n)
-  }
+  const preCalls =
+    inputCalls && inputCalls.length > 0 ? convertActionCallsToPreDeltaCalls(inputCalls) : undefined
+  const postCalls =
+    destinationCalls && destinationCalls.length > 0
+      ? convertActionCallsToPostDeltaCalls(destinationCalls)
+      : undefined
+  const destinationGasLimit =
+    destinationCalls && destinationCalls.length > 0
+      ? destinationCalls.reduce((acc, c) => acc + (c.gasLimit || 0n), 0n)
+      : undefined
 
   if (isSameChain) {
     const trades = await fetchAllAggregatorTrades(
@@ -94,7 +100,8 @@ export async function fetchQuotes(params: QuoteFetcherParams): Promise<Quote[]> 
         usePermit: false,
       } as any,
       controller,
-      additionalCalls
+      preCalls,
+      postCalls
     )
     allQuotes = trades.map((t) => ({ label: t.aggregator.toString(), trade: t.trade }))
   } else {
@@ -109,11 +116,11 @@ export async function fetchQuotes(params: QuoteFetcherParams): Promise<Quote[]> 
         receiver: receiverAddress,
         order: 'CHEAPEST',
         usePermit: false,
-        ...(additionalCalls ? { additionalCalls } : {}),
+        preCalls,
+        postCalls,
         destinationGasLimit,
       } as any,
-      controller,
-      (axelarPrices || {}) as PricesRecord
+      controller
     )
     console.info('All actions received from trade-sdk:', {
       actions: actionTrades.map((t) => t.action),

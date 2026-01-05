@@ -3,22 +3,25 @@ import { PayInfo } from '../../transactionSummary/PayInfo'
 
 interface CurrencyReceiveCheckoutProps {
   formattedOutput: string
-  dstCurrency?: RawCurrency
-  dstChainName?: string
+  currency?: RawCurrency
   outputUsd?: number
+  actionLabel?: string
+  actionDirection?: 'input' | 'destination'
+  dstCurrency?: RawCurrency
+  destinationActionLabel?: string
 }
 
 export function CurrencyReceiveCheckout({
   formattedOutput,
-  dstCurrency,
-  dstChainName,
+  currency,
   outputUsd,
+  dstCurrency,
 }: CurrencyReceiveCheckoutProps) {
+  const effectiveCurrency = currency || dstCurrency
   return (
     <PayInfo
       label="You receive"
-      currency={dstCurrency}
-      chainName={dstChainName}
+      currency={effectiveCurrency}
       amountUsd={outputUsd}
       amount={formattedOutput}
     />

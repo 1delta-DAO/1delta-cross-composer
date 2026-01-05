@@ -14,7 +14,7 @@ export function registerStakingAction(): void {
     priority: 5,
     actionType: 'staking',
     buildPanelProps: (context) => ({
-      setDestinationInfo: context.setDestinationInfo,
+      setActionInfo: context.setActionInfo,
       srcCurrency: context.srcCurrency,
       dstCurrency: context.dstCurrency,
       slippage: context.slippage,

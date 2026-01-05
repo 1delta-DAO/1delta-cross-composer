@@ -12,7 +12,7 @@ import { getTokenFromCache, isTokenListsReady } from '../../../../lib/data/token
 import { isEmptyAddress, isValidAddress } from '../../../../utils/validatorUtils'
 
 interface OlderfallPanelProps {
-  setDestinationInfo?: ActionHandler
+  setActionInfo?: ActionHandler
   preloadedListings?: Record<string, OlderfallListing[]>
   resetKey?: number
 }
@@ -93,7 +93,7 @@ const OLDERFALL_OPTIONS = [
 /* ---------- Main unified panel with tabs ---------- */
 
 export function OlderfallPanel({
-  setDestinationInfo,
+  setActionInfo,
   preloadedListings,
   resetKey,
 }: OlderfallPanelProps) {
@@ -122,7 +122,7 @@ export function OlderfallPanel({
       setSelectedOlderfallOrderId('')
       setSelectedOptionIndex(0)
       setReceiverAddress('')
-      setDestinationInfo?.(undefined, undefined, [])
+      setActionInfo?.(undefined, undefined, [])
     }
   }, [resetKey])
 
@@ -155,7 +155,7 @@ export function OlderfallPanel({
     })
     const nftName = listing.name || `NFT #${listing.tokenId}`
 
-    setDestinationInfo?.(
+    setActionInfo?.(
       // define output amount
       CurrencyHandler.fromRawAmount(
         purchaseTokenData,

@@ -16,6 +16,8 @@ interface TransactionSummaryProps {
   outputAmount?: string
   currencyAmount?: RawCurrencyAmount
   destinationActionLabel?: string
+  inputActionLabel?: string
+  isReverseFlow?: boolean
   route?: string
   pricesData?: PricesRecord
   isLoadingPrices?: boolean
@@ -30,6 +32,8 @@ export function TransactionSummary({
   outputAmount: outputAmountProp,
   currencyAmount,
   destinationActionLabel,
+  inputActionLabel,
+  isReverseFlow = false,
   route,
   pricesData: pricesDataProp,
   isLoadingPrices: isLoadingPricesProp,
@@ -38,19 +42,35 @@ export function TransactionSummary({
 }: TransactionSummaryProps) {
   const { data: chains } = useChainsRegistry()
 
+  const selectedDef = useMemo(() => {
+    if (!state.selectedAction) return undefined
+    return getRegisteredActions().find((a) => a.id === state.selectedAction)
+  }, [state.selectedAction])
+
+  const isInputDirection = selectedDef?.actionDirection === 'input'
+
+  const actionAmount = useMemo(() => {
+    if (!currencyAmount) return undefined
+    const amount = CurrencyHandler.toExactNumber(currencyAmount)
+    return amount > 0 ? amount.toString() : undefined
+  }, [currencyAmount])
+
   const outputAmount = useMemo(() => {
     if (outputAmountProp) return outputAmountProp
-    if (currencyAmount) {
+    if (!isReverseFlow && currencyAmount) {
       const amount = CurrencyHandler.toExactNumber(currencyAmount)
       return amount > 0 ? amount.toString() : undefined
     }
     return undefined
-  }, [outputAmountProp, currencyAmount])
+  }, [outputAmountProp, currencyAmount, isReverseFlow])
 
   const shouldShow = useMemo(() => {
-    const hasOutputAmount = outputAmount && Number(outputAmount) > 0
-    return Boolean(srcCurrency && dstCurrency && hasOutputAmount)
-  }, [srcCurrency, dstCurrency, outputAmount])
+    if (!srcCurrency || !dstCurrency) return false
+    if (isReverseFlow) {
+      return Boolean(actionAmount && Number(actionAmount) > 0)
+    }
+    return Boolean(outputAmount && Number(outputAmount) > 0)
+  }, [srcCurrency, dstCurrency, isReverseFlow, actionAmount, outputAmount])
 
   const pricesData = pricesDataProp
   const isLoadingPrices = isLoadingPricesProp ?? false
@@ -110,6 +130,11 @@ export function TransactionSummary({
     return Number(inputAmount) * srcPrice
   }, [inputAmount, srcPrice])
 
+  const actionUsd = useMemo(() => {
+    if (!actionAmount || !srcPrice) return undefined
+    return Number(actionAmount) * srcPrice
+  }, [actionAmount, srcPrice])
+
   const outputUsd = useMemo(() => {
     if (!outputAmount || !dstPrice) return undefined
     return Number(outputAmount) * dstPrice
@@ -133,21 +158,34 @@ export function TransactionSummary({
       : 'Calculating...'
 
   const formattedOutput = formatDisplayAmount(outputAmount || '0')
+  const formattedActionOutput = formatDisplayAmount(actionAmount || '0')
+
+  const hasReceiveAmount = outputAmount && Number(outputAmount) > 0
+  const formattedReceive = hasReceiveAmount ? formatDisplayAmount(outputAmount) : 'Calculating...'
 
   if (!shouldShow) return null
 
-  /* -------------------------------------------------------------------------- */
-  /*                    Checkout Summary Renderer                               */
-  /* -------------------------------------------------------------------------- */
+  const renderActionSummary = () => {
+    if (!selectedDef) return null
 
-  const renderSummary = () => {
-    if (!state.selectedAction) return null
+    const isInputAction = selectedDef.actionDirection === 'input'
+    const effectiveCurrency = isInputAction ? srcCurrency : dstCurrency
+    const effectiveAmount = isInputAction ? formattedActionOutput : formattedOutput
+    const effectiveUsd = isInputAction ? actionUsd : outputUsd
+    const effectiveLabel = isInputAction ? inputActionLabel : destinationActionLabel
 
-    const def = getRegisteredActions().find((a) => a.id === state.selectedAction)
-    if (!def) return null
-
-    // either pick costom summary if any
-    if (!def.customSummary)
+    if (!selectedDef.customSummary) {
+      if (isInputAction) {
+        return (
+          <SummaryRow
+            label="You'll withdraw:"
+            amount={formattedActionOutput}
+            currencySymbol={srcCurrency?.symbol}
+            chainName={srcChainName}
+            amountUsd={actionUsd}
+          />
+        )
+      }
       return (
         <SummaryRow
           label="You'll receive:"
@@ -158,15 +196,17 @@ export function TransactionSummary({
           destinationActionLabel={destinationActionLabel}
         />
       )
+    }
 
-    // or the default
     return (
-      <def.customSummary
-        formattedOutput={formattedOutput}
-        dstCurrency={dstCurrency}
-        dstChainName={dstChainName}
-        outputUsd={outputUsd}
-        destinationActionLabel={destinationActionLabel}
+      <selectedDef.customSummary
+        formattedOutput={effectiveAmount}
+        currency={effectiveCurrency}
+        outputUsd={effectiveUsd}
+        actionLabel={effectiveLabel}
+        actionDirection={isInputAction ? 'input' : 'destination'}
+        dstCurrency={effectiveCurrency}
+        destinationActionLabel={effectiveLabel}
       />
     )
   }
@@ -177,19 +217,27 @@ export function TransactionSummary({
         <div className="text-sm font-semibold mb-3">Transaction Summary</div>
 
         <div className="space-y-3">
-          {/* Pay info */}
-          <PayInfo
-            label="You'll pay:"
-            amount={formattedInput}
-            currency={srcCurrency}
-            chainName={srcChainName}
-            amountUsd={inputUsd}
-            showFadedAmount={!hasInputAmount}
-          />
-
-          {/* Checkout info */}
-          {renderSummary()}
-
+          {!isReverseFlow && (
+            <PayInfo
+              label="You'll pay:"
+              amount={formattedInput}
+              currency={srcCurrency}
+              chainName={srcChainName}
+              amountUsd={inputUsd}
+              showFadedAmount={!hasInputAmount}
+            />
+          )}
+          {renderActionSummary()}
+          {isReverseFlow && isInputDirection && (
+            <PayInfo
+              label="You'll receive:"
+              amount={formattedReceive}
+              currency={dstCurrency}
+              chainName={dstChainName}
+              amountUsd={outputUsd}
+              showFadedAmount={!hasReceiveAmount}
+            />
+          )}
           {route && <RouteSection route={route} />}
         </div>
       </div>

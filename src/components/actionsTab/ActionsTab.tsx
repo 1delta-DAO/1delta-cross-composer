@@ -27,6 +27,9 @@ import { detectChainTransition } from '../../sdk/hooks/useTradeQuotes/inputValid
 import { useDestinationReverseQuote } from '../../sdk/hooks/useDestinationReverseQuote'
 import { useQuoteTrace } from '../../contexts/QuoteTraceContext'
 import { useDestinationInfo } from '../../contexts/DestinationInfoContext'
+import { isLendingAction } from '../actions/lending/utils/isLendingAction'
+import { refreshUserLendingBalances } from '../actions/lending/withdraw/balanceCache'
+import { getCachedMarkets } from '../actions/lending/shared/marketCache'
 
 type Props = {
   onResetStateChange?: (showReset: boolean, resetCallback?: () => void) => void
@@ -478,14 +481,14 @@ export function ActionsTab({ onResetStateChange }: Props) {
         srcCurrency={inputCurrency}
         dstCurrency={actionCurrency}
         currentChainId={currentChainId}
-        setDestinationInfo={setDestinationInfo}
+        setActionInfo={setDestinationInfo}
         quotes={quotes}
         selectedQuoteIndex={selectedQuoteIndex}
         setSelectedQuoteIndex={wrappedSetSelectedQuoteIndex}
         slippage={slippage}
         onSrcCurrencyChange={setInputCurrency}
         calculatedInputAmount={calculatedInputAmount}
-        destinationInfo={destinationInfo}
+        actionInfo={destinationInfo}
         pricesData={pricesData}
         isLoadingPrices={isLoadingPrices}
         isFetchingPrices={isFetchingPrices}
@@ -533,6 +536,21 @@ export function ActionsTab({ onResetStateChange }: Props) {
                     queryKey: ['balances', address],
                   })
                 }
+
+                if (
+                  address &&
+                  (actionCurrency?.chainId || inputCurrency?.chainId) &&
+                  isLendingAction(destinationCalls)
+                ) {
+                  const chainId = actionCurrency?.chainId || inputCurrency?.chainId
+                  const markets = getCachedMarkets()
+                  if (chainId && markets) {
+                    refreshUserLendingBalances(chainId, address as Address, markets).catch(
+                      console.error
+                    )
+                  }
+                }
+
                 setDestinationInfo(undefined, undefined, [])
                 setActionResetKey((prev) => prev + 1)
                 setPreservedTrade(undefined)

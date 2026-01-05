@@ -1,16 +1,14 @@
-import ActionSelector, { initialState, UnifiedState } from '../ActionSelector'
+import ReverseActionSelector from '../ReverseActionSelector'
 import type { RawCurrency, RawCurrencyAmount } from '../../types/currency'
 import { ActionHandler } from '../actions/shared/types'
 import type { GenericTrade } from '@1delta/lib-utils'
-import { TransactionSummary } from '../transactionSummary/TransactionSummary'
+import { CurrencyHandler } from '@1delta/lib-utils'
 import type { PricesRecord } from '../../hooks/prices/usePriceQuery'
-import { useState } from 'react'
+import { TransactionSummary } from '../transactionSummary/TransactionSummary'
+import { initialState, UnifiedState } from '../ActionSelector'
+import { useMemo, useState } from 'react'
 
-/* -------------------------------------------------------------------------- */
-/*                            UNIFIED STATE SHAPE                             */
-/* -------------------------------------------------------------------------- */
-
-type ActionsPanelProps = {
+type ReverseActionsPanelProps = {
   srcCurrency?: RawCurrency
   dstCurrency?: RawCurrency
   currentChainId: number
@@ -19,16 +17,16 @@ type ActionsPanelProps = {
   selectedQuoteIndex?: number
   setSelectedQuoteIndex?: (index: number) => void
   slippage?: number
-  onSrcCurrencyChange: (currency: RawCurrency) => void
+  onDstCurrencyChange: (currency: RawCurrency) => void
   calculatedInputAmount?: string
-  actionInfo?: { currencyAmount?: RawCurrencyAmount; actionLabel?: string }
+  actionInfo?: { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string }
   resetKey?: number
   pricesData?: PricesRecord
   isLoadingPrices?: boolean
   isFetchingPrices?: boolean
 }
 
-export function ActionsPanel({
+export function ReverseActionsPanel({
   srcCurrency,
   dstCurrency,
   setActionInfo,
@@ -36,20 +34,28 @@ export function ActionsPanel({
   selectedQuoteIndex,
   setSelectedQuoteIndex,
   slippage,
-  onSrcCurrencyChange,
+  onDstCurrencyChange,
   calculatedInputAmount,
   actionInfo,
   resetKey,
   pricesData,
   isLoadingPrices,
   isFetchingPrices,
-}: ActionsPanelProps) {
-  /** selection state */
+}: ReverseActionsPanelProps) {
   const [state, setState] = useState<UnifiedState>(initialState)
-
+  const quoteOutputAmount = useMemo(() => {
+    const idx = selectedQuoteIndex ?? 0
+    const tradeOut = quotes?.[idx]?.trade?.outputAmount
+    if (!tradeOut) return undefined
+    try {
+      return CurrencyHandler.toExact(tradeOut)
+    } catch {
+      return undefined
+    }
+  }, [quotes, selectedQuoteIndex])
   return (
     <>
-      <ActionSelector
+      <ReverseActionSelector
         state={state}
         setState={setState}
         pricesData={pricesData}
@@ -61,7 +67,7 @@ export function ActionsPanel({
         selectedQuoteIndex={selectedQuoteIndex}
         setSelectedQuoteIndex={setSelectedQuoteIndex}
         slippage={slippage}
-        onSrcCurrencyChange={onSrcCurrencyChange}
+        onDstCurrencyChange={onDstCurrencyChange}
         actionInfo={actionInfo}
       />
 
@@ -69,8 +75,10 @@ export function ActionsPanel({
         srcCurrency={srcCurrency}
         dstCurrency={dstCurrency}
         inputAmount={calculatedInputAmount}
+        outputAmount={quoteOutputAmount}
         currencyAmount={actionInfo?.currencyAmount}
-        destinationActionLabel={actionInfo?.actionLabel}
+        inputActionLabel={actionInfo?.actionLabel}
+        isReverseFlow={true}
         pricesData={pricesData}
         isLoadingPrices={isLoadingPrices}
         isFetchingPrices={isFetchingPrices}

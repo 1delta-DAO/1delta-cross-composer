@@ -1,18 +1,27 @@
 import { fetchAggregatorTrade, getAvailableAggregators, TradeAggregator } from '@1delta/trade-sdk'
-import type { GenericTrade, AggregatorApiInput, DeltaCall } from '@1delta/lib-utils'
+import type {
+  GenericTrade,
+  AggregatorApiInput,
+  PreDeltaCall,
+  PostDeltaCall,
+} from '@1delta/lib-utils'
 
 export async function fetchAllAggregatorTrades(
   chainId: string,
   input: AggregatorApiInput,
   controller?: AbortController,
-  additionalCalls?: DeltaCall[]
+  preCalls?: PreDeltaCall[],
+  postCalls?: PostDeltaCall[]
 ): Promise<Array<{ aggregator: string; trade: GenericTrade }>> {
   const availableAggregators = getAvailableAggregators(chainId)
   if (availableAggregators.length === 0) return []
 
-  const inputWithCalls: AggregatorApiInput = additionalCalls
-    ? { ...input, additionalCalls, disableComposer: false }
-    : input
+  const inputWithCalls: AggregatorApiInput = {
+    ...input,
+    ...(preCalls && preCalls.length > 0 ? { preCalls } : {}),
+    ...(postCalls && postCalls.length > 0 ? { postCalls } : {}),
+    disableComposer: false,
+  }
 
   const results = await Promise.all(
     availableAggregators.map(async (aggregatorName: string) => {

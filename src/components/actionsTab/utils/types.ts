@@ -31,3 +31,5 @@ export interface ExecutionResult {
   dstHash?: string
   completed: boolean
 }
+
+export type { DebitData, LenderDebitData } from '@1delta/calldata-sdk'

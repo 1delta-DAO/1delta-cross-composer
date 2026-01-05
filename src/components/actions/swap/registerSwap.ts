@@ -15,7 +15,7 @@ export function registerSwapAction(): void {
     actionType: 'lending',
     requiresSrcCurrency: true,
     buildPanelProps: (context) => ({
-      setDestinationInfo: context.setDestinationInfo,
+      setActionInfo: context.setActionInfo,
       srcCurrency: context.srcCurrency,
       dstCurrency: context.dstCurrency,
       quotes: context.quotes,

@@ -2,42 +2,53 @@ import { RawCurrency } from '@1delta/lib-utils'
 import { Logo } from '../../../common/Logo'
 import { useActionData } from '../../../../contexts/DestinationInfoContext'
 import { getChainLogo } from '@1delta/lib-utils'
+import { useChainsRegistry } from '../../../../sdk/hooks/useChainsRegistry'
+import { useMemo } from 'react'
 
 const getLenderUri = (protocol: string) => {
   const lc = protocol.toLowerCase()
   return `https://raw.githubusercontent.com/1delta-DAO/protocol-icons/main/lender/${lc}.webp`
 }
 
-interface LendingCheckoutProps {
+interface DepositCheckoutProps {
   formattedOutput: string
-  dstCurrency?: RawCurrency
-  dstChainName?: string
+  currency?: RawCurrency
   outputUsd?: number
+  actionLabel?: string
+  actionDirection?: 'input' | 'destination'
+  dstCurrency?: RawCurrency
   destinationActionLabel?: string
 }
 
-export function LendingCheckout({
+export function DepositCheckout({
   formattedOutput,
-  dstCurrency,
-  dstChainName,
+  currency,
   outputUsd,
-  destinationActionLabel,
-}: LendingCheckoutProps) {
+  dstCurrency,
+}: DepositCheckoutProps) {
   const actionData = useActionData()
   if (!actionData || !actionData.lender) return null
+
+  const { data: chains } = useChainsRegistry()
+  const effectiveCurrency = currency || dstCurrency
 
   const formattedUsd =
     outputUsd !== undefined && isFinite(outputUsd) ? `$${outputUsd.toFixed(2)}` : undefined
 
-  const chainLogo = getChainLogo(dstCurrency?.chainId)
+  const chainName = useMemo(() => {
+    if (!effectiveCurrency?.chainId || !chains) return effectiveCurrency?.chainId
+    return chains[effectiveCurrency.chainId]?.data?.name || effectiveCurrency.chainId
+  }, [effectiveCurrency?.chainId, chains])
+
+  const chainLogo = getChainLogo(effectiveCurrency?.chainId)
 
   return (
     <div className="flex flex-col gap-1 p-3 rounded-xl bg-base-100 border border-base-300">
-      {/* Token Conversion Row */}
       <div className="flex items-center gap-2">
-        {/* Staked token */}
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold opacity-70">Deposit {dstCurrency?.symbol} to</span>
+          <span className="text-sm font-semibold opacity-70">
+            Deposit {effectiveCurrency?.symbol} to
+          </span>
           <Logo
             src={getLenderUri(actionData.lender)}
             alt={actionData.lender}
@@ -47,33 +58,31 @@ export function LendingCheckout({
           <div className="text-sm font-medium">{actionData.lender}</div>
         </div>
 
-        {/* Chain info */}
-        {dstChainName && (
+        {chainName && (
           <div className="flex items-center gap-1 text-xs opacity-70">
-            <span>on {dstChainName}</span>
+            <span>on {chainName}</span>
             {chainLogo && (
               <Logo
                 src={chainLogo}
-                alt={dstChainName}
+                alt={chainName}
                 className="h-4 w-4 rounded-full"
-                fallbackText={dstChainName[0]}
+                fallbackText={chainName[0]}
               />
             )}
           </div>
         )}
       </div>
 
-      {/* Amount row */}
       <div className="rounded-lg bg-base-100 p-1">
         <div className="flex items-center gap-2">
           <Logo
-            src={dstCurrency?.logoURI}
-            alt={dstCurrency?.symbol ?? '--'}
-            fallbackText={dstCurrency?.symbol}
+            src={effectiveCurrency?.logoURI}
+            alt={effectiveCurrency?.symbol ?? '--'}
+            fallbackText={effectiveCurrency?.symbol}
             className="h-6 w-6 rounded-full"
           />
           <div className="text-lg font-semibold">
-            {formattedOutput} {dstCurrency?.symbol}
+            {formattedOutput} {effectiveCurrency?.symbol}
           </div>
         </div>
 

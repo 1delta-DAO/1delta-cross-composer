@@ -1,14 +1,15 @@
 import { registerAction } from '../../shared/actionRegistry'
-import { DepositPanel } from './DepositPanel'
-import { DepositIcon } from './DepositIcon'
+import { WithdrawPanel } from './WithdrawPanel'
+import { WithdrawIcon } from './WithdrawIcon'
 import type { ActionDefinition, ActionLoaderContext } from '../../shared/actionDefinitions'
 import {
   getCachedMarkets,
   isMarketsReady,
   subscribeToCacheChanges,
   type MoonwellMarket,
+  initializeMoonwellMarkets,
 } from '../shared/marketCache'
-import { DepositCheckout } from './Checkout'
+import { WithdrawCheckout } from './Checkout'
 
 async function waitForMarkets(): Promise<MoonwellMarket[]> {
   return new Promise((resolve) => {
@@ -28,27 +29,28 @@ async function waitForMarkets(): Promise<MoonwellMarket[]> {
   })
 }
 
-export function registerDepositAction(): void {
-  const depositAction: ActionDefinition = {
-    id: 'moonwell_deposit',
-    label: 'Moonwell Deposit',
+export function registerWithdrawAction(): void {
+  const withdrawAction: ActionDefinition = {
+    id: 'moonwell_withdraw',
+    label: 'Moonwell Withdraw',
     category: 'lending',
-    icon: DepositIcon,
-    panel: DepositPanel,
+    icon: WithdrawIcon,
+    panel: WithdrawPanel,
     priority: 1,
     actionType: 'lending',
+    actionDirection: 'input',
     dataLoader: async (_context: ActionLoaderContext): Promise<MoonwellMarket[]> => {
       return await waitForMarkets()
     },
     buildPanelProps: (context) => ({
       setActionInfo: context.setActionInfo,
-      chainId: context.dstCurrency?.chainId,
+      chainId: context.srcCurrency?.chainId,
       actionInfo: context.actionInfo,
       markets: context.actionData,
     }),
-    customSummary: DepositCheckout,
+    customSummary: WithdrawCheckout,
     params: { lender: 'MOONWELL' },
   }
 
-  registerAction(depositAction)
+  registerAction(withdrawAction)
 }

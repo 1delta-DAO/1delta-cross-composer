@@ -265,13 +265,17 @@ If `true`, the action will only be shown when a source currency is available.
 }
 ```
 
-#### `requiresMarkets?: boolean`
+#### `params?: ActionParams`
 
-If `true`, the action will only be shown when markets are ready. Use this for actions that depend on market data. Note: This field exists in the type definition but is not currently used for readiness checks.
+Optional action-specific parameters. Currently supports:
+
+- `lender?: string` - Lender provider identifier (e.g., "MOONWELL") used for displaying lender badges
 
 ```typescript
 {
-  requiresMarkets: true,
+  params: {
+    lender: 'MOONWELL',
+  },
 }
 ```
 
@@ -433,7 +437,6 @@ registerAction({
   panel: ConditionalPanel,
   priority: 2,
   actionType: 'lending',
-  requiresMarkets: true,
   buildPanelProps: (context) => ({
     setDestinationInfo: context.setDestinationInfo,
     requiresExactDestinationAmount: context.requiresExactDestinationAmount,
@@ -572,7 +575,7 @@ buildPanelProps: (context) => ({
 ### Action Not Appearing
 
 - Check that registration function is called
-- Verify `requiresSrcCurrency` and `requiresMarkets` settings
+- Verify `requiresSrcCurrency` settings
 - Ensure action ID is unique
 
 ### Panel Not Resetting

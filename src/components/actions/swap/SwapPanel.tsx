@@ -13,7 +13,7 @@ import { SwapCard } from './SwapCard'
 interface SwapPanelProps {
   srcCurrency?: RawCurrency
   dstCurrency?: RawCurrency
-  setDestinationInfo?: ActionHandler
+  setActionInfo?: ActionHandler
   quotes?: Array<{ label: string; trade: GenericTrade }>
   selectedQuoteIndex?: number
   setSelectedQuoteIndex?: (index: number) => void
@@ -23,7 +23,7 @@ interface SwapPanelProps {
 export function SwapPanel({
   srcCurrency,
   dstCurrency: initialDstCurrency,
-  setDestinationInfo,
+  setActionInfo,
   quotes,
   selectedQuoteIndex = 0,
   setSelectedQuoteIndex,
@@ -60,15 +60,15 @@ export function SwapPanel({
         setSelectedDstCurrency(undefined)
       }
       setOutputAmount('')
-      setDestinationInfo?.(undefined, undefined, [])
+      setActionInfo?.(undefined, undefined, [])
     }
-  }, [srcCurrency?.chainId, dstCurrency?.chainId, selectedDstCurrency, setDestinationInfo])
+  }, [srcCurrency?.chainId, dstCurrency?.chainId, selectedDstCurrency, setActionInfo])
 
   useEffect(() => {
-    if (!srcCurrency || !dstCurrency || !setDestinationInfo || !outputAmount) {
+    if (!srcCurrency || !dstCurrency || !setActionInfo || !outputAmount) {
       if (lastDestinationKeyRef.current !== null) {
         lastDestinationKeyRef.current = null
-        setDestinationInfo?.(undefined, undefined, [])
+        setActionInfo?.(undefined, undefined, [])
       }
       return
     }
@@ -77,7 +77,7 @@ export function SwapPanel({
     if (!amount || amount <= 0) {
       if (lastDestinationKeyRef.current !== null) {
         lastDestinationKeyRef.current = null
-        setDestinationInfo?.(undefined, undefined, [])
+        setActionInfo?.(undefined, undefined, [])
       }
       return
     }
@@ -91,7 +91,7 @@ export function SwapPanel({
     if (!currency) {
       if (lastDestinationKeyRef.current !== null) {
         lastDestinationKeyRef.current = null
-        setDestinationInfo?.(undefined, undefined, [])
+        setActionInfo?.(undefined, undefined, [])
       }
       return
     }
@@ -103,15 +103,15 @@ export function SwapPanel({
 
       if (lastDestinationKeyRef.current !== destinationKey) {
         lastDestinationKeyRef.current = destinationKey
-        setDestinationInfo(currencyAmount, undefined, [])
+        setActionInfo(currencyAmount, undefined, [])
       }
     } catch {
       if (lastDestinationKeyRef.current !== null) {
         lastDestinationKeyRef.current = null
-        setDestinationInfo?.(undefined, undefined, [])
+        setActionInfo?.(undefined, undefined, [])
       }
     }
-  }, [srcCurrency, dstCurrency, outputAmount, setDestinationInfo])
+  }, [srcCurrency, dstCurrency, outputAmount, setActionInfo])
 
   const handleOutputAmountChange = (value: string) => {
     setOutputAmount(value)
@@ -126,8 +126,7 @@ export function SwapPanel({
   }
 
   const handleQuoteSelect = (index: number) => {
-    if (!srcCurrency || !dstCurrency || !setDestinationInfo || !quotes || !setSelectedQuoteIndex)
-      return
+    if (!srcCurrency || !dstCurrency || !setActionInfo || !quotes || !setSelectedQuoteIndex) return
 
     setSelectedQuoteIndex(index)
 
@@ -145,9 +144,9 @@ export function SwapPanel({
       try {
         const outputAmountWei = parseUnits(outputAmount, currency.decimals)
         const currencyAmount = CurrencyHandler.fromRawAmount(currency, outputAmountWei.toString())
-        setDestinationInfo(currencyAmount, undefined, [])
+        setActionInfo(currencyAmount, undefined, [])
       } catch {
-        setDestinationInfo?.(undefined, undefined, [])
+        setActionInfo?.(undefined, undefined, [])
       }
     }
   }
@@ -158,9 +157,9 @@ export function SwapPanel({
       setOutputAmount('')
       setSelectedDstCurrency(initialDstCurrency)
       lastDestinationKeyRef.current = null
-      setDestinationInfo?.(undefined, undefined, [])
+      setActionInfo?.(undefined, undefined, [])
     }
-  }, [resetKey, initialDstCurrency, setDestinationInfo])
+  }, [resetKey, initialDstCurrency, setActionInfo])
 
   if (!srcCurrency) {
     return null

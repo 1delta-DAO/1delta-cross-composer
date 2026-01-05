@@ -9,7 +9,7 @@ type MarketTokenCardProps = {
   enteredAmount?: string
 }
 
-function DepositCard({
+function WithdrawCard({
   market,
   onActionClick,
   currencyFromList,
@@ -33,11 +33,11 @@ function DepositCard({
     <button
       type="button"
       className={`flex flex-col items-center gap-2 p-3 cursor-pointer rounded-lg ${borderClass} bg-base-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
-      disabled={market.mintPaused}
+      disabled={market.borrowPaused}
       onClick={() => {
-        if (!market.mintPaused) onActionClick()
+        if (!market.borrowPaused) onActionClick()
       }}
-      title={market.mintPaused ? 'Unavailable' : symbol}
+      title={market.borrowPaused ? 'Unavailable' : symbol}
     >
       <div className="h-12 w-12 rounded-full bg-base-200 flex items-center justify-center overflow-hidden shrink-0">
         {iconSrc ? (
@@ -51,4 +51,4 @@ function DepositCard({
   )
 }
 
-export { DepositCard }
+export { WithdrawCard }

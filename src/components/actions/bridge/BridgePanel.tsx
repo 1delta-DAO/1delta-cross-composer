@@ -13,7 +13,7 @@ import { getTokenFromCache } from '../../../lib/data/tokenListsCache'
 interface BridgePanelProps {
   srcCurrency?: RawCurrency
   dstCurrency?: RawCurrency
-  setDestinationInfo?: ActionHandler
+  setActionInfo?: ActionHandler
   quotes?: Array<{ label: string; trade: GenericTrade }>
   selectedQuoteIndex?: number
   setSelectedQuoteIndex?: (index: number) => void
@@ -24,7 +24,7 @@ interface BridgePanelProps {
 export function BridgePanel({
   srcCurrency,
   dstCurrency: initialDstCurrency,
-  setDestinationInfo,
+  setActionInfo,
   quotes,
   selectedQuoteIndex = 0,
   setSelectedQuoteIndex,
@@ -39,11 +39,11 @@ export function BridgePanel({
   const [tokenModalQuery, setTokenModalQuery] = useState('')
   const lastDestinationKeyRef = useRef<string | null>(null)
   const lastResetKeyRef = useRef<number>(0)
-  const setDestinationInfoRef = useRef(setDestinationInfo)
+  const setActionInfoRef = useRef(setActionInfo)
 
   useEffect(() => {
-    setDestinationInfoRef.current = setDestinationInfo
-  }, [setDestinationInfo])
+    setActionInfoRef.current = setActionInfo
+  }, [setActionInfo])
 
   const dstCurrency = useMemo(
     () => selectedDstCurrency || initialDstCurrency,
@@ -58,10 +58,10 @@ export function BridgePanel({
   }, [initialDstCurrency, selectedDstCurrency])
 
   useEffect(() => {
-    if (!srcCurrency || !dstCurrency || !setDestinationInfo || !debouncedOutputAmount) {
+    if (!srcCurrency || !dstCurrency || !setActionInfo || !debouncedOutputAmount) {
       if (lastDestinationKeyRef.current !== null) {
         lastDestinationKeyRef.current = null
-        setDestinationInfoRef.current?.(undefined, undefined, [])
+        setActionInfoRef.current?.(undefined, undefined, [])
       }
       return
     }
@@ -70,7 +70,7 @@ export function BridgePanel({
     if (!amount || amount <= 0) {
       if (lastDestinationKeyRef.current !== null) {
         lastDestinationKeyRef.current = null
-        setDestinationInfoRef.current?.(undefined, undefined, [])
+        setActionInfoRef.current?.(undefined, undefined, [])
       }
       return
     }
@@ -90,7 +90,7 @@ export function BridgePanel({
 
     if (lastDestinationKeyRef.current !== destinationKey) {
       lastDestinationKeyRef.current = destinationKey
-      setDestinationInfoRef.current?.(currencyAmount, undefined, [])
+      setActionInfoRef.current?.(currencyAmount, undefined, [])
     }
   }, [srcCurrency, dstCurrency, debouncedOutputAmount])
 
@@ -98,7 +98,7 @@ export function BridgePanel({
     setOutputAmount(value)
     if (!value || Number(value) <= 0) {
       lastDestinationKeyRef.current = null
-      setDestinationInfoRef.current?.(undefined, undefined, [])
+      setActionInfoRef.current?.(undefined, undefined, [])
     }
   }
 
@@ -114,8 +114,7 @@ export function BridgePanel({
   }, [])
 
   const handleQuoteSelect = (index: number) => {
-    if (!srcCurrency || !dstCurrency || !setDestinationInfo || !quotes || !setSelectedQuoteIndex)
-      return
+    if (!srcCurrency || !dstCurrency || !setActionInfo || !quotes || !setSelectedQuoteIndex) return
 
     setSelectedQuoteIndex(index)
 
@@ -132,7 +131,7 @@ export function BridgePanel({
 
       if (lastDestinationKeyRef.current !== destinationKey) {
         lastDestinationKeyRef.current = destinationKey
-        setDestinationInfoRef.current?.(currencyAmount, undefined, [])
+        setActionInfoRef.current?.(currencyAmount, undefined, [])
       }
     }
   }
@@ -143,7 +142,7 @@ export function BridgePanel({
       setOutputAmount('')
       setSelectedDstCurrency(initialDstCurrency)
       lastDestinationKeyRef.current = null
-      setDestinationInfoRef.current?.(undefined, undefined, [])
+      setActionInfoRef.current?.(undefined, undefined, [])
     }
   }, [resetKey, initialDstCurrency])
 
