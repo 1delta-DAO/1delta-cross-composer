@@ -38,9 +38,6 @@ export function WithdrawCheckout({
   const effectiveCurrency = currency || dstCurrency
   const effectiveActionLabel = actionLabel || destinationActionLabel
 
-  const formattedUsd =
-    outputUsd !== undefined && isFinite(outputUsd) ? `$${outputUsd.toFixed(2)}` : undefined
-
   const chainName = useMemo(() => {
     if (!effectiveCurrency?.chainId || !chains) return effectiveCurrency?.chainId
     return chains[effectiveCurrency.chainId]?.data?.name || effectiveCurrency.chainId

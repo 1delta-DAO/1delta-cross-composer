@@ -2,20 +2,12 @@ import { Address, zeroAddress } from 'viem'
 import { Logo } from '../common/Logo'
 
 type RelevantTokensBarProps = {
-  chainId: string
-  chains: any
   relevant: Address[]
   tokensMap: Record<string, any>
   onChange: (addr: Address) => void
 }
 
-export function RelevantTokensBar({
-  chainId,
-  chains,
-  relevant,
-  tokensMap,
-  onChange,
-}: RelevantTokensBarProps) {
+export function RelevantTokensBar({ relevant, tokensMap, onChange }: RelevantTokensBarProps) {
   if (!relevant.length) return null
 
   return (
@@ -23,16 +15,6 @@ export function RelevantTokensBar({
       {relevant.map((addr) => {
         const addrLower = addr.toLowerCase()
         let t = tokensMap[addrLower]
-        if (!t && addrLower === zeroAddress) {
-          const nativeCurrency = chains?.[chainId]?.data?.nativeCurrency
-          if (nativeCurrency) {
-            t = {
-              symbol: nativeCurrency.symbol,
-              name: nativeCurrency.name,
-              logoURI: chains?.[chainId]?.data?.icon,
-            } as any
-          }
-        }
         if (!t) return null
         return (
           <button
