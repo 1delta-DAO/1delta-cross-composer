@@ -64,12 +64,22 @@ export function useUnifiedApprovals(
       return {}
     }
 
-    const rawResults = results.map((r) => r.result)
-    return parseDebitDataResult({
-      raw: rawResults,
-      tokenAddresses: prepared.meta.tokenAddresses,
-      spenders: prepared.meta.spenders,
-    })
+    const rawResults = results.map((r) => r.result ?? '0x')
+
+    try {
+      return parseDebitDataResult({
+        raw: rawResults,
+        tokenAddresses: prepared.meta.tokenAddresses,
+        spenders: prepared.meta.spenders,
+      })
+    } catch (error) {
+      console.error('parseDebitDataResult error:', error, {
+        rawResults,
+        tokenAddresses: prepared.meta?.tokenAddresses,
+        spenders: prepared.meta?.spenders,
+      })
+      return {}
+    }
   }, [prepared, results])
 
   const needsApproval = useMemo(

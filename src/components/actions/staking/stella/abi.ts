@@ -15,3 +15,13 @@ export const STELLA_STAKING_ABI = [
     stateMutability: 'nonpayable',
   },
 ] as Abi
+
+export const STELLA_STAKING_NATIVE_ABI = [
+  {
+    type: 'function',
+    name: 'deposit',
+    inputs: [],
+    outputs: [],
+    stateMutability: 'payable',
+  },
+] as Abi

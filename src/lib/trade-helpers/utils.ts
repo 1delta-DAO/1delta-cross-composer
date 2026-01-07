@@ -1,7 +1,6 @@
-import { type Address, zeroAddress } from 'viem'
+import { type Address } from 'viem'
 import { getTokenFromCache } from '../data/tokenListsCache'
 import type { RawCurrency } from '../../types/currency'
-import { chains } from '@1delta/data-sdk'
 import { CurrencyHandler } from '@1delta/lib-utils/dist/services/currency/currencyUtils'
 import type { ActionCall } from '../../components/actions/shared/types'
 import type { DeltaCall, PostDeltaCall, PreDeltaCall } from '@1delta/lib-utils'
@@ -14,14 +13,6 @@ export function getCurrency(
   if (!tokenAddress || !chainId) {
     return undefined
   }
-
-  if (tokenAddress.toLowerCase() === zeroAddress.toLowerCase()) {
-    const chainInfo = chains()?.[chainId]
-    if (!chainInfo?.nativeCurrency) return undefined
-    const { symbol, name, decimals } = chainInfo.nativeCurrency
-    return CurrencyHandler.Currency(chainId, zeroAddress, decimals, symbol, name)
-  }
-
   const token = getTokenFromCache(chainId, tokenAddress)
   return token
 }

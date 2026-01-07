@@ -56,8 +56,6 @@ export function TokenSelectorDropdownMode({
       {open && (
         <div className="mt-2 p-2 rounded-box border border-base-300 bg-base-100 shadow-xl absolute z-20 w-full">
           <RelevantTokensBar
-            chainId={chainId}
-            chains={chains}
             relevant={relevant}
             tokensMap={tokensMap}
             onChange={(addr) => {
