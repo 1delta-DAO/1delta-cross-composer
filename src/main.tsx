@@ -8,6 +8,7 @@ import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { config } from './wagmi'
 import App from './App'
 import { ToastProvider } from './components/common/ToastHost'
+import { Web3Provider } from './contexts/Web3Context'
 import { SlippageProvider } from './contexts/SlippageContext'
 import { TxHistoryProvider } from './contexts/TxHistoryContext'
 import { QuoteTraceProvider } from './contexts/QuoteTraceContext'
@@ -86,15 +87,17 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <WagmiProvider config={config}>
       <QueryClientProvider client={client}>
         <RainbowKitProvider theme={rainbowDaisyTheme}>
-          <ToastProvider>
-            <SlippageProvider>
-              <TxHistoryProvider>
-                <QuoteTraceProvider>
-                  <RootApp />
-                </QuoteTraceProvider>
-              </TxHistoryProvider>
-            </SlippageProvider>
-          </ToastProvider>
+          <Web3Provider>
+            <ToastProvider>
+              <SlippageProvider>
+                <TxHistoryProvider>
+                  <QuoteTraceProvider>
+                    <RootApp />
+                  </QuoteTraceProvider>
+                </TxHistoryProvider>
+              </SlippageProvider>
+            </ToastProvider>
+          </Web3Provider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
