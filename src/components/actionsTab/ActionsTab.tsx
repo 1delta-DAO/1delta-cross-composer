@@ -1,12 +1,9 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import type { Address } from 'viem'
 import { zeroAddress, parseUnits } from 'viem'
-import { useChainId, useConnection } from 'wagmi'
-import { useChainsRegistry } from '../../sdk/hooks/useChainsRegistry'
-import { useTokenLists } from '../../hooks/useTokenLists'
+import { useWeb3 } from '../../contexts/Web3Context'
 import { useBalanceQuery } from '../../hooks/balances/useBalanceQuery'
 import { usePriceQuery } from '../../hooks/prices/usePriceQuery'
-import { useDebounce } from '../../hooks/useDebounce'
 import { CurrencyHandler, SupportedChainId } from '../../sdk/types'
 import type { RawCurrency, RawCurrencyAmount } from '../../types/currency'
 import { getCurrency } from '../../lib/trade-helpers/utils'
@@ -35,14 +32,20 @@ type Props = {
 const DEFAULT_INPUT_CHAIN_ID = SupportedChainId.BASE
 
 export function ActionsTab({ onResetStateChange }: Props) {
-  const { address } = useConnection()
-  const { data: chains } = useChainsRegistry()
-  const { data: lists } = useTokenLists()
-  const currentChainId = useChainId()
+  const { address, currentChainId, chains, tokenLists: lists } = useWeb3()
+  const {
+    slippage,
+    setPriceImpact,
+    route,
+    setSrcAmount,
+    setDstAmount,
+    setCalls,
+    clearCalls,
+    destinationCalls,
+  } = useTradeContext()
 
-  const [inputCurrency, setInputCurrency] = useState<RawCurrency | undefined>(undefined)
-  const [actionCurrency, setActionCurrency] = useState<RawCurrency | undefined>(undefined)
-  const [amount, setAmount] = useState('')
+  const inputCurrency = route.srcAmount?.currency as RawCurrency | undefined
+  const actionCurrency = route.dstAmount?.currency as RawCurrency | undefined
 
   /** This sets the destination purchase info */
   const { destinationInfo, setDestinationInfoState } = useDestinationInfo()
@@ -65,8 +68,8 @@ export function ActionsTab({ onResetStateChange }: Props) {
     if (!pick) return
     const meta = tokensMap[pick.toLowerCase()]
     if (!meta) return
-    setInputCurrency(meta)
-  }, [inputCurrency, lists, chains])
+    setSrcAmount(CurrencyHandler.fromRawAmount(meta as RawCurrency, 0n))
+  }, [inputCurrency, lists, chains, setSrcAmount])
 
   const inputAddressesWithNative = useMemo(() => {
     if (!inputChainId || !address) return []
@@ -171,12 +174,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
     const priceKey = actionCurrency.address.toLowerCase()
     return pricesData[chainId!]?.[priceKey]?.usd
   }, [actionCurrency, pricesData, actionChainId])
-
-  const debouncedAmount = useDebounce(amount, 1000)
-
-  const { slippage, setPriceImpact } = useTradeContext()
   const [txInProgress, setTxInProgress] = useState(false)
-  const [destinationCalls, setDestinationCalls] = useState<ActionCall[]>([])
   const [actionResetKey, setActionResetKey] = useState(0)
 
   const [selectedQuoteIndex, setSelectedQuoteIndex] = useState(0)
@@ -194,23 +192,12 @@ export function ActionsTab({ onResetStateChange }: Props) {
   }, [inputCurrency, actionCurrency])
 
   const srcAmount = useMemo<RawCurrencyAmount | undefined>(() => {
-    if (!inputCurrency || !debouncedAmount) return undefined
-    const amountNum = Number(debouncedAmount)
-    if (!Number.isFinite(amountNum) || amountNum <= 0) return undefined
-    try {
-      const amountWei = parseUnits(debouncedAmount, inputCurrency.decimals)
-      return CurrencyHandler.fromRawAmount(inputCurrency, amountWei.toString())
-    } catch {
-      return undefined
-    }
-  }, [inputCurrency, debouncedAmount])
+    return route.srcAmount
+  }, [route.srcAmount])
 
   const srcKey = useMemo(() => createCurrencyKey(inputCurrency), [inputCurrency])
   const dstKey = useMemo(() => createCurrencyKey(actionCurrency), [actionCurrency])
-  const destinationCallsKey = useMemo(
-    () => hashActionCalls(destinationCalls),
-    [destinationCalls]
-  )
+  const destinationCallsKey = useMemo(() => hashActionCalls(destinationCalls), [destinationCalls])
 
   const validation = useQuoteValidation(slippage)
 
@@ -360,6 +347,15 @@ export function ActionsTab({ onResetStateChange }: Props) {
   const [wasTransactionCancelled, setWasTransactionCancelled] = useState(false)
   const tradeToUse = preservedTrade || selectedTrade
 
+  const srcAmountHuman = useMemo(() => {
+    if (!srcAmount) return undefined
+    try {
+      return CurrencyHandler.toExactNumber(srcAmount)
+    } catch {
+      return undefined
+    }
+  }, [srcAmount])
+
   const quoteOut = useMemo(() => {
     if (!isSwapOrBridge || !selectedTrade?.outputAmount) return undefined
     try {
@@ -371,11 +367,11 @@ export function ActionsTab({ onResetStateChange }: Props) {
   }, [selectedTrade, isSwapOrBridge])
 
   const priceImpact = useMemo(() => {
-    if (!selectedTrade || !amount || !quoteOut || !inputPrice || !actionTokenPrice) {
+    if (!selectedTrade || !srcAmountHuman || !quoteOut || !inputPrice || !actionTokenPrice) {
       return undefined
     }
     try {
-      const inputValue = Number(amount) * inputPrice
+      const inputValue = Number(srcAmountHuman) * inputPrice
       const expectedOutput = inputValue / actionTokenPrice
       const actualOutput = Number(quoteOut)
 
@@ -386,7 +382,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
     } catch {
       return undefined
     }
-  }, [selectedTrade, amount, quoteOut, inputPrice, actionTokenPrice])
+  }, [selectedTrade, srcAmountHuman, quoteOut, inputPrice, actionTokenPrice])
 
   useEffect(() => {
     if (isSwapOrBridge) {
@@ -407,29 +403,23 @@ export function ActionsTab({ onResetStateChange }: Props) {
     ) => {
       if (!currencyAmount) {
         setDestinationInfoState(undefined)
-        setDestinationCalls([])
-        const prevActionCurrency = actionCurrency
-        setActionCurrency(undefined)
-        if (prevActionCurrency) {
-          setAmount('')
-          setWasTransactionCancelled(false)
-        }
+        clearCalls()
+        setDstAmount(undefined)
+        setWasTransactionCancelled(false)
         return
       }
-
-      const actionCur = currencyAmount.currency as RawCurrency
-      setActionCurrency(actionCur)
 
       const amountHuman = CurrencyHandler.toExactNumber(currencyAmount)
       if (!amountHuman || amountHuman <= 0) {
         setDestinationInfoState(undefined)
-        setDestinationCalls([])
-        setActionCurrency(undefined)
+        clearCalls()
+        setDstAmount(undefined)
         return
       }
 
       setDestinationInfoState({ currencyAmount, actionLabel, actionId, actionData })
-      setDestinationCalls(destinationCalls)
+      setDstAmount(currencyAmount)
+      setCalls(destinationCalls)
 
       quoteTrace.addTrace({
         quotes: [],
@@ -448,7 +438,15 @@ export function ActionsTab({ onResetStateChange }: Props) {
         success: true,
       })
     },
-    [inputCurrency, slippage, quoteTrace]
+    [
+      inputCurrency,
+      slippage,
+      quoteTrace,
+      setDestinationInfoState,
+      clearCalls,
+      setDstAmount,
+      setCalls,
+    ]
   )
 
   const { calculatedInputAmount } = useDestinationReverseQuote({
@@ -458,7 +456,15 @@ export function ActionsTab({ onResetStateChange }: Props) {
     actionTokenPrice,
     slippage,
     isLoadingPrices,
-    onInputAmountChange: setAmount,
+    onInputAmountChange: (value) => {
+      if (!inputCurrency) return
+      try {
+        const amountWei = parseUnits(value, inputCurrency.decimals)
+        setSrcAmount(CurrencyHandler.fromRawAmount(inputCurrency, amountWei.toString()))
+      } catch {
+        setSrcAmount(undefined)
+      }
+    },
   })
 
   useEffect(() => {
@@ -483,7 +489,9 @@ export function ActionsTab({ onResetStateChange }: Props) {
         selectedQuoteIndex={selectedQuoteIndex}
         setSelectedQuoteIndex={wrappedSetSelectedQuoteIndex}
         slippage={slippage}
-        onSrcCurrencyChange={setInputCurrency}
+        onSrcCurrencyChange={(currency) => {
+          setSrcAmount(CurrencyHandler.fromRawAmount(currency, 0n))
+        }}
         calculatedInputAmount={calculatedInputAmount}
         actionInfo={destinationInfo}
         pricesData={pricesData}
@@ -517,7 +525,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
             srcCurrency={inputCurrency}
             dstCurrency={actionCurrency}
             amountWei={amountWei}
-            hasActionCalls={destinationCalls?.length > 0}
+            hasActionCalls={(destinationCalls?.length ?? 0) > 0}
             chains={chains}
             quoting={quoting}
             onDone={(hashes) => {
@@ -551,7 +559,9 @@ export function ActionsTab({ onResetStateChange }: Props) {
                 setDestinationInfo(undefined, undefined, [])
                 setActionResetKey((prev) => prev + 1)
                 setPreservedTrade(undefined)
-                setAmount('')
+                if (inputCurrency) {
+                  setSrcAmount(CurrencyHandler.fromRawAmount(inputCurrency, 0n))
+                }
                 setWasTransactionCancelled(false)
               }
             }}
@@ -568,7 +578,6 @@ export function ActionsTab({ onResetStateChange }: Props) {
               setPreservedTrade(undefined)
             }}
             onReset={() => {
-              setAmount('')
               setTxInProgress(false)
               setPreservedTrade(undefined)
               setWasTransactionCancelled(false)

@@ -1,7 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { useChainId, useConnection } from 'wagmi'
-import { useChainsRegistry } from '../../sdk/hooks/useChainsRegistry'
-import { useTokenLists } from '../../hooks/useTokenLists'
+import { useWeb3 } from '../../contexts/Web3Context'
 import { usePriceQuery } from '../../hooks/prices/usePriceQuery'
 import { CurrencyHandler, SupportedChainId } from '../../sdk/types'
 import type { RawCurrency, RawCurrencyAmount } from '../../types/currency'
@@ -26,14 +24,12 @@ type Props = {
 const DEFAULT_DESTINATION_CHAIN_ID = SupportedChainId.BASE
 
 export function ReverseActionsTab({ onResetStateChange }: Props) {
-  const { address } = useConnection()
-  const { data: chains } = useChainsRegistry()
-  const { data: lists } = useTokenLists()
-  const currentChainId = useChainId()
+  const { address, currentChainId, chains } = useWeb3()
+  const { slippage, route, setSrcAmount, setDstAmount, setCalls, inputCalls, clearCalls } =
+    useTradeContext()
 
-  const [destinationCurrency, setDestinationCurrency] = useState<RawCurrency | undefined>(undefined)
-  const [inputActionCurrency, setInputActionCurrency] = useState<RawCurrency | undefined>(undefined)
-  const [inputCalls, setInputCalls] = useState<ActionCall[]>([])
+  const destinationCurrency = route.dstAmount?.currency as RawCurrency | undefined
+  const inputActionCurrency = route.srcAmount?.currency as RawCurrency | undefined
   const [inputInfo, setInputInfoState] = useState<
     { currencyAmount?: RawCurrencyAmount; actionLabel?: string; actionId?: string } | undefined
   >(undefined)
@@ -87,11 +83,10 @@ export function ReverseActionsTab({ onResetStateChange }: Props) {
     return pricesData[chainId!]?.[priceKey]?.usd
   }, [inputActionCurrency, pricesData, inputActionChainId])
 
-  const { slippage } = useTradeContext()
   const quoteTrace = useQuoteTrace()
   const queryClient = useQueryClient()
 
-  const srcAmount = useMemo(() => inputInfo?.currencyAmount, [inputInfo])
+  const srcAmount = useMemo(() => route.srcAmount, [route.srcAmount])
 
   const shouldFetchQuotes = useMemo(() => {
     return !txInProgress && Boolean(srcAmount && destinationCurrency)
@@ -179,28 +174,22 @@ export function ReverseActionsTab({ onResetStateChange }: Props) {
     ) => {
       if (!currencyAmount) {
         setInputInfoState(undefined)
-        setInputCalls([])
-        const prevInputActionCurrency = inputActionCurrency
-        setInputActionCurrency(undefined)
-        if (prevInputActionCurrency) {
-          setActionResetKey((prev) => prev + 1)
-        }
+        clearCalls()
+        setSrcAmount(undefined)
         return
       }
-
-      const inputCur = currencyAmount.currency as RawCurrency
-      setInputActionCurrency(inputCur)
 
       const amountHuman = CurrencyHandler.toExactNumber(currencyAmount)
       if (!amountHuman || amountHuman <= 0) {
         setInputInfoState(undefined)
-        setInputCalls([])
-        setInputActionCurrency(undefined)
+        clearCalls()
+        setSrcAmount(undefined)
         return
       }
 
       setInputInfoState({ currencyAmount, actionLabel, actionId })
-      setInputCalls(inputCalls)
+      setSrcAmount(currencyAmount)
+      setCalls(inputCalls)
 
       quoteTrace.addTrace({
         quotes: [],
@@ -219,7 +208,7 @@ export function ReverseActionsTab({ onResetStateChange }: Props) {
         success: true,
       })
     },
-    [destinationCurrency, slippage, quoteTrace, inputActionCurrency]
+    [destinationCurrency, slippage, quoteTrace, clearCalls, setSrcAmount, setCalls]
   )
 
   const handleTransactionDone = useCallback(
@@ -295,7 +284,9 @@ export function ReverseActionsTab({ onResetStateChange }: Props) {
         selectedQuoteIndex={selectedQuoteIndex}
         setSelectedQuoteIndex={wrappedSetSelectedQuoteIndex}
         slippage={slippage}
-        onDstCurrencyChange={setDestinationCurrency}
+        onDstCurrencyChange={(currency) => {
+          setDstAmount(CurrencyHandler.fromRawAmount(currency, 0n))
+        }}
         calculatedInputAmount={undefined}
         actionInfo={inputInfo}
         pricesData={pricesData}
@@ -311,7 +302,7 @@ export function ReverseActionsTab({ onResetStateChange }: Props) {
             srcCurrency={inputActionCurrency}
             dstCurrency={destinationCurrency}
             amountWei={amountWei}
-            hasActionCalls={inputCalls?.length > 0}
+            hasActionCalls={(inputCalls?.length ?? 0) > 0}
             inputCalls={inputCalls}
             chains={chains}
             quoting={quoting}
