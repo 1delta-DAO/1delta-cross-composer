@@ -1,5 +1,10 @@
+import {
+  validateQuoteRequest,
+  detectChainTransition as detectChainTransitionNew,
+  type QuoteValidation,
+} from '../../services/quoteService'
 import type { RawCurrency, RawCurrencyAmount } from '../../../types/currency'
-import { DeltaCallType, LendingCall } from '@1delta/lib-utils'
+import type { ActionCall } from '../../../components/actions/shared/types'
 
 export interface InputValidationResult {
   isValid: boolean
@@ -8,43 +13,25 @@ export interface InputValidationResult {
   reason?: string
 }
 
+/** @deprecated Use validateQuoteRequest from sdk/services/quoteService instead */
 export function validateInputs(
   srcAmount?: RawCurrencyAmount,
   dstCurrency?: RawCurrency,
-  inputCalls?: any[]
+  inputCalls?: ActionCall[]
 ): InputValidationResult {
-  const hasWithdrawMax = inputCalls?.some(
-    (call) =>
-      call?.callType === DeltaCallType.LENDING &&
-      call?.lendingAction === LendingCall.DeltaCallLendingAction.WITHDRAW &&
-      call?.amount === 0n
-  )
-
-  const amountOk = !!srcAmount && (srcAmount.amount > 0n || hasWithdrawMax)
-  const srcCurrencyOk = Boolean(srcAmount?.currency)
-  const dstCurrencyOk = Boolean(dstCurrency)
-
-  if (!amountOk || !srcCurrencyOk || !dstCurrencyOk) {
-    return {
-      isValid: false,
-      isSameChain: false,
-      shouldFetch: false,
-      reason: !amountOk ? 'Invalid amount' : 'Missing currency',
-    }
-  }
-
-  const isSameChain = srcAmount!.currency.chainId === dstCurrency!.chainId
-
+  const result = validateQuoteRequest(srcAmount, dstCurrency, inputCalls)
   return {
-    isValid: true,
-    isSameChain,
-    shouldFetch: true,
+    isValid: result.isValid,
+    isSameChain: result.isSameChain,
+    shouldFetch: result.isValid,
+    reason: result.reason,
   }
 }
 
+/** @deprecated Use detectChainTransition from sdk/services/quoteService instead */
 export function detectChainTransition(
   currentIsSameChain: boolean,
   previousIsSameChain: boolean | null
 ): boolean {
-  return previousIsSameChain !== null && previousIsSameChain !== currentIsSameChain
+  return detectChainTransitionNew(currentIsSameChain, previousIsSameChain)
 }

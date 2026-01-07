@@ -1,48 +1,30 @@
+import {
+  hashActionCalls,
+  createCurrencyKey,
+  createQuoteKey as createQuoteKeyNew,
+  areKeysEqual,
+  type QuoteKeyParams,
+} from '../../utils/keyGenerator'
 import type { ActionCall } from '../../../components/actions/shared/types'
 import type { Address } from 'viem'
 import type { RawCurrency, RawCurrencyAmount } from '../../../types/currency'
 
+/** @deprecated Use hashActionCalls from sdk/utils/keyGenerator instead */
 export function generateDestinationCallsKey(destinationCalls?: ActionCall[]): string {
-  return JSON.stringify(
-    (destinationCalls || []).map((c) => ({
-      t: 'target' in c && c.target ? c.target.toLowerCase() : '',
-      v: 'value' in c && c.value ? c.value.toString() : '',
-      dStart: 'callData' in c && c.callData ? c.callData.slice(0, 10) : '',
-      dEnd: 'callData' in c && c.callData ? c.callData.slice(-10) : '',
-      g: c.gasLimit ? c.gasLimit.toString() : '',
-      ct: typeof c.callType === 'number' ? c.callType : 0,
-      ta: 'tokenAddress' in c && c.tokenAddress ? c.tokenAddress.toLowerCase() : '',
-      bi:
-        'balanceOfInjectIndex' in c && typeof c.balanceOfInjectIndex === 'number'
-          ? c.balanceOfInjectIndex
-          : 0,
-    }))
-  )
+  return hashActionCalls(destinationCalls)
 }
 
+/** @deprecated Use hashActionCalls from sdk/utils/keyGenerator instead */
 export function generateInputCallsKey(inputCalls?: ActionCall[]): string {
-  return JSON.stringify(
-    (inputCalls || []).map((c) => ({
-      t: 'target' in c && c.target ? c.target.toLowerCase() : '',
-      v: 'value' in c && c.value ? c.value.toString() : '',
-      dStart: 'callData' in c && c.callData ? c.callData.slice(0, 10) : '',
-      dEnd: 'callData' in c && c.callData ? c.callData.slice(-10) : '',
-      g: c.gasLimit ? c.gasLimit.toString() : '',
-      ct: typeof c.callType === 'number' ? c.callType : 0,
-      ta: 'tokenAddress' in c && c.tokenAddress ? c.tokenAddress.toLowerCase() : '',
-      bi:
-        'balanceOfInjectIndex' in c && typeof c.balanceOfInjectIndex === 'number'
-          ? c.balanceOfInjectIndex
-          : 0,
-    }))
-  )
+  return hashActionCalls(inputCalls)
 }
 
+/** @deprecated Use createCurrencyKey from sdk/utils/keyGenerator instead */
 export function generateCurrencyKey(currency?: RawCurrency): string {
-  if (!currency) return ''
-  return `${currency.chainId}|${currency.address.toLowerCase()}`
+  return createCurrencyKey(currency)
 }
 
+/** @deprecated Use createQuoteKey from sdk/utils/keyGenerator instead */
 export function generateQuoteKey(
   srcAmount: RawCurrencyAmount | undefined,
   dstCurrency: RawCurrency | undefined,
@@ -51,12 +33,15 @@ export function generateQuoteKey(
   destinationCallsKey: string,
   inputCallsKey?: string
 ): string {
-  const srcKey = srcAmount ? generateCurrencyKey(srcAmount.currency) : ''
-  const dstKey = dstCurrency ? generateCurrencyKey(dstCurrency) : ''
-  const amount = srcAmount ? srcAmount.amount.toString() : ''
-  return `${amount}|${srcKey}|${dstKey}|${slippage}|${receiverAddress}|${destinationCallsKey}|${inputCallsKey || ''}`
+  return createQuoteKeyNew({
+    srcAmount,
+    dstCurrency,
+    slippage,
+    receiverAddress,
+  })
 }
 
+/** @deprecated Use areKeysEqual from sdk/utils/keyGenerator instead */
 export function areQuoteKeysEqual(key1: string | null, key2: string | null): boolean {
-  return key1 !== null && key2 !== null && key1 === key2
+  return areKeysEqual(key1, key2)
 }

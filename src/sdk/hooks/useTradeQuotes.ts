@@ -9,12 +9,11 @@ import { fetchQuotes, type Quote } from './useQuoteFetcher'
 import { useQuoteValidation } from './useQuoteValidation'
 import { useQuoteRefreshHelpers, REFRESH_INTERVAL_MS } from './useQuoteRefresh'
 import {
-  generateDestinationCallsKey,
-  generateInputCallsKey,
-  generateQuoteKey,
-  areQuoteKeysEqual,
-} from './useTradeQuotes/stateHelpers'
-import { validateInputs } from './useTradeQuotes/inputValidation'
+  hashActionCalls,
+  createQuoteKey,
+  areKeysEqual,
+} from '../utils/keyGenerator'
+import { validateQuoteRequest } from '../services/quoteService'
 import { useQuoteTrace } from '../../contexts/QuoteTraceContext'
 
 const TRACE_QUOTING_ENABLED = import.meta.env.VITE_TRACE_QUOTING === 'true'
@@ -66,11 +65,11 @@ export function useTradeQuotes({
   const srcCurrency = useMemo(() => srcAmount?.currency, [srcAmount])
 
   const destinationCallsKey = useMemo(
-    () => generateDestinationCallsKey(destinationCalls),
+    () => hashActionCalls(destinationCalls),
     [destinationCalls]
   )
 
-  const inputCallsKey = useMemo(() => generateInputCallsKey(inputCalls), [inputCalls])
+  const inputCallsKey = useMemo(() => hashActionCalls(inputCalls), [inputCalls])
 
   const clearQuotes = useCallback(() => {
     setQuotes([])
@@ -89,7 +88,7 @@ export function useTradeQuotes({
       return
     }
 
-    const inputValidation = validateInputs(srcAmount, dstCurrency, inputCalls)
+    const inputValidation = validateQuoteRequest(srcAmount, dstCurrency, inputCalls)
 
     if (!inputValidation.isValid) {
       if (quotes.length > 0) {
@@ -103,17 +102,17 @@ export function useTradeQuotes({
       return
     }
 
-    const currentKey = generateQuoteKey(
+    const currentKey = createQuoteKey({
       srcAmount,
       dstCurrency,
       slippage,
       receiverAddress,
-      destinationCallsKey,
-      inputCallsKey
-    )
+      destinationCalls,
+      inputCalls,
+    })
 
     const now = Date.now()
-    const sameAsLast = areQuoteKeysEqual(lastQuotedKeyRef.current, currentKey)
+    const sameAsLast = areKeysEqual(lastQuotedKeyRef.current, currentKey)
     const elapsed = now - lastQuotedAtRef.current
 
     if (sameAsLast && elapsed < REFRESH_INTERVAL_MS) {
@@ -136,7 +135,7 @@ export function useTradeQuotes({
 
     const fetchQuote = async () => {
       try {
-        const isRefresh = areQuoteKeysEqual(lastQuotedKeyRef.current, currentKey)
+        const isRefresh = areKeysEqual(lastQuotedKeyRef.current, currentKey)
         lastQuotedKeyRef.current = currentKey
         lastQuotedAtRef.current = Date.now()
 

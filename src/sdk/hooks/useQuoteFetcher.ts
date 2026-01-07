@@ -1,12 +1,9 @@
 import type { Address } from 'viem'
 import type { GenericTrade } from '@1delta/lib-utils'
 import { TradeType } from '@1delta/lib-utils'
-import {
-  convertActionCallsToPreDeltaCalls,
-  convertActionCallsToPostDeltaCalls,
-} from '../../lib/trade-helpers/utils'
 import { fetchAllAggregatorTrades } from '../../lib/trade-helpers/aggregatorSelector'
 import { fetchAllActionTrades } from '../trade-helpers/actionSelector'
+import { DeltaCallConverter } from '../utils/deltaCallConverter'
 import type { ActionCall } from '../../components/actions/shared/types'
 import type { RawCurrency, RawCurrencyAmount } from '../../types/currency'
 
@@ -74,14 +71,14 @@ export async function fetchQuotes(params: QuoteFetcherParams): Promise<Quote[]> 
   let allQuotes: Quote[] = []
 
   const preCalls =
-    inputCalls && inputCalls.length > 0 ? convertActionCallsToPreDeltaCalls(inputCalls) : undefined
+    inputCalls && inputCalls.length > 0 ? DeltaCallConverter.toPreCalls(inputCalls) : undefined
   const postCalls =
     destinationCalls && destinationCalls.length > 0
-      ? convertActionCallsToPostDeltaCalls(destinationCalls)
+      ? DeltaCallConverter.toPostCalls(destinationCalls)
       : undefined
   const destinationGasLimit =
     destinationCalls && destinationCalls.length > 0
-      ? destinationCalls.reduce((acc, c) => acc + (c.gasLimit || 0n), 0n)
+      ? DeltaCallConverter.calculateGasLimit(destinationCalls)
       : undefined
 
   if (isSameChain) {
