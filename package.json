@@ -12,15 +12,15 @@
     "fetch-assets": "npx tsx src/lib/assetLists.ts"
   },
   "dependencies": {
-    "@1delta/bridge-configs": "^0.1.8",
+    "@1delta/bridge-configs": "^0.1.9",
     "@1delta/bridge-core": "^0.1.3",
     "@1delta/calldata-sdk": "^0.0.132",
     "@1delta/calldatalib": "0.0.46",
     "@1delta/chain-registry": "^0.0.4",
     "@1delta/data-sdk": "^0.0.11",
-    "@1delta/lib-utils": "^0.1.9",
+    "@1delta/lib-utils": "^0.1.10",
     "@1delta/providers": "^0.0.42",
-    "@1delta/trade-sdk": "^0.1.8",
+    "@1delta/trade-sdk": "^0.1.9",
     "@rainbow-me/rainbowkit": "^2.2.10",
     "@tailwindcss/postcss": "^4.1.18",
     "@tanstack/react-query": "^5.90.16",
@@ -29,11 +29,11 @@
     "qs": "^6.14.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "react-window": "2.2.3",
+    "react-window": "2.2.4",
     "tailwindcss": "^4.1.18",
-    "viem": "^2.43.4",
-    "vite": "^7.3.0",
-    "wagmi": "^3.1.4"
+    "viem": "^2.43.5",
+    "vite": "^7.3.1",
+    "wagmi": "^3.2.0"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
