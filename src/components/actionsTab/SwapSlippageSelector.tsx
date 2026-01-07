@@ -1,8 +1,8 @@
 import { SlippageSelector } from './SlippageSelector'
-import { useSlippage } from '../../contexts/SlippageContext'
+import { useTradeContext } from '../../contexts/TradeContext'
 
 export function SwapSlippageSelector() {
-  const { slippage, setSlippage, priceImpact } = useSlippage()
+  const { slippage, setSlippage, priceImpact } = useTradeContext()
 
   return (
     <div className="dropdown dropdown-end">

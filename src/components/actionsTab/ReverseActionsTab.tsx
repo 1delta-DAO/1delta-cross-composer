@@ -5,7 +5,7 @@ import { useTokenLists } from '../../hooks/useTokenLists'
 import { usePriceQuery } from '../../hooks/prices/usePriceQuery'
 import { CurrencyHandler, SupportedChainId } from '../../sdk/types'
 import type { RawCurrency, RawCurrencyAmount } from '../../types/currency'
-import { useSlippage } from '../../contexts/SlippageContext'
+import { useTradeContext } from '../../contexts/TradeContext'
 import { ReverseActionsPanel } from './ReverseActionsPanel'
 import type { ActionCall } from '../actions/shared/types'
 import { ActionHandler } from '../actions/shared/types'
@@ -87,7 +87,7 @@ export function ReverseActionsTab({ onResetStateChange }: Props) {
     return pricesData[chainId!]?.[priceKey]?.usd
   }, [inputActionCurrency, pricesData, inputActionChainId])
 
-  const { slippage } = useSlippage()
+  const { slippage } = useTradeContext()
   const quoteTrace = useQuoteTrace()
   const queryClient = useQueryClient()
 

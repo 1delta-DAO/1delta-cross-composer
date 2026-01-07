@@ -11,7 +11,8 @@ import { CurrencyHandler, SupportedChainId } from '../../sdk/types'
 import type { RawCurrency, RawCurrencyAmount } from '../../types/currency'
 import { getCurrency } from '../../lib/trade-helpers/utils'
 import { useQueryClient } from '@tanstack/react-query'
-import { useSlippage } from '../../contexts/SlippageContext'
+import { useTradeContext } from '../../contexts/TradeContext'
+import { useDestinationInfo } from '../../contexts/DestinationInfoContext'
 import { useTradeQuotes } from '../../sdk/hooks/useTradeQuotes'
 import { useQuoteValidation } from '../../sdk/hooks/useQuoteValidation'
 import type { Quote } from '../../sdk/hooks/useQuoteFetcher'
@@ -19,14 +20,10 @@ import ExecuteButton from './ExecuteButton'
 import { ActionsPanel } from './ActionsPanel'
 import { formatDisplayAmount, pickPreferredToken } from './swapUtils'
 import type { ActionCall, ActionHandler } from '../actions/shared/types'
-import {
-  generateDestinationCallsKey,
-  generateCurrencyKey,
-} from '../../sdk/hooks/useTradeQuotes/stateHelpers'
-import { detectChainTransition } from '../../sdk/hooks/useTradeQuotes/inputValidation'
+import { hashActionCalls, createCurrencyKey } from '../../sdk/utils/keyGenerator'
+import { detectChainTransition } from '../../sdk/services/quoteService'
 import { useDestinationReverseQuote } from '../../sdk/hooks/useDestinationReverseQuote'
 import { useQuoteTrace } from '../../contexts/QuoteTraceContext'
-import { useDestinationInfo } from '../../contexts/DestinationInfoContext'
 import { isLendingAction } from '../actions/lending/utils/isLendingAction'
 import { refreshUserLendingBalances } from '../actions/lending/withdraw/balanceCache'
 import { getCachedMarkets } from '../actions/lending/shared/marketCache'
@@ -177,7 +174,7 @@ export function ActionsTab({ onResetStateChange }: Props) {
 
   const debouncedAmount = useDebounce(amount, 1000)
 
-  const { slippage, setPriceImpact } = useSlippage()
+  const { slippage, setPriceImpact } = useTradeContext()
   const [txInProgress, setTxInProgress] = useState(false)
   const [destinationCalls, setDestinationCalls] = useState<ActionCall[]>([])
   const [actionResetKey, setActionResetKey] = useState(0)
@@ -208,10 +205,10 @@ export function ActionsTab({ onResetStateChange }: Props) {
     }
   }, [inputCurrency, debouncedAmount])
 
-  const srcKey = useMemo(() => generateCurrencyKey(inputCurrency), [inputCurrency])
-  const dstKey = useMemo(() => generateCurrencyKey(actionCurrency), [actionCurrency])
+  const srcKey = useMemo(() => createCurrencyKey(inputCurrency), [inputCurrency])
+  const dstKey = useMemo(() => createCurrencyKey(actionCurrency), [actionCurrency])
   const destinationCallsKey = useMemo(
-    () => generateDestinationCallsKey(destinationCalls),
+    () => hashActionCalls(destinationCalls),
     [destinationCalls]
   )
 

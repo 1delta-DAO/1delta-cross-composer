@@ -7,7 +7,8 @@ import { ThemeSwitcher } from './components/themeSwitcher'
 import { WalletConnect } from './components/connect'
 import { TxHistoryButton } from './components/history/TxHistoryButton'
 import { QuoteTracePanel } from './components/debug/QuoteTracePanel'
-import { DestinationInfoProvider, useDestinationInfo } from './contexts/DestinationInfoContext'
+import { DestinationInfoProvider } from './contexts/DestinationInfoContext'
+import { TradeProvider, useTradeContext } from './contexts/TradeContext'
 
 export default function App() {
   const [showSwapReset, setShowSwapReset] = useState(false)
@@ -45,7 +46,8 @@ export default function App() {
       {/* MAIN */}
       <main className="flex-1 overflow-y-auto">
         <DestinationInfoProvider>
-          <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <TradeProvider>
+            <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
             <div className="space-y-4 flex flex-col items-center">
               {/* TABS + SLIPPAGE */}
               <div className="w-full max-w-[1000px] min-w-[450px] flex items-center justify-between">
@@ -89,6 +91,7 @@ export default function App() {
               </div>
             </div>
           </div>
+          </TradeProvider>
         </DestinationInfoProvider>
       </main>
       <QuoteTracePanel />
@@ -97,7 +100,7 @@ export default function App() {
 }
 
 function FlowModeSwitcher() {
-  const { flowMode, setFlowMode } = useDestinationInfo()
+  const { flowMode, setFlowMode } = useTradeContext()
 
   return (
     <div className="flex items-center gap-2">
@@ -124,7 +127,7 @@ function TabContent({
 }: {
   onResetStateChange?: (showReset: boolean, resetCallback?: () => void) => void
 }) {
-  const { flowMode } = useDestinationInfo()
+  const { flowMode } = useTradeContext()
 
   if (flowMode === 'src') {
     return <ReverseActionsTab onResetStateChange={onResetStateChange} />
