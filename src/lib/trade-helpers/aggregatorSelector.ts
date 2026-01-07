@@ -29,7 +29,9 @@ export async function fetchAllAggregatorTrades(
         const aggregator = aggregatorName as TradeAggregator
         const trade = await fetchAggregatorTrade(aggregator, inputWithCalls, controller)
         if (trade) return { aggregator: aggregatorName, trade }
-      } catch {}
+      } catch (error) {
+        console.debug(`Error fetching trade from ${aggregatorName}:`, error)
+      }
       return undefined
     })
   )
