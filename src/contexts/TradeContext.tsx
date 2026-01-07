@@ -1,16 +1,16 @@
-import { createContext, useContext, useCallback, useMemo, type ReactNode } from 'react'
+import { createContext, useContext, useCallback, useMemo, useState, type ReactNode } from 'react'
 import { useSlippage } from './SlippageContext'
-import {
-  useDestinationInfo,
-  type FlowMode,
-} from './DestinationInfoContext'
+import { useDestinationInfo } from './DestinationInfoContext'
 import type { RawCurrency, RawCurrencyAmount } from '../types/currency'
 import { CurrencyHandler } from '@1delta/lib-utils/dist/services/currency/currencyUtils'
+import type { ActionCall } from '../components/actions/shared/types'
 
 export interface TradeSettings {
   slippage: number
   priceImpact: number | undefined
 }
+
+export type TradeSide = 'src' | 'dst'
 
 export interface TradeDestination {
   currencyAmount?: RawCurrencyAmount
@@ -20,13 +20,23 @@ export interface TradeDestination {
   actionData?: unknown
 }
 
+export interface TradeRoute {
+  srcAmount?: RawCurrencyAmount
+  dstAmount?: RawCurrencyAmount
+}
+
+export interface TradeActions {
+  side: TradeSide
+  calls: ActionCall[]
+}
+
 export interface TradeContextValue {
   slippage: number
   setSlippage: (slippage: number) => void
   priceImpact: number | undefined
   setPriceImpact: (priceImpact: number | undefined) => void
-  flowMode: FlowMode
-  setFlowMode: (mode: FlowMode) => void
+  flowMode: TradeSide
+  setFlowMode: (mode: TradeSide) => void
   destination: TradeDestination | undefined
   setDestination: (
     currencyAmount: RawCurrencyAmount | undefined,
@@ -35,13 +45,30 @@ export interface TradeContextValue {
     actionData?: unknown
   ) => void
   clearDestination: () => void
+  route: TradeRoute
+  setSrcAmount: (srcAmount: RawCurrencyAmount | undefined) => void
+  setDstAmount: (dstAmount: RawCurrencyAmount | undefined) => void
+  clearRoute: () => void
+  actions: TradeActions
+  setCalls: (calls: ActionCall[]) => void
+  clearCalls: () => void
+  inputCalls: ActionCall[] | undefined
+  destinationCalls: ActionCall[] | undefined
 }
 
 const TradeContext = createContext<TradeContextValue | undefined>(undefined)
 
 export function TradeProvider({ children }: { children: ReactNode }) {
   const { slippage, setSlippage, priceImpact, setPriceImpact } = useSlippage()
-  const { destinationInfo, setDestinationInfoState, flowMode, setFlowMode } = useDestinationInfo()
+  const {
+    destinationInfo,
+    setDestinationInfoState,
+    flowMode: destinationFlowMode,
+    setFlowMode: setDestinationFlowMode,
+  } = useDestinationInfo()
+
+  const [route, setRoute] = useState<TradeRoute>({})
+  const [calls, setCallsState] = useState<ActionCall[]>([])
 
   const destination = useMemo<TradeDestination | undefined>(() => {
     if (!destinationInfo) return undefined
@@ -53,6 +80,8 @@ export function TradeProvider({ children }: { children: ReactNode }) {
       actionData: destinationInfo.actionData,
     }
   }, [destinationInfo])
+
+  const flowMode: TradeSide = destinationFlowMode
 
   const setDestination = useCallback(
     (
@@ -86,6 +115,52 @@ export function TradeProvider({ children }: { children: ReactNode }) {
     setDestinationInfoState(undefined)
   }, [setDestinationInfoState])
 
+  const setFlowMode = useCallback(
+    (mode: TradeSide) => {
+      setDestinationFlowMode(mode)
+      setRoute({})
+      setCallsState([])
+      setDestinationInfoState(undefined)
+      setPriceImpact(undefined)
+    },
+    [setDestinationFlowMode, setDestinationInfoState, setPriceImpact]
+  )
+
+  const setSrcAmount = useCallback((srcAmount: RawCurrencyAmount | undefined) => {
+    setRoute((prev) => ({ ...prev, srcAmount }))
+  }, [])
+
+  const setDstAmount = useCallback((dstAmount: RawCurrencyAmount | undefined) => {
+    setRoute((prev) => ({ ...prev, dstAmount }))
+  }, [])
+
+  const clearRoute = useCallback(() => {
+    setRoute({})
+  }, [])
+
+  const setCalls = useCallback((next: ActionCall[]) => {
+    setCallsState(next)
+  }, [])
+
+  const clearCalls = useCallback(() => {
+    setCallsState([])
+  }, [])
+
+  const actions = useMemo<TradeActions>(() => {
+    return {
+      side: flowMode,
+      calls,
+    }
+  }, [flowMode, calls])
+
+  const inputCalls = useMemo(() => {
+    return actions.side === 'src' && actions.calls.length > 0 ? actions.calls : undefined
+  }, [actions.side, actions.calls])
+
+  const destinationCalls = useMemo(() => {
+    return actions.side === 'dst' && actions.calls.length > 0 ? actions.calls : undefined
+  }, [actions.side, actions.calls])
+
   const value = useMemo<TradeContextValue>(
     () => ({
       slippage,
@@ -97,6 +172,15 @@ export function TradeProvider({ children }: { children: ReactNode }) {
       destination,
       setDestination,
       clearDestination,
+      route,
+      setSrcAmount,
+      setDstAmount,
+      clearRoute,
+      actions,
+      setCalls,
+      clearCalls,
+      inputCalls,
+      destinationCalls,
     }),
     [
       slippage,
@@ -108,6 +192,15 @@ export function TradeProvider({ children }: { children: ReactNode }) {
       destination,
       setDestination,
       clearDestination,
+      route,
+      setSrcAmount,
+      setDstAmount,
+      clearRoute,
+      actions,
+      setCalls,
+      clearCalls,
+      inputCalls,
+      destinationCalls,
     ]
   )
 
@@ -132,3 +225,12 @@ export function useTradeDestination() {
   return { destination, setDestination, clearDestination }
 }
 
+export function useTradeInput() {
+  const { route, setSrcAmount } = useTradeContext()
+  return { srcAmount: route.srcAmount, setSrcAmount }
+}
+
+export function useTradeReverseInput() {
+  const { route, setDstAmount } = useTradeContext()
+  return { dstAmount: route.dstAmount, setDstAmount }
+}
