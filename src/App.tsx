@@ -8,6 +8,7 @@ import { TxHistoryButton } from './components/history/TxHistoryButton'
 import { QuoteTracePanel } from './components/debug/QuoteTracePanel'
 import { DestinationInfoProvider } from './contexts/DestinationInfoContext'
 import { TradeProvider, useTradeContext } from './contexts/TradeContext'
+import logo from './assets/icons/1delta_logo.svg'
 
 export default function App() {
   const [showSwapReset, setShowSwapReset] = useState(false)
@@ -27,7 +28,7 @@ export default function App() {
         <div className="flex flex-row p-2 grow">
           <div className="flex-1">
             <div className="flex items-center space-x-2">
-              <h1 className="text-2xl font-bold text-primary">1ΔC²</h1>
+              <img src={logo} alt="Logo" className="h-10 w-auto" />
             </div>
           </div>
           <div className="flex-none flex gap-3 items-center">
@@ -48,7 +49,7 @@ export default function App() {
             <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
               <div className="space-y-4 flex flex-col items-center">
                 {/* TABS + SLIPPAGE */}
-                <div className="w-full max-w-[1000px] min-w-[450px] flex items-center justify-between">
+                <div className="w-full max-w-250 min-w-112.5 flex items-center justify-between">
                   <FlowModeSwitcher />
 
                   <div className="flex items-center gap-2">
@@ -75,7 +76,7 @@ export default function App() {
                 </div>
 
                 {/* CARD */}
-                <div className="w-full max-w-[1000px] min-w-[450px]">
+                <div className="w-full max-w-250 min-w-112.5">
                   <div className="card bg-base-100 shadow-xl rounded-2xl">
                     <div className="card-body p-4 sm:p-6">
                       <TabContent
@@ -107,13 +108,13 @@ function FlowModeSwitcher() {
           className={`btn btn-xs join-item ${flowMode === 'dst' ? 'btn-secondary' : 'btn-ghost'}`}
           onClick={() => setFlowMode('dst')}
         >
-          Destination Actions
+          X-Chain Deposits
         </button>
         <button
           className={`btn btn-xs join-item ${flowMode === 'src' ? 'btn-secondary' : 'btn-ghost'}`}
           onClick={() => setFlowMode('src')}
         >
-          Source Actions
+          X-Chain Withdrawal
         </button>
       </div>
     </div>
