@@ -3,7 +3,6 @@ import { ActionsTab } from './components/actionsTab/ActionsTab'
 import { ReverseActionsTab } from './components/actionsTab/ReverseActionsTab'
 import { TradeSdkWalletSync } from './lib/trade-helpers/walletClient'
 import { SwapSlippageSelector } from './components/actionsTab/SwapSlippageSelector'
-import { ThemeSwitcher } from './components/themeSwitcher'
 import { WalletConnect } from './components/connect'
 import { TxHistoryButton } from './components/history/TxHistoryButton'
 import { QuoteTracePanel } from './components/debug/QuoteTracePanel'
@@ -20,7 +19,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-base-200 flex flex-col">
+    <div data-theme="default" className="min-h-screen bg-base-200 flex flex-col">
       <TradeSdkWalletSync />
 
       {/* NAVBAR */}
@@ -34,7 +33,6 @@ export default function App() {
           <div className="flex-none flex gap-3 items-center">
             <div className="flex-none flex gap-3 items-center">
               <TxHistoryButton />
-              <ThemeSwitcher />
             </div>
             <div className="flex-none flex gap-3 items-center">
               <WalletConnect />

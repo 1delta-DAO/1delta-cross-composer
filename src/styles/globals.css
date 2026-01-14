@@ -13,123 +13,106 @@
 }
 
 @plugin "daisyui/theme" {
-  name: 'terminal';
-  color-scheme: dark;
+  name: 'default';
+   color-scheme: dark;
 
-  /* Global font for this theme (optional, but nice for terminal feel) */
-  font-family:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
-    monospace;
-
-  /* Base background + text */
-  --color-base-100: #020617; /* main background (near black) */
-  --color-base-200: #020617;
-  --color-base-300: #0b1120;
-  --color-base-content: #bbf7d0; /* soft green-ish text */
-
-  /* Primary = neon green */
-  --color-primary: #22c55e;
-  --color-primary-content: #022c22;
-
-  /* Secondary = darker green */
-  --color-secondary: #16a34a;
-  --color-secondary-content: #022c22;
-
-  /* Accent = bright lime */
-  --color-accent: #4ade80;
-  --color-accent-content: #022c22;
-
-  /* Neutral surfaces (cards, nav, etc.) */
-  --color-neutral: #020617;
-  --color-neutral-content: #e5e7eb;
-
-  /* Status colors */
-  --color-info: #38bdf8;
-  --color-success: #22c55e;
-  --color-warning: #eab308;
-  --color-error: #ef4444;
-
-  /* Border radius – a bit sharper, “terminal window” style */
-  --radius-selector: 0.25rem;
-  --radius-field: 0.25rem;
-  --radius-box: 0.375rem;
-
-  /* Sizes + border */
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-  --border: 1px;
-
-  /* Subtle depth, no noise */
-  --depth: 0.5;
-  --noise: 0;
-}
-
-@plugin "daisyui/theme" {
-  name: 'moonbeam';
-  color-scheme: dark;
-
-  /* Cosmic monospace */
-  /* Universal: Inter (embedded) + system fallbacks */
   font-family:
     'Inter',
     -apple-system,
     BlinkMacSystemFont,
     'Segoe UI',
     Roboto,
-    'Noto Sans',
-    'Ubuntu',
-    'DejaVu Sans',
     sans-serif;
 
-  /* Deep-space background with slight indigo tint */
-  --color-base-100: #0b0c1f;
-  --color-base-200: #10122b;
-  --color-base-300: #181a36;
-  --color-base-content: #f8f7ff;
+  /* =========================
+     Base Surfaces
+     ========================= */
 
-  /*
-    🌈 HIGH-CHROMA RAINBOW NEONS
-    Tuned specifically for UI — vibrant but readable
-  */
+  --color-base-100: #0f1823; /* Blues/400 */
+  --color-base-200: #141c24; /* Blues/300 */
+  --color-base-300: #1a232c; /* Blues/250 */
+  --color-base-content: #f9f9f9; /* Whites/100 */
 
-  /* 🔮 Primary = neon purple-magenta */
-  --color-primary: #c084fc; /* bright violet */
-  --color-primary-content: #240038;
+  /* =========================
+     Primary / Secondary / Accent
+     ========================= */
 
-  /* 💙 Secondary = electric azure */
-  --color-secondary: #60a5fa; /* vibrant blue */
-  --color-secondary-content: #001a3f;
+  --color-primary: #01c38e; /* Greens/500 */
+  --color-primary-content: #0f1823; /* Grayscale/500 */
 
-  /* 🍏 Accent = neon mint-green */
-  --color-accent: #5cf4d5; /* bright aqua-mint */
-  --color-accent-content: #00332b;
+  --color-secondary: #1f313f; /* Blues/100 */
+  --color-secondary-content: #f3f3f3; /* Whites/200 */
 
-  /* 🟣 Info = neon cyan-light */
-  --color-info: #67e8f9;
+  --color-accent: #998ae6; /* Purple/600 */
+  --color-accent-content: #1c2025; /* Accent 1/900 */
 
-  /* 💚 Success = neon lime */
-  --color-success: #86efac;
+  /* =========================
+     Neutral UI
+     ========================= */
 
-  /* 🟡 Warning = bright cosmic gold */
-  --color-warning: #fcd34d;
+  --color-neutral: #192834; /* Blues/200 */
+  --color-neutral-content: #dedede; /* Whites/700 */
 
-  /* 🔥 Error = vivid neon rose */
-  --color-error: #fb7185;
+  /* =========================
+     Status Colors
+     ========================= */
 
-  /* Neutral surfaces */
-  --color-neutral: #1b1d32;
-  --color-neutral-content: #e8e9f5;
+  --color-info: #8da0b7; /* Accent 1/500 */
+  --color-info-content: #030507; /* Grayscale/900 */
 
-  /* Slightly softer, rounder components */
-  --radius-selector: 0.4rem;
-  --radius-field: 0.4rem;
+  --color-success: #01c38e; /* Greens/500 */
+  --color-success-content: #00271c; /* Greens/900 */
+
+  --color-warning: #e7aa66; /* Accent 2/500 */
+  --color-warning-content: #2e2214; /* Accent 2/900 */
+
+  --color-error: #dc604f; /* Accent 3/500 */
+  --color-error-content: #2c1310; /* Accent 3/900 */
+
+  /* =========================
+     Button Behavior (Important)
+     ========================= */
+
+  /* Hover states */
+  --color-primary-focus: #67dbbb; /* Greens/300 */
+  --color-secondary-focus: #192834; /* Blues/200 */
+  --color-accent-focus: #7763de; /* Purple/700 */
+
+  /* Active states */
+  --color-primary-active: #019c72; /* Greens/600 */
+  --color-secondary-active: #141c24; /* Blues/300 */
+  --color-accent-active: #7763de; /* Purple/700 */
+
+  /* Disabled buttons */
+  --color-disabled: #3f464f; /* Grayscale/400 */
+  --color-disabled-content: #6f747b; /* Grayscale/300 */
+
+  /* =========================
+     Borders & Inputs
+     ========================= */
+
+  --color-border: #1f313f; /* Blues/100 */
+  --color-border-focus: #01c38e; /* Greens/500 */
+
+  --color-input: #141c24; /* Blues/300 */
+  --color-input-content: #ffffff; /* Whites/0 */
+
+  /* =========================
+     Radius & Density
+     ========================= */
+
+  --radius-selector: 0.375rem;
+  --radius-field: 0.375rem;
   --radius-box: 0.5rem;
 
   --size-selector: 0.35rem;
   --size-field: 0.35rem;
   --border: 1px;
 
-  /* A bit more glow depth */
-  --depth: 0.8;
-  --noise: 0.05;
+  /* =========================
+     Visual Feel
+     ========================= */
+
+  --depth: 0.6;
+  --noise: 0;
 }

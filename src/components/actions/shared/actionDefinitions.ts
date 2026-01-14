@@ -63,14 +63,6 @@ export interface ActionDefinition {
 
 export { getRegisteredActions }
 
-export const CATEGORIES: { id: ActionCategory; label: string }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'defi', label: 'DeFi' },
-  { id: 'lending', label: 'Lending' },
-  { id: 'gaming', label: 'Gaming' },
-  { id: 'yield', label: 'Yield' },
-]
-
 // Get actions filtered by category
 export function getActionsByCategory(
   category: ActionCategory,

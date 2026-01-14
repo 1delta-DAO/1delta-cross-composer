@@ -13,7 +13,7 @@ importers:
   .:
     dependencies:
       '@1delta/bridge-configs':
-        specifier: ^0.1.9
+        specifier: ^0.1.8
         version: 0.1.9(@types/node@25.0.3)(ajv@8.17.1)(bufferutil@4.1.0)(cross-fetch@3.2.0)(ipfs-only-hash@4.0.0)(jiti@2.6.1)(lightningcss@1.30.2)(multiformats@9.9.0)(tsx@4.21.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(vitest@4.0.16(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0))
       '@1delta/bridge-core':
         specifier: ^0.1.3
