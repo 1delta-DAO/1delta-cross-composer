@@ -7,7 +7,6 @@ import {
   isMarketsReady,
   subscribeToCacheChanges,
   type MoonwellMarket,
-  initializeMoonwellMarkets,
 } from '../shared/marketCache'
 import { WithdrawCheckout } from './Checkout'
 

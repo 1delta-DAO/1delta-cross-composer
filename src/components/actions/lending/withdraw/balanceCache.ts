@@ -7,6 +7,7 @@ import { multicallRetryUniversal } from '@1delta/providers'
 type BalanceCache = Record<string, Record<string, Record<string, bigint>>>
 
 let cachedBalances: BalanceCache = {}
+let cachedUnderlyingBalances: BalanceCache = {}
 let loadingStates: Record<string, Record<string, boolean>> = {}
 let errorStates: Record<string, Record<string, string | undefined>> = {}
 
@@ -39,6 +40,15 @@ export function getCachedBalances(chainId: string, userAddress: Address): Record
   const chainKey = chainId
   const userKey = userAddress.toLowerCase()
   return cachedBalances[chainKey]?.[userKey] || {}
+}
+
+export function getCachedUnderlyingBalances(
+  chainId: string,
+  userAddress: Address
+): Record<string, bigint> {
+  const chainKey = chainId
+  const userKey = userAddress.toLowerCase()
+  return cachedUnderlyingBalances[chainKey]?.[userKey] || {}
 }
 
 export function isBalancesLoading(chainId: string, userAddress: Address): boolean {
@@ -87,6 +97,12 @@ export async function initializeUserLendingBalances(
   if (!cachedBalances[chainKey][userKey]) {
     cachedBalances[chainKey][userKey] = {}
   }
+  if (!cachedUnderlyingBalances[chainKey]) {
+    cachedUnderlyingBalances[chainKey] = {}
+  }
+  if (!cachedUnderlyingBalances[chainKey][userKey]) {
+    cachedUnderlyingBalances[chainKey][userKey] = {}
+  }
   if (!loadingStates[chainKey]) {
     loadingStates[chainKey] = {}
   }
@@ -105,6 +121,12 @@ export async function initializeUserLendingBalances(
       params: [userAddress],
     }))
 
+    const underlyingBalanceCalls = markets.map((market) => ({
+      address: market.mTokenCurrency.address as Address,
+      name: 'balanceOfUnderlying' as const,
+      params: [userAddress],
+    }))
+
     const rpcFromRpcSelector = await getBestRpcsForChain(chainId)
     const overrides =
       rpcFromRpcSelector && rpcFromRpcSelector.length > 0
@@ -113,28 +135,55 @@ export async function initializeUserLendingBalances(
 
     const balanceResults = await multicallRetryUniversal({
       chain: chainId,
-      calls: balanceCalls,
-      abi: erc20Abi,
+      calls: [...balanceCalls, ...underlyingBalanceCalls],
+      abi: [
+        ...erc20Abi,
+        {
+          type: 'function',
+          name: 'balanceOfUnderlying',
+          stateMutability: 'view',
+          inputs: [
+            {
+              name: 'account',
+              type: 'address',
+            },
+          ],
+          outputs: [
+            {
+              type: 'uint256',
+            },
+          ],
+        },
+      ],
       maxRetries: 3,
       providerId: 0,
       ...(overrides && { overrdies: overrides }),
     })
 
-    const balanceMap: Record<string, bigint> = {}
     for (let i = 0; i < markets.length; i++) {
       const market = markets[i]
       const mTokenKey = market.mTokenCurrency.address.toLowerCase()
       const result = balanceResults[i]
+      console.log('resultBase', result)
+      const resultUnderlying = balanceResults[markets.length + i]
+      console.log('resultUnderlying', resultUnderlying)
       const balance = result ? (result as bigint) : 0n
+      const balanceOfUnderlying = resultUnderlying ? (resultUnderlying as bigint) : 0n
       cachedBalances[chainKey][userKey][mTokenKey] = balance
-      balanceMap[mTokenKey] = balance
+      cachedUnderlyingBalances[chainKey][userKey][market.underlyingCurrency.address.toLowerCase()] =
+        balanceOfUnderlying
     }
+
+    console.log('cachedBalances', cachedBalances)
+    console.log('cachedUnderlyingBalances', cachedUnderlyingBalances)
 
     errorStates[chainKey][userKey] = undefined
   } catch (e) {
+    console.log('error', e)
     errorStates[chainKey][userKey] =
       e instanceof Error ? e.message : 'Failed to fetch lending balances'
     cachedBalances[chainKey][userKey] = {}
+    cachedUnderlyingBalances[chainKey][userKey] = {}
   } finally {
     loadingStates[chainKey][userKey] = false
     notifyListeners()

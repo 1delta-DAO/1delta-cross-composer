@@ -1,5 +1,6 @@
 import type { MoonwellMarket } from '../shared/marketCache'
 import { RawCurrency } from '../../../../types/currency'
+import { CurrencyHandler } from '@1delta/lib-utils'
 
 type MarketTokenCardProps = {
   market: MoonwellMarket
@@ -7,6 +8,8 @@ type MarketTokenCardProps = {
   currencyFromList: RawCurrency
   underlyingCurrency: RawCurrency
   enteredAmount?: string
+  balance: bigint
+  balanceOfUnderlying: bigint
 }
 
 function WithdrawCard({
@@ -15,9 +18,10 @@ function WithdrawCard({
   currencyFromList,
   underlyingCurrency,
   enteredAmount,
+  balance,
+  balanceOfUnderlying,
 }: MarketTokenCardProps) {
   const token = currencyFromList
-
   const symbol = market.symbol || token?.symbol || 'Unknown'
 
   const iconSrc = currencyFromList.logoURI
@@ -29,6 +33,9 @@ function WithdrawCard({
     ? 'border-2 border-primary'
     : 'border border-base-300 hover:border-primary/50'
 
+  const balanceFormatted = CurrencyHandler.toSignificant(
+    CurrencyHandler.fromRawAmount(currencyFromList, balanceOfUnderlying)
+  )
   return (
     <button
       type="button"
@@ -47,6 +54,12 @@ function WithdrawCard({
         )}
       </div>
       <span className="text-xs font-medium truncate w-full text-center">{symbol}</span>
+
+      {/* Balance */}
+      <div className="text-center">
+        <span className="block text-[11px] text-base-content/60">Balance</span>
+        <span className="text-xs font-medium tabular-nums">{balanceFormatted}</span>
+      </div>
     </button>
   )
 }
