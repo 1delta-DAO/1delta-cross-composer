@@ -287,7 +287,7 @@ export function ReverseActionsTab({ onResetStateChange }: Props) {
         onDstCurrencyChange={(currency) => {
           setDstAmount(CurrencyHandler.fromRawAmount(currency, 0n))
         }}
-        calculatedInputAmount={undefined}
+        calculatedInputAmount={CurrencyHandler.toSignificant(inputInfo?.currencyAmount)}
         actionInfo={inputInfo}
         pricesData={pricesData}
         isLoadingPrices={isLoadingPrices}
