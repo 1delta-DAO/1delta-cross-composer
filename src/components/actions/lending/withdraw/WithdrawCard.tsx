@@ -39,7 +39,7 @@ function WithdrawCard({
   return (
     <button
       type="button"
-      className={`flex flex-col items-center gap-2 p-3 cursor-pointer rounded-lg ${borderClass} bg-base-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+      className={`flex flex-col items-center gap-1 p-3 cursor-pointer rounded-lg ${borderClass} bg-base-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
       disabled={market.borrowPaused}
       onClick={() => {
         if (!market.borrowPaused) onActionClick()
@@ -54,6 +54,7 @@ function WithdrawCard({
         )}
       </div>
       <span className="text-xs font-medium truncate w-full text-center">{symbol}</span>
+      <span className="block text-[9px] text-base-content/60">{token.name}</span>
 
       {/* Balance */}
       <div className="text-center">
