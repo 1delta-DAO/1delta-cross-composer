@@ -119,48 +119,93 @@ export function StellaStakingPanel({ setActionInfo, resetKey }: StellaStakingPan
     }
   }, [resetKey])
 
+  const [open, setOpen] = useState(false)
+
+  const tokens: any = {
+    DOT: xcDOTToken,
+    GLMR: glmrToken,
+  }
+
+  const selectedToken = tokens[tokenType]
+
+  const wrapperRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(e: PointerEvent) {
+      if (!wrapperRef.current?.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', handleClickOutside)
+    return () => {
+      document.removeEventListener('pointerdown', handleClickOutside)
+    }
+  }, [])
+
   return (
-    <div className="space-y-3">
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <input
-            className="input input-bordered flex-1"
-            placeholder={`${tokenType} amount`}
-            value={outputAmount}
-            onChange={(e) => handleAmountChange(e.target.value)}
-            inputMode="decimal"
-          />
-          <select
-            defaultValue={tokenType}
-            className="select select-primary"
-            onChange={(e) => {
-              setTokenType(e.target.value as 'DOT' | 'GLMR')
-              setOutputAmount('')
-            }}
+    <div className="space-y-2">
+      <div className="flex items-stretch gap-2 rounded-xl border border-base-300 bg-base-100 p-2 focus-within:border-primary transition">
+        {/* Amount Input */}
+        <input
+          className="flex-1 bg-transparent outline-none text-lg font-medium placeholder:text-base-content/40"
+          placeholder={`${tokenType} amount`}
+          value={outputAmount}
+          onChange={(e) => handleAmountChange(e.target.value)}
+          inputMode="decimal"
+        />
+
+        {/* Token Selector */}
+        <div className="relative" ref={wrapperRef}>
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="flex items-center gap-2 rounded-lg bg-base-200 px-3 py-2 hover:bg-base-300 transition"
           >
-            <option value="DOT">
-              <>
-                <Logo
-                  src={xcDOTToken?.logoURI}
-                  alt={xcDOTToken?.symbol || 'DOT'}
-                  fallbackText={xcDOTToken?.symbol?.[0] || 'DOT'}
-                  size={16}
-                />
-                <span>DOT</span>
-              </>
-            </option>
-            <option value="GLMR">
-              <>
-                <Logo
-                  src={glmrToken?.logoURI}
-                  alt={glmrToken?.symbol || 'GLMR'}
-                  fallbackText={glmrToken?.symbol?.[0] || 'GLMR'}
-                  size={16}
-                />
-                <span>GLMR</span>
-              </>
-            </option>
-          </select>
+            <Logo
+              src={selectedToken?.logoURI}
+              alt={''}
+              fallbackText={selectedToken?.symbol?.[0] || tokenType}
+              size={18}
+            />
+            <span className="font-semibold">{tokenType}</span>
+            {/* CSS Arrow */}
+            <span
+              className={`ml-1 inline-block h-0 w-0 border-l-4 border-r-4 border-t-6 border-l-transparent border-r-transparent border-t-base-content/60 transition-transform ${
+                open ? 'rotate-180' : ''
+              }`}
+            />{' '}
+          </button>
+
+          {/* Dropdown */}
+          {open && (
+            <div className="absolute right-0 top-full z-10 mt-2 w-36 rounded-xl border border-base-300 bg-base-100 shadow-lg overflow-hidden">
+              {(Object.keys(tokens) as any[]).map((key) => {
+                const token = tokens[key]
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => {
+                      setTokenType(key)
+                      setOpen(false)
+                    }}
+                    className={`flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-base-200 transition ${
+                      key === tokenType ? 'bg-primary/10 font-semibold' : ''
+                    }`}
+                  >
+                    <Logo
+                      src={token?.logoURI}
+                      alt={token?.symbol}
+                      fallbackText={token?.symbol?.[0] || key}
+                      size={16}
+                    />
+                    <span>{key}</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>
