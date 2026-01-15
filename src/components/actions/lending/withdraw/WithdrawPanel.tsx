@@ -6,8 +6,12 @@ import { ActionHandler } from '../../shared/types'
 import { useConnection } from 'wagmi'
 import { useTokenLists } from '../../../../hooks/useTokenLists'
 import type { RawCurrencyAmount } from '../../../../types/currency'
-import { waitForBalances, getCachedBalances, subscribeToBalanceChanges } from './balanceCache'
-import { DUMMY_ADDRESS } from '../../../../lib/consts'
+import {
+  waitForBalances,
+  getCachedBalances,
+  subscribeToBalanceChanges,
+  getCachedUnderlyingBalances,
+} from './balanceCache'
 import { SupportedChainId } from '@1delta/lib-utils'
 
 type WithdrawPanelProps = {
@@ -26,9 +30,7 @@ export function WithdrawPanel({
   markets = [],
 }: WithdrawPanelProps) {
   const { address } = useConnection()
-  const [isExpanded, setIsExpanded] = useState(false)
   const [showNoBalance, setShowNoBalance] = useState(true)
-  const userAddress = address || DUMMY_ADDRESS
   const effectiveChainId = chainId || SupportedChainId.MOONBEAM
 
   const [balanceUpdateKey, setBalanceUpdateKey] = useState(0)
@@ -59,6 +61,11 @@ export function WithdrawPanel({
     return getCachedBalances(effectiveChainId, address)
   }, [effectiveChainId, address, balanceUpdateKey])
 
+  const underlyingBalances = useMemo(() => {
+    if (!effectiveChainId || !address) return {}
+    return getCachedUnderlyingBalances(effectiveChainId, address)
+  }, [effectiveChainId, address, balanceUpdateKey])
+
   const withdrawMarkets = useMemo(() => {
     let filtered = markets.filter((m) => m.isListed && !m.borrowPaused)
 
@@ -79,7 +86,7 @@ export function WithdrawPanel({
     }
 
     return filtered
-  }, [markets, showNoBalance, balances, address])
+  }, [markets, showNoBalance, balances, underlyingBalances, address])
 
   const [selectedMarket, setSelectedMarket] = useState<undefined | MoonwellMarket>(undefined)
   const [marketAmounts, setMarketAmounts] = useState<Map<string, string>>(new Map())
@@ -90,7 +97,6 @@ export function WithdrawPanel({
   useEffect(() => {
     if (resetKey !== undefined && resetKey > 0) {
       setSelectedMarket(undefined)
-      setIsExpanded(false)
       setMarketAmounts(new Map())
       setLastSelectedMarketAddress(undefined)
       setActionInfo?.(undefined, undefined, [])
@@ -151,7 +157,7 @@ export function WithdrawPanel({
             />
           </label>
         </div>
-        <div className="grid grid-cols-2 min-[600px]:grid-cols-3 min-[800px]:grid-cols-4 min-[1000px]:grid-cols-5 gap-3 max-h-[400px] overflow-y-auto">
+        <div className="grid grid-cols-2 min-[600px]:grid-cols-3 min-[800px]:grid-cols-4 min-[1000px]:grid-cols-5 gap-3 max-h-100 overflow-y-auto">
           {withdrawMarkets.length === 0 ? (
             <div className="col-span-full text-sm opacity-50 text-center py-4">
               No markets available
@@ -177,6 +183,10 @@ export function WithdrawPanel({
                   }
                   underlyingCurrency={market.underlyingCurrency}
                   enteredAmount={isSelected ? enteredAmount : undefined}
+                  balance={balances[market.mTokenCurrency.address.toLowerCase()] ?? 0n}
+                  balanceOfUnderlying={
+                    underlyingBalances[market.underlyingCurrency.address.toLowerCase()] ?? 0n
+                  }
                 />
               )
             })
@@ -200,6 +210,9 @@ export function WithdrawPanel({
           amount={marketAmounts.get(selectedMarket.mTokenCurrency.address) || ''}
           onAmountChange={(amount) =>
             handleAmountChange(selectedMarket.mTokenCurrency.address, amount)
+          }
+          balanceOfUnderlying={
+            underlyingBalances[selectedMarket.underlyingCurrency.address.toLowerCase()] ?? 0n
           }
         />
       )}

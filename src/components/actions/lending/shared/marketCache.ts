@@ -227,7 +227,6 @@ export async function initializeMoonwellMarkets(
     isInitialized = true
     error = undefined
 
-    console.log('results', results)
     return { markets: results }
   } catch (e) {
     error = e instanceof Error ? e.message : 'Failed to fetch Moonwell markets'

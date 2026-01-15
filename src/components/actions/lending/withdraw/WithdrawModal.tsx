@@ -19,6 +19,7 @@ type WithdrawActionModalProps = {
   chainId?: string
   setActionInfo?: ActionHandler
   amount?: string
+  balanceOfUnderlying: bigint
   onAmountChange?: (amount: string) => void
 }
 
@@ -30,6 +31,7 @@ export function WithdrawActionModal({
   setActionInfo,
   amount: externalAmount,
   onAmountChange,
+  balanceOfUnderlying,
 }: WithdrawActionModalProps) {
   const [internalAmount, setInternalAmount] = useState<string>('')
   const { address } = useConnection()
@@ -54,6 +56,10 @@ export function WithdrawActionModal({
   const iconSrc = (selectedCurrency as any)?.icon || (selectedCurrency as any)?.logoURI || undefined
 
   const mTokenSymbol = market.mTokenCurrency?.symbol || 'mToken'
+
+  const balanceFormatted = CurrencyHandler.toSignificant(
+    CurrencyHandler.fromRawAmount(underlying, balanceOfUnderlying)
+  )
 
   const handleConfirm = async () => {
     if (!amount || !underlying) return
@@ -92,7 +98,7 @@ export function WithdrawActionModal({
     })
 
     setActionInfo?.(
-      CurrencyHandler.fromRawAmount(underlying, 0n),
+      CurrencyHandler.fromRawAmount(underlying, balanceOfUnderlying - 1n),
       undefined,
       inputCalls,
       `${mTokenSymbol} withdraw (Max)`,
@@ -157,9 +163,11 @@ export function WithdrawActionModal({
         <div className="space-y-4">
           <div className="form-control">
             <label className="label py-1">
-              <span className="label-text text-sm font-medium">
-                Amount {symbol && `(${symbol})`}
-              </span>
+              {
+                <span className="label-text text-sm font-medium">
+                  Available: {balanceFormatted ?? '0.0'} {symbol && `${symbol}`}
+                </span>
+              }
             </label>
             <div className="flex items-center gap-2">
               <input

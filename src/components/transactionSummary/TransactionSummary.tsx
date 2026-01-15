@@ -217,16 +217,15 @@ export function TransactionSummary({
         <div className="text-sm font-semibold mb-3">Transaction Summary</div>
 
         <div className="space-y-3">
-          {!isReverseFlow && (
-            <PayInfo
-              label="You'll pay:"
-              amount={formattedInput}
-              currency={srcCurrency}
-              chainName={srcChainName}
-              amountUsd={inputUsd}
-              showFadedAmount={!hasInputAmount}
-            />
-          )}
+          <PayInfo
+            label={!isReverseFlow ? "You'll pay:" : "You'll withdraw"}
+            amount={formattedInput}
+            currency={srcCurrency}
+            chainName={srcChainName}
+            amountUsd={inputUsd}
+            showFadedAmount={!hasInputAmount}
+          />
+
           {renderActionSummary()}
           {isReverseFlow && isInputDirection && (
             <PayInfo
