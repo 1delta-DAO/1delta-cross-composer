@@ -164,9 +164,7 @@ export async function initializeUserLendingBalances(
       const market = markets[i]
       const mTokenKey = market.mTokenCurrency.address.toLowerCase()
       const result = balanceResults[i]
-      console.log('resultBase', result)
       const resultUnderlying = balanceResults[markets.length + i]
-      console.log('resultUnderlying', resultUnderlying)
       const balance = result ? (result as bigint) : 0n
       const balanceOfUnderlying = resultUnderlying ? (resultUnderlying as bigint) : 0n
       cachedBalances[chainKey][userKey][mTokenKey] = balance
@@ -174,12 +172,8 @@ export async function initializeUserLendingBalances(
         balanceOfUnderlying
     }
 
-    console.log('cachedBalances', cachedBalances)
-    console.log('cachedUnderlyingBalances', cachedUnderlyingBalances)
-
     errorStates[chainKey][userKey] = undefined
   } catch (e) {
-    console.log('error', e)
     errorStates[chainKey][userKey] =
       e instanceof Error ? e.message : 'Failed to fetch lending balances'
     cachedBalances[chainKey][userKey] = {}
