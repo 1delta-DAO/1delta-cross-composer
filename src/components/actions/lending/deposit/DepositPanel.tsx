@@ -3,7 +3,7 @@ import { type MoonwellMarket } from '../shared/marketCache'
 import { DepositActionModal } from './DepositModal'
 import { DepositCard } from './DepositCard'
 import { ActionHandler } from '../../shared/types'
-import { useConnection } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { useTokenLists } from '../../../../hooks/useTokenLists'
 import type { RawCurrencyAmount } from '../../../../types/currency'
 
@@ -22,7 +22,7 @@ export function DepositPanel({
   actionInfo,
   markets = [],
 }: DepositPanelProps) {
-  const { address } = useConnection()
+  const { address } = useAccount()
 
   // Only listed markets can be used for deposits
   const depositMarkets = useMemo(() => {

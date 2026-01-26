@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import type { Address } from 'viem'
 import { zeroAddress } from 'viem'
-import { usePublicClient, useConnection, useWalletClient } from 'wagmi'
+import { usePublicClient, useAccount, useWalletClient } from 'wagmi'
 import type { GenericTrade } from '../../sdk/types'
 import { buildTransactionUrl } from '../../lib/explorer'
 import { useChainsRegistry } from '../../sdk/hooks/useChainsRegistry'
@@ -80,7 +80,7 @@ export default function ExecuteButton(props: ExecuteButtonProps) {
     quoting,
   } = props
 
-  const { address, isConnected } = useConnection()
+  const { address, isConnected } = useAccount()
   const publicClient = usePublicClient()
   const toast = useToast()
 

@@ -5,7 +5,7 @@ import { buildCalls } from './callBuilder'
 import { STELLA_STDOT_ADDRESS, STELLA_STGLMR_ADDRESS } from './consts'
 import { parseUnits, zeroAddress } from 'viem'
 import { useDebounce } from '../../../../hooks/useDebounce'
-import { useConnection } from 'wagmi'
+import { useAccount } from 'wagmi'
 import {
   getTokenFromCache,
   isTokenListsReady,
@@ -19,7 +19,7 @@ interface StellaStakingPanelProps {
 }
 
 export function StellaStakingPanel({ setActionInfo, resetKey }: StellaStakingPanelProps) {
-  const { address } = useConnection()
+  const { address } = useAccount()
 
   const [outputAmount, setOutputAmount] = useState('')
   const [tokenType, setTokenType] = useState<'DOT' | 'GLMR'>('DOT')

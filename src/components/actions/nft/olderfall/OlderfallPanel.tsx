@@ -6,7 +6,7 @@ import { OlderfallListingCard } from './OlderfallCard'
 import { formatListingPriceLabel } from './utils'
 import { buildCalls } from './callBuilder'
 import type { OlderfallListing } from './api'
-import { useConnection } from 'wagmi'
+import { useAccount } from 'wagmi'
 import type { Address } from 'viem'
 import { getTokenFromCache, isTokenListsReady } from '../../../../lib/data/tokenListsCache'
 import { isEmptyAddress, isValidAddress } from '../../../../utils/validatorUtils'
@@ -97,7 +97,7 @@ export function OlderfallPanel({
   preloadedListings,
   resetKey,
 }: OlderfallPanelProps) {
-  const { address } = useConnection()
+  const { address } = useAccount()
   const [selectedOlderfallOrderId, setSelectedOlderfallOrderId] = useState<string>('')
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(0)
   const [receiverAddress, setReceiverAddress] = useState<string>('')
