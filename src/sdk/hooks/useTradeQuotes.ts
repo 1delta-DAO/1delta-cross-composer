@@ -4,7 +4,7 @@ import { DUMMY_ADDRESS } from '../../lib/consts'
 import { useToast } from '../../components/common/ToastHost'
 import type { ActionCall } from '../../components/actions/shared/types'
 import type { RawCurrency, RawCurrencyAmount } from '../../types/currency'
-import { useConnection } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { fetchQuotes, type Quote } from './useQuoteFetcher'
 import { useQuoteValidation } from './useQuoteValidation'
 import { useQuoteRefreshHelpers, REFRESH_INTERVAL_MS } from './useQuoteRefresh'
@@ -41,7 +41,7 @@ export function useTradeQuotes({
     actionId?: string
   }
 }) {
-  const { address: userAddress } = useConnection()
+  const { address: userAddress } = useAccount()
   const receiverAddress = userAddress || DUMMY_ADDRESS
   const toast = useToast()
 

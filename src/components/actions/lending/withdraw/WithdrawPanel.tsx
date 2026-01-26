@@ -3,7 +3,7 @@ import { type MoonwellMarket } from '../shared/marketCache'
 import { WithdrawActionModal } from './WithdrawModal'
 import { WithdrawCard } from './WithdrawCard'
 import { ActionHandler } from '../../shared/types'
-import { useConnection } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { useTokenLists } from '../../../../hooks/useTokenLists'
 import type { RawCurrencyAmount } from '../../../../types/currency'
 import {
@@ -29,7 +29,7 @@ export function WithdrawPanel({
   actionInfo,
   markets = [],
 }: WithdrawPanelProps) {
-  const { address } = useConnection()
+  const { address } = useAccount()
   const [showNoBalance, setShowNoBalance] = useState(true)
   const effectiveChainId = chainId || SupportedChainId.MOONBEAM
 

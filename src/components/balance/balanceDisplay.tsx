@@ -1,6 +1,6 @@
 import { CurrencyHandler, getWNative, type RawCurrency } from '@1delta/lib-utils'
 import { InputTokenSelector } from '../actions/shared/InputTokenSelector'
-import { useConnection } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { useBalanceQuery } from '../../hooks/balances/useBalanceQuery'
 import { PricesRecord } from '../../hooks/prices/usePriceQuery'
 
@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default function BalanceDisplay({ srcCurrency, onSrcCurrencyChange, pricesData }: Props) {
-  const { address } = useConnection()
+  const { address } = useAccount()
   const { data: inputBalances, isLoading } = useBalanceQuery({
     currencies: srcCurrency ? [srcCurrency, getWNative(srcCurrency.chainId)] : [],
     enabled: srcCurrency && Boolean(address),

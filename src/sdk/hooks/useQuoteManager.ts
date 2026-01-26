@@ -1,6 +1,6 @@
 import { useReducer, useEffect, useRef, useMemo, useCallback } from 'react'
 import type { Address } from 'viem'
-import { useConnection } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { DUMMY_ADDRESS } from '../../lib/consts'
 import { useToast } from '../../components/common/ToastHost'
 import type { ActionCall } from '../../components/actions/shared/types'
@@ -64,7 +64,7 @@ export function useQuoteManager(params: QuoteManagerParams): QuoteManagerResult 
     actionInfo,
   } = params
 
-  const { address: userAddress } = useConnection()
+  const { address: userAddress } = useAccount()
   const receiverAddress = userAddress || DUMMY_ADDRESS
   const toast = useToast()
   const quoteTrace = useQuoteTrace()

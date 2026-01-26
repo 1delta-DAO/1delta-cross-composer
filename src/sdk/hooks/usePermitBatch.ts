@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useConnection, useSignTypedData, useWriteContract, useChainId } from 'wagmi'
+import { useAccount, useSignTypedData, useWriteContract, useChainId } from 'wagmi'
 import { encodeFunctionData, erc20Abi, parseUnits, type Address, type Hex } from 'viem'
 import { moonbeam } from 'viem/chains'
 import { BATCH_PRECOMPILE, CALL_PERMIT_PRECOMPILE, DOMAIN_SEPARATOR } from '../../lib/consts'
@@ -9,7 +9,7 @@ import { getRpcSelectorEvmClient } from '@1delta/lib-utils'
 import { fetchDecimals as fetchDecimalsUtil } from '../utils/tokenUtils'
 
 export function usePermitBatch() {
-  const { address } = useConnection()
+  const { address } = useAccount()
   const chainId = useChainId()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

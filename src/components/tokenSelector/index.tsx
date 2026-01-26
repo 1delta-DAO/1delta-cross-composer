@@ -11,7 +11,7 @@ import type { RawCurrency } from '../../types/currency'
 import { TokenSelectorDropdownMode } from './Dropdown'
 import { TokenSelectorListMode } from './ListMode'
 import type { TokenRowData } from './types'
-import { useConnection } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { getMainTokensCache, isMainToken } from '../../lib/assetLists'
 import { getUserTokensForChain, addUserToken, isUserToken } from '../../lib/userTokens'
 
@@ -36,7 +36,7 @@ export function TokenSelector({
   showSearch = true,
   listMode = false,
 }: TokenSelectorProps) {
-  const { address: userAddress } = useConnection()
+  const { address: userAddress } = useAccount()
   const { data: lists, isLoading: listsLoading } = useTokenLists()
   const { data: chains } = useChainsRegistry()
   const [open, setOpen] = useState(false)

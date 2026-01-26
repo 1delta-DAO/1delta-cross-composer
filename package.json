@@ -21,6 +21,7 @@
     "@1delta/lib-utils": "^0.1.10",
     "@1delta/providers": "^0.0.42",
     "@1delta/trade-sdk": "^0.1.9",
+    "@metamask/sdk": "^0.34.0",
     "@rainbow-me/rainbowkit": "^2.2.10",
     "@tailwindcss/postcss": "^4.1.18",
     "@tanstack/react-query": "^5.90.16",
@@ -33,7 +34,7 @@
     "tailwindcss": "^4.1.18",
     "viem": "^2.43.5",
     "vite": "^7.3.1",
-    "wagmi": "^3.2.0"
+    "wagmi": "^2.14.11"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",

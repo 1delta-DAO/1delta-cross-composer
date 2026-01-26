@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import type { Address } from 'viem'
 import { zeroAddress } from 'viem'
-import { useConnection } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { fetchEvmUserTokenDataEnhanced } from '../../sdk/utils/fetchBalances'
 import type { RawCurrency, RawCurrencyAmount } from '../../types/currency'
 import { CurrencyHandler } from '@1delta/lib-utils/dist/services/currency/currencyUtils'
@@ -105,7 +105,7 @@ async function fetchBalances(
 
 export function useBalanceQuery(params: { currencies: RawCurrency[]; enabled?: boolean }) {
   const { currencies, enabled = true } = params
-  const { address: userAddress } = useConnection()
+  const { address: userAddress } = useAccount()
 
   const queryKey = useMemo(() => {
     const keys: Set<string> = new Set()

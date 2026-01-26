@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, type ReactNode } from 'react'
-import { useConnection, useChainId } from 'wagmi'
+import { useAccount, useChainId } from 'wagmi'
 import type { Address } from 'viem'
 import { useChainsRegistry, type ChainsRegistryRecord } from '../sdk/hooks/useChainsRegistry'
 import { useTokenLists, type TokenListsRecord } from '../hooks/useTokenLists'
@@ -18,7 +18,7 @@ export interface Web3ContextValue {
 const Web3Context = createContext<Web3ContextValue | undefined>(undefined)
 
 export function Web3Provider({ children }: { children: ReactNode }) {
-  const { address, isConnected } = useConnection()
+  const { address, isConnected } = useAccount()
   const currentChainId = useChainId()
   const { data: chains, isLoading: chainsLoading, error: chainsError } = useChainsRegistry()
   const { data: lists, isLoading: tokenListsLoading } = useTokenLists()

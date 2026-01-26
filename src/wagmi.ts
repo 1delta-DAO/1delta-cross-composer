@@ -27,8 +27,8 @@ export const evmTransportsWagmi = Object.assign(
 )
 
 export const config = getDefaultConfig({
-  appName: '1Delta Cross Composer',
-  projectId: 'id',
+  appName: '1delta Cross Composer',
+  projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '',
   chains: evmChainWagmi as any,
   transports: {
     ...evmTransportsWagmi,

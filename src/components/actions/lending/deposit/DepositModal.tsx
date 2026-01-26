@@ -5,7 +5,7 @@ import { CurrencyHandler } from '@1delta/lib-utils/dist/services/currency/curren
 import { ActionHandler } from '../../shared/types'
 import { buildCalls } from './callBuilder'
 import { MoonwellMarket } from '../shared/marketCache'
-import { useConnection } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { DUMMY_ADDRESS } from '../../../../lib/consts'
 import { RawCurrency } from '../../../../types/currency'
 import { Lender } from '@1delta/lib-utils'
@@ -32,7 +32,7 @@ export function DepositActionModal({
   onAmountChange,
 }: DepositActionModalProps) {
   const [internalAmount, setInternalAmount] = useState<string>('')
-  const { address } = useConnection()
+  const { address } = useAccount()
   const userAddress = address ?? DUMMY_ADDRESS
 
   const amount = onAmountChange ? externalAmount || '' : internalAmount
