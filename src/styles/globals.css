@@ -116,3 +116,15 @@
   --depth: 0.6;
   --noise: 0;
 }
+
+/*
+ * DaisyUI 5.x modal backdrop uses oklch() which is unsupported in
+ * Safari < 15.4 and older browsers.  Those browsers silently discard
+ * the rule and keep the initial transparent background, making the
+ * backdrop appear white.  Provide a universally-supported rgba() fallback.
+ */
+.modal.modal-open,
+.modal:target,
+.modal[open] {
+  background-color: rgba(0, 0, 0, 0.4);
+}

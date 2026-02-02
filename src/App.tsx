@@ -49,7 +49,7 @@ export default function App() {
             <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
               <div className="space-y-4 flex flex-col items-center">
                 {/* TABS + SLIPPAGE */}
-                <div className="w-full max-w-250 min-w-112.5 flex items-center justify-between">
+                <div className="w-full max-w-250 flex items-center justify-between">
                   <FlowModeSwitcher />
 
                   <div className="flex items-center gap-2">
@@ -76,7 +76,7 @@ export default function App() {
                 </div>
 
                 {/* CARD */}
-                <div className="w-full max-w-250 min-w-112.5">
+                <div className="w-full max-w-250">
                   <div className="card bg-base-100 shadow-xl rounded-2xl">
                     <div className="card-body p-4 sm:p-6">
                       <TabContent
@@ -101,22 +101,24 @@ export default function App() {
 function FlowModeSwitcher() {
   const { flowMode, setFlowMode } = useTradeContext()
 
+  const base = 'px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors'
+  const active = 'bg-secondary text-secondary-content'
+  const inactive = 'text-base-content/70 hover:bg-base-300/50'
+
   return (
-    <div className="flex items-center gap-2">
-      <div className="join">
-        <button
-          className={`btn btn-xs join-item ${flowMode === 'dst' ? 'btn-secondary' : 'btn-ghost'}`}
-          onClick={() => setFlowMode('dst')}
-        >
-          X-Chain Deposits
-        </button>
-        <button
-          className={`btn btn-xs join-item ${flowMode === 'src' ? 'btn-secondary' : 'btn-ghost'}`}
-          onClick={() => setFlowMode('src')}
-        >
-          X-Chain Withdrawal
-        </button>
-      </div>
+    <div className="flex rounded-lg border border-base-300">
+      <button
+        className={`${base} rounded-l-lg ${flowMode === 'dst' ? active : inactive}`}
+        onClick={() => setFlowMode('dst')}
+      >
+        X-Chain Deposits
+      </button>
+      <button
+        className={`${base} rounded-r-lg border-l border-base-300 ${flowMode === 'src' ? active : inactive}`}
+        onClick={() => setFlowMode('src')}
+      >
+        X-Chain Withdrawal
+      </button>
     </div>
   )
 }

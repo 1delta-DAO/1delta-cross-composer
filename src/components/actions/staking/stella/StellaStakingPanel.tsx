@@ -145,10 +145,10 @@ export function StellaStakingPanel({ setActionInfo, resetKey }: StellaStakingPan
 
   return (
     <div className="space-y-2">
-      <div className="flex items-stretch gap-2 rounded-xl border border-base-300 bg-base-100 p-2 focus-within:border-primary transition">
+      <div className="flex items-center rounded-xl border border-base-300 bg-base-100 px-3 py-2 focus-within:border-primary transition">
         {/* Amount Input */}
         <input
-          className="flex-1 bg-transparent outline-none text-lg font-medium placeholder:text-base-content/40"
+          className="flex-1 min-w-0 bg-transparent outline-none text-lg font-medium placeholder:text-base-content/40"
           placeholder={`${tokenType} amount`}
           value={outputAmount}
           onChange={(e) => handleAmountChange(e.target.value)}
@@ -156,11 +156,11 @@ export function StellaStakingPanel({ setActionInfo, resetKey }: StellaStakingPan
         />
 
         {/* Token Selector */}
-        <div className="relative" ref={wrapperRef}>
+        <div className="relative shrink-0 ml-2" ref={wrapperRef}>
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="flex items-center gap-2 rounded-lg bg-base-200 px-3 py-2 hover:bg-base-300 transition"
+            className="flex items-center gap-2 rounded-lg bg-base-200 px-3 py-1.5 hover:bg-base-300 transition"
           >
             <Logo
               src={selectedToken?.logoURI}
